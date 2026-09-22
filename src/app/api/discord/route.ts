@@ -1,58 +1,120 @@
 import { NextResponse } from "next/server";
 
+// Valid channel targets
+type AllowedChannel = "sell" | "trade" | "looking_for" | "bulk" | "test";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { webhookUrl, embed, content } = body;
+    const { channel, embed, content } = body;
 
-    // Check if webhook is provided either directly or via environment variable
-    const targetWebhook =
-      webhookUrl ||
-      process.env.DISCORD_WEBHOOK_URL ||
-      process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL;
-
-    if (!targetWebhook) {
+    // Validate channel parameter strictly
+    const validChannels: AllowedChannel[] = ["sell", "trade", "looking_for", "bulk", "test"];
+    if (!channel || !validChannels.includes(channel)) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Keine Discord Webhook-URL konfiguriert. Du kannst sie in den Admin-Einstellungen hinterlegen.",
-        },
+        { success: false, error: "Ungültiger oder fehlender Kanal-Typ." },
         { status: 400 }
       );
     }
 
-    const payload: {
-      content?: string;
-      embeds?: unknown[];
-      username?: string;
-      avatar_url?: string;
-    } = {
+    // Resolve webhook URL strictly from server environment variables - NEVER from client input!
+    let targetWebhookUrl: string | undefined;
+
+    switch (channel) {
+      case "sell":
+        targetWebhookUrl = process.env.DISCORD_WEBHOOK_SELL || process.env.DISCORD_WEBHOOK_URL;
+        break;
+      case "trade":
+        targetWebhookUrl = process.env.DISCORD_WEBHOOK_TRADE || process.env.DISCORD_WEBHOOK_URL;
+        break;
+      case "looking_for":
+        targetWebhookUrl = process.env.DISCORD_WEBHOOK_LOOKING_FOR || process.env.DISCORD_WEBHOOK_URL;
+        break;
+      case "bulk":
+        targetWebhookUrl = process.env.DISCORD_WEBHOOK_MANACARDS_BULK || process.env.DISCORD_WEBHOOK_URL;
+        break;
+      case "test":
+        targetWebhookUrl = process.env.DISCORD_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_SELL;
+        break;
+    }
+
+    if (!targetWebhookUrl) {
+      // Return safe message without leaking internal paths or configurations
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Für diesen Kanal ist auf dem Server keine Webhook-URL konfiguriert.",
+          configured: false,
+        },
+        { status: 404 }
+      );
+    }
+
+    // Ensure the target URL is strictly a discord.com domain
+    try {
+      const parsedUrl = new URL(targetWebhookUrl);
+      if (
+        parsedUrl.protocol !== "https:" ||
+        !parsedUrl.hostname.endsWith("discord.com") ||
+        !parsedUrl.pathname.startsWith("/api/webhooks/")
+      ) {
+        return NextResponse.json(
+          { success: false, error: "Server-Fehlkonfiguration: Ungültige Discord-Webhook-Domain." },
+          { status: 500 }
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Server-Fehlkonfiguration: Ungültiges URL-Format." },
+        { status: 500 }
+      );
+    }
+
+    // Sanitize embed data
+    const sanitizedEmbed = embed
+      ? {
+          title: String(embed.title || "").slice(0, 256),
+          description: String(embed.description || "").slice(0, 2048),
+          color: typeof embed.color === "number" ? embed.color : 0x6366f1,
+          fields: Array.isArray(embed.fields)
+            ? embed.fields.slice(0, 10).map((f: { name?: string; value?: string; inline?: boolean }) => ({
+                name: String(f.name || "").slice(0, 256),
+                value: String(f.value || "").slice(0, 1024),
+                inline: Boolean(f.inline),
+              }))
+            : [],
+          image: embed.image?.url ? { url: String(embed.image.url) } : undefined,
+          footer: { text: "Manaverse Community • Whatnot & Discord" },
+          timestamp: new Date().toISOString(),
+        }
+      : undefined;
+
+    const payload = {
       username: "Manaverse Bot",
       avatar_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
+      content: content ? String(content).slice(0, 2000) : undefined,
+      embeds: sanitizedEmbed ? [sanitizedEmbed] : undefined,
     };
 
-    if (content) payload.content = content;
-    if (embed) payload.embeds = [embed];
-
-    const response = await fetch(targetWebhook, {
+    const response = await fetch(targetWebhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
       return NextResponse.json(
-        { success: false, error: errorText },
+        { success: false, error: "Discord API verweigerte die Anfrage." },
         { status: response.status }
       );
     }
 
-    return NextResponse.json({ success: true, message: "Erfolgreich an Discord gesendet!" });
+    return NextResponse.json({ success: true, message: "Erfolgreich an Discord übermittelt." });
   } catch (error) {
-    console.error("Discord webhook dispatch error:", error);
+    // Never expose stack traces or raw error messages to the client
+    console.error("Secure Discord dispatcher error:", error);
     return NextResponse.json(
-      { success: false, error: (error as Error).message },
+      { success: false, error: "Interner Verarbeitungsfehler." },
       { status: 500 }
     );
   }

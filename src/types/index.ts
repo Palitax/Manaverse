@@ -6,10 +6,10 @@ export type CardLanguage = 'DE' | 'EN' | 'JP' | 'OTHER' | 'Egal';
 
 export type ListingType = 'sell' | 'trade' | 'looking_for';
 
-export interface UserProfile {
+// Publicly visible profile - NO sensitive data (no email, no address, no tokens)
+export interface PublicUserProfile {
   id: string;
   username: string;
-  email: string;
   avatarUrl: string;
   role: UserRole;
   verified: boolean;
@@ -20,10 +20,15 @@ export interface UserProfile {
   createdAt: string;
 }
 
+// Authenticated user's own profile
+export interface UserProfile extends PublicUserProfile {
+  email?: string;
+}
+
 export interface CardListing {
   id: string;
   userId: string;
-  user: UserProfile;
+  user: PublicUserProfile;
   type: ListingType;
   name: string;
   set?: string;
@@ -48,7 +53,7 @@ export interface TradeOffer {
   listingId: string;
   listing: CardListing;
   fromUserId: string;
-  fromUser: UserProfile;
+  fromUser: PublicUserProfile;
   offeredCardsDescription: string;
   offeredImages: string[];
   estimatedValue: number;
@@ -70,7 +75,7 @@ export interface BulkCardItem {
 export interface BulkSubmission {
   id: string;
   userId: string;
-  user: UserProfile;
+  user: PublicUserProfile;
   totalCards: number;
   cards: BulkCardItem[];
   askingPrice?: number;
@@ -94,13 +99,6 @@ export interface DealConfirmation {
   status: 'pending' | 'completed';
   createdAt: string;
   completedAt?: string;
-}
-
-export interface DiscordWebhookConfig {
-  sellWebhookUrl: string;
-  tradeWebhookUrl: string;
-  lookingForWebhookUrl: string;
-  bulkWebhookUrl: string;
 }
 
 export interface PokemonApiCard {

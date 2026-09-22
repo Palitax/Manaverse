@@ -7,7 +7,6 @@ import {
   TradeOffer,
   BulkSubmission,
   DealConfirmation,
-  DiscordWebhookConfig,
 } from "@/types";
 import {
   MOCK_USERS,
@@ -24,7 +23,6 @@ interface StoreContextType {
   deals: DealConfirmation[];
   bulkSubmissions: BulkSubmission[];
   tradeOffers: TradeOffer[];
-  webhooks: DiscordWebhookConfig;
   switchUser: (userId: string) => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">) => Promise<CardListing>;
@@ -32,7 +30,6 @@ interface StoreContextType {
   addBulkSubmission: (submission: { cards: BulkSubmission["cards"]; askingPrice?: number; notes?: string }) => Promise<void>;
   confirmDeal: (dealId: string, asRole: "seller" | "buyer") => void;
   createDeal: (listing: CardListing, buyer: UserProfile) => void;
-  updateWebhooks: (config: DiscordWebhookConfig) => void;
   deleteListing: (listingId: string) => void;
 }
 
@@ -45,20 +42,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [deals, setDeals] = useState<DealConfirmation[]>(INITIAL_DEALS);
   const [bulkSubmissions, setBulkSubmissions] = useState<BulkSubmission[]>(INITIAL_BULK_SUBMISSIONS);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
-  const [webhooks, setWebhooks] = useState<DiscordWebhookConfig>({
-    sellWebhookUrl: "",
-    tradeWebhookUrl: "",
-    lookingForWebhookUrl: "",
-    bulkWebhookUrl: "",
-  });
 
-  // Load saved state from localStorage if available
+  // Load saved state from localStorage safely (only public listings)
   useEffect(() => {
     try {
-      const savedWebhooks = localStorage.getItem("manaverse_webhooks");
-      if (savedWebhooks) {
-        setWebhooks(JSON.parse(savedWebhooks));
-      }
       const savedListings = localStorage.getItem("manaverse_listings");
       if (savedListings) {
         setListings(JSON.parse(savedListings));
@@ -80,45 +67,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const updateWebhooks = (config: DiscordWebhookConfig) => {
-    setWebhooks(config);
-    try {
-      localStorage.setItem("manaverse_webhooks", JSON.stringify(config));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
+  // Dispatch through secure server proxy - client NEVER sees the raw webhook URLs
   const dispatchDiscordWebhook = async (listing: CardListing) => {
-    let targetWebhook = "";
+    let channel: "sell" | "trade" | "looking_for" = "sell";
     let embedColor = 0x6366f1;
     let typeLabel = "ANGEBOT";
 
     if (listing.type === "sell") {
-      targetWebhook = webhooks.sellWebhookUrl;
+      channel = "sell";
       embedColor = 0x10b981; // Green
       typeLabel = "VERKAUF";
     } else if (listing.type === "trade") {
-      targetWebhook = webhooks.tradeWebhookUrl;
+      channel = "trade";
       embedColor = 0x8b5cf6; // Purple
       typeLabel = "TAUSCH";
     } else if (listing.type === "looking_for") {
-      targetWebhook = webhooks.lookingForWebhookUrl;
+      channel = "looking_for";
       embedColor = 0x06b6d4; // Cyan
       typeLabel = "GESUCH";
     }
-
-    if (!targetWebhook) return;
 
     try {
       await fetch("/api/discord", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          webhookUrl: targetWebhook,
+          channel,
           embed: {
             title: `[${typeLabel}] ${listing.name}`,
-            description: listing.description || "Neues Listing auf Manaverse!",
+            description: listing.description || "Neues Angebot auf Manaverse!",
             color: embedColor,
             fields: [
               { name: "Zustand", value: listing.condition, inline: true },
@@ -131,24 +108,36 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               { name: "Verkäufer", value: `${listing.user.username} (Discord: ${listing.user.discordUsername || "N/A"})`, inline: false },
             ],
             image: listing.photos[0] ? { url: listing.photos[0] } : undefined,
-            footer: { text: "Manaverse Community • Whatnot & Discord" },
-            timestamp: new Date().toISOString(),
           },
         }),
       });
     } catch (err) {
-      console.warn("Failed to dispatch webhook:", err);
+      console.warn("Secure Discord notification trigger failed:", err);
     }
   };
 
   const addListing = async (
     listingData: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">
   ): Promise<CardListing> => {
+    // Sanitize user profile for listing - ensure no private fields leak
+    const sanitizedUser = {
+      id: currentUser.id,
+      username: currentUser.username,
+      avatarUrl: currentUser.avatarUrl,
+      role: currentUser.role,
+      verified: currentUser.verified,
+      dealsCount: currentUser.dealsCount,
+      whatnotUsername: currentUser.whatnotUsername,
+      discordUsername: currentUser.discordUsername,
+      bio: currentUser.bio,
+      createdAt: currentUser.createdAt,
+    };
+
     const newListing: CardListing = {
       ...listingData,
       id: `list-${Date.now()}`,
       userId: currentUser.id,
-      user: currentUser,
+      user: sanitizedUser,
       status: "active",
       createdAt: new Date().toISOString(),
     };
@@ -227,32 +216,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     setBulkSubmissions((prev) => [newSubmission, ...prev]);
 
-    // Send discord webhook to Manacards Admin Ankauf channel if configured
-    if (webhooks.bulkWebhookUrl) {
-      try {
-        await fetch("/api/discord", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            webhookUrl: webhooks.bulkWebhookUrl,
-            embed: {
-              title: `[MANACARDS ANKAUF] Neue Sammlung eingereicht von ${currentUser.username}!`,
-              description: `Enthält **${newSubmission.totalCards} Karten**. Wunschpreis: ${newSubmission.askingPrice ? `${newSubmission.askingPrice} €` : "Offen / Gebot erwünscht"}\n\nNotizen: ${newSubmission.notes || "Keine"}`,
-              color: 0xf59e0b,
-              fields: newSubmission.cards.slice(0, 5).map((c, i) => ({
-                name: `Karte #${i + 1}: ${c.name}`,
-                value: `Zustand: ${c.condition} | Sprache: ${c.language}${c.estimatedValue ? ` | Wert: ${c.estimatedValue} €` : ""}`,
-                inline: true,
-              })),
-              image: newSubmission.cards[0]?.image ? { url: newSubmission.cards[0].image } : undefined,
-              footer: { text: "Manacards Ankauf Postfach" },
-              timestamp: new Date().toISOString(),
-            },
-          }),
-        });
-      } catch (e) {
-        console.warn(e);
-      }
+    // Send discord webhook securely through server
+    try {
+      await fetch("/api/discord", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: "bulk",
+          embed: {
+            title: `[MANACARDS ANKAUF] Neue Sammlung eingereicht von ${currentUser.username}!`,
+            description: `Enthält **${newSubmission.totalCards} Karten**. Wunschpreis: ${newSubmission.askingPrice ? `${newSubmission.askingPrice} €` : "Offen / Gebot erwünscht"}\n\nNotizen: ${newSubmission.notes || "Keine"}`,
+            color: 0xf59e0b,
+            fields: newSubmission.cards.slice(0, 5).map((c, i) => ({
+              name: `Karte #${i + 1}: ${c.name}`,
+              value: `Zustand: ${c.condition} | Sprache: ${c.language}${c.estimatedValue ? ` | Wert: ${c.estimatedValue} €` : ""}`,
+              inline: true,
+            })),
+            image: newSubmission.cards[0]?.image ? { url: newSubmission.cards[0].image } : undefined,
+          },
+        }),
+      });
+    } catch (e) {
+      console.warn(e);
     }
   };
 
@@ -287,12 +272,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           buyerConfirmed: asRole === "buyer" ? true : deal.buyerConfirmed,
         };
 
-        // If both confirmed, mark completed and increment user deal counters!
         if (updated.sellerConfirmed && updated.buyerConfirmed && deal.status !== "completed") {
           updated.status = "completed";
           updated.completedAt = new Date().toISOString();
 
-          // Increment counters for seller and buyer
           setUsers((uList) =>
             uList.map((u) => {
               if (u.id === deal.sellerId || u.id === deal.buyerId) {
@@ -300,7 +283,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 const becomesVerified = newCount >= 3;
 
                 if (becomesVerified && !u.verified) {
-                  // Fire celebratory confetti!
                   try {
                     confetti({
                       particleCount: 100,
@@ -337,7 +319,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         deals,
         bulkSubmissions,
         tradeOffers,
-        webhooks,
         switchUser,
         updateProfile,
         addListing,
@@ -346,7 +327,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addBulkSubmission,
         confirmDeal,
         createDeal,
-        updateWebhooks,
       }}
     >
       {children}

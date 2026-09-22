@@ -1,10 +1,10 @@
 import { CardListing, UserProfile, DealConfirmation, BulkSubmission } from "@/types";
 
+// Public profiles: strictly no emails or private credentials
 export const MOCK_USERS: UserProfile[] = [
   {
     id: "user-1",
     username: "Levin_Mana",
-    email: "levin@manaverse.gg",
     avatarUrl: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
     role: "founder",
     verified: true,
@@ -17,7 +17,6 @@ export const MOCK_USERS: UserProfile[] = [
   {
     id: "user-2",
     username: "PokeKarpador",
-    email: "karpador@manaverse.gg",
     avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
     role: "beta",
     verified: true,
@@ -30,11 +29,10 @@ export const MOCK_USERS: UserProfile[] = [
   {
     id: "user-3",
     username: "GlurakHunter_91",
-    email: "glurak@manaverse.gg",
     avatarUrl: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
     role: "member",
     verified: false,
-    dealsCount: 2, // 2 deals -> 1 away from verified!
+    dealsCount: 2,
     whatnotUsername: "CharizardHunter",
     discordUsername: "GlurakHunter#4567",
     bio: "Suche WOTC Holos und Base Set Gluraks in Near Mint.",
@@ -43,7 +41,6 @@ export const MOCK_USERS: UserProfile[] = [
   {
     id: "user-4",
     username: "SnorlaxLover",
-    email: "relaxo@manaverse.gg",
     avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
     role: "member",
     verified: true,
@@ -238,7 +235,7 @@ export const INITIAL_BULK_SUBMISSIONS: BulkSubmission[] = [
     id: "bulk-1",
     userId: "user-2",
     user: MOCK_USERS[1],
-    totalCards: 6,
+    totalCards: 3,
     cards: [
       {
         id: "c-1",

@@ -8,70 +8,78 @@ import {
   Settings,
   Send,
   Sparkles,
-  Layers,
   Inbox,
-  CheckCircle,
-  ExternalLink,
-  Save,
-  Check,
+  ShieldAlert,
+  Lock,
+  ArrowLeft,
+  CheckCircle2,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminPage() {
-  const { webhooks, updateWebhooks, bulkSubmissions } = useStore();
-
-  const [sellUrl, setSellUrl] = useState(webhooks.sellWebhookUrl);
-  const [tradeUrl, setTradeUrl] = useState(webhooks.tradeWebhookUrl);
-  const [lookingForUrl, setLookingForUrl] = useState(webhooks.lookingForWebhookUrl);
-  const [bulkUrl, setBulkUrl] = useState(webhooks.bulkWebhookUrl);
-
+  const { currentUser, bulkSubmissions } = useStore();
   const [testStatus, setTestStatus] = useState<string | null>(null);
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [testingChannel, setTestingChannel] = useState<string | null>(null);
 
-  const handleSaveWebhooks = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateWebhooks({
-      sellWebhookUrl: sellUrl,
-      tradeWebhookUrl: tradeUrl,
-      lookingForWebhookUrl: lookingForUrl,
-      bulkWebhookUrl: bulkUrl,
-    });
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2000);
-  };
+  // STRICT ACCESS CONTROL: Only Founder & Admin can view this page
+  const hasAdminAccess = currentUser.role === "founder" || currentUser.role === "admin";
 
-  const handleTestWebhook = async (url: string, channelName: string) => {
-    if (!url) {
-      alert(`Bitte trage zuerst eine Webhook-URL für ${channelName} ein.`);
-      return;
-    }
-    setTestStatus(`Sende Test an ${channelName}...`);
+  if (!hasAdminAccess) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl glass-panel border border-rose-500/30 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-black text-white">Zugriff verweigert (403)</h1>
+          <p className="text-xs text-neutral-400 leading-relaxed">
+            Dieser Bereich ist ausschließlich für Administratoren und Gründer von Manacards bestimmt. Aus Sicherheitsgründen sind sensible Ankaufsdaten und Webhook-Steuerungen geschützt.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Zurück zum Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleTestChannel = async (channel: "sell" | "trade" | "looking_for" | "bulk") => {
+    setTestingChannel(channel);
+    setTestStatus(`Sende Test-Signal an Kanal '${channel}'...`);
+
     try {
       const res = await fetch("/api/discord", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          webhookUrl: url,
+          channel,
           embed: {
-            title: `🧪 Test-Nachricht: ${channelName} Webhook erfolgreich verbunden!`,
-            description: "Die Manaverse Community-Plattform ist erfolgreich mit diesem Discord-Kanal verknüpft.",
+            title: `🧪 Test-Nachricht: Kanal '${channel}' erfolgreich verbunden!`,
+            description: "Die Manaverse Plattform hat dieses Signal sicher über den Server gesendet.",
             color: 0x6366f1,
             fields: [
-              { name: "Status", value: "Aktiv & Bereit", inline: true },
-              { name: "Features", value: "Sell, Buy, Trade, Looking For, Manacards Bulk", inline: true },
+              { name: "Sender", value: `Admin @${currentUser.username}`, inline: true },
+              { name: "Sicherheit", value: "Server-Side Token (Kein Client-Leak)", inline: true },
             ],
-            footer: { text: "Manaverse Bot System" },
-            timestamp: new Date().toISOString(),
           },
         }),
       });
+
       const data = await res.json();
       if (data.success) {
-        setTestStatus(`✓ Test für ${channelName} erfolgreich empfangen!`);
+        setTestStatus(`✓ Kanal '${channel}' hat die Testnachricht erfolgreich empfangen!`);
       } else {
-        setTestStatus(`Fehler: ${data.error || "Webhook antwortete mit Fehler"}`);
+        setTestStatus(`Hinweis: ${data.error}`);
       }
     } catch (e) {
-      setTestStatus(`Fehler: ${(e as Error).message}`);
+      setTestStatus(`Verbindungsfehler: ${(e as Error).message}`);
+    } finally {
+      setTestingChannel(null);
     }
   };
 
@@ -86,7 +94,7 @@ export default function AdminPage() {
           Admin Postfach & Discord-Zentrale
         </h1>
         <p className="text-sm text-neutral-400 mt-1">
-          Verwalte eingereichte Sammlungen und konfiguriere die Webhook-URLs deiner Discord-Kanäle.
+          Geschützter Verwaltungsbereich für Sammlungs-Ankäufe und Discord-Kanal-Integrationen.
         </p>
       </div>
 
@@ -179,7 +187,6 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Contact / Action */}
                   <div className="pt-2 flex gap-2">
                     <button
                       onClick={() => alert(`Angebot per Discord an ${sub.user.discordUsername || sub.user.username} vorbereiten!`)}
@@ -200,136 +207,64 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Right: Discord Webhook Settings */}
+        {/* Right: Discord Webhook Diagnostics & Security */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-black text-white flex items-center gap-2">
               <Settings className="w-5 h-5 text-indigo-400" />
-              Discord Webhook-Kanäle
+              Discord Kanäle & Sicherheit
             </h2>
-            <span className="text-[10px] text-indigo-400 font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-              Live Dispatcher
+            <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Server-Geschützt
             </span>
           </div>
 
           <div className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/30 text-xs text-neutral-300 space-y-2">
             <p className="font-bold text-white flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Wie erstelle ich Webhooks im Discord?
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Datenschutz & Sicherheit
             </p>
-            <ol className="list-decimal pl-4 space-y-1 text-neutral-400 text-[11px]">
-              <li>Gehe in Discord in die Kanaleinstellungen (z.B. <code className="text-indigo-300">#karten-verkauf</code>).</li>
-              <li>Klicke auf <b>Integrationen</b> $\rightarrow$ <b>Webhooks</b> $\rightarrow$ <b>Neuer Webhook</b>.</li>
-              <li>Klicke auf <b>Webhook-URL kopieren</b> und füge sie unten in das entsprechende Feld ein!</li>
-            </ol>
+            <p className="text-neutral-400 text-[11px] leading-relaxed">
+              Deine Discord Webhook-Tokens werden <b>ausschließlich serverseitig</b> in Umgebungsvariablen verwaltet (z.B. in Vercel oder <code className="text-indigo-300">.env</code>). Dadurch sind sie <b>im Browser, in der Console und im Network-Tab unantastbar und unsichtbar</b>.
+            </p>
           </div>
 
-          <form onSubmit={handleSaveWebhooks} className="space-y-4 glass-panel p-6 rounded-3xl border border-white/10 text-xs">
-            {/* Sell Webhook */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-neutral-300 font-bold">
-                  1. Sell Kanal Webhook-URL (#karten-verkauf)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleTestWebhook(sellUrl, "Sell (#karten-verkauf)")}
-                  className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1"
-                >
-                  <Send className="w-3 h-3" /> Test senden
-                </button>
-              </div>
-              <input
-                type="url"
-                value={sellUrl}
-                onChange={(e) => setSellUrl(e.target.value)}
-                placeholder="https://discord.com/api/webhooks/..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs"
-              />
-            </div>
+          <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 text-xs">
+            <h3 className="font-bold text-white text-sm">Kanal-Status & Verbindungstests</h3>
 
-            {/* Trade Webhook */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-neutral-300 font-bold">
-                  2. Trade Kanal Webhook-URL (#karten-tausch)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleTestWebhook(tradeUrl, "Trade (#karten-tausch)")}
-                  className="text-[10px] text-purple-400 hover:underline flex items-center gap-1"
+            <div className="space-y-3">
+              {[
+                { id: "sell", name: "1. Sell-Kanal (#karten-verkauf)", env: "DISCORD_WEBHOOK_SELL" },
+                { id: "trade", name: "2. Trade-Kanal (#karten-tausch)", env: "DISCORD_WEBHOOK_TRADE" },
+                { id: "looking_for", name: "3. Gesuche-Kanal (#gesuche)", env: "DISCORD_WEBHOOK_LOOKING_FOR" },
+                { id: "bulk", name: "4. Ankauf-Kanal (#ankauf-postfach)", env: "DISCORD_WEBHOOK_MANACARDS_BULK" },
+              ].map((channelItem) => (
+                <div
+                  key={channelItem.id}
+                  className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between"
                 >
-                  <Send className="w-3 h-3" /> Test senden
-                </button>
-              </div>
-              <input
-                type="url"
-                value={tradeUrl}
-                onChange={(e) => setTradeUrl(e.target.value)}
-                placeholder="https://discord.com/api/webhooks/..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs"
-              />
-            </div>
-
-            {/* Looking For Webhook */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-neutral-300 font-bold">
-                  3. Looking For Webhook-URL (#gesuche)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleTestWebhook(lookingForUrl, "Looking For (#gesuche)")}
-                  className="text-[10px] text-cyan-400 hover:underline flex items-center gap-1"
-                >
-                  <Send className="w-3 h-3" /> Test senden
-                </button>
-              </div>
-              <input
-                type="url"
-                value={lookingForUrl}
-                onChange={(e) => setLookingForUrl(e.target.value)}
-                placeholder="https://discord.com/api/webhooks/..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs"
-              />
-            </div>
-
-            {/* Bulk / Manacards Ankauf Webhook */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-neutral-300 font-bold">
-                  4. Manacards Ankauf Webhook-URL (#ankauf-postfach)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleTestWebhook(bulkUrl, "Manacards Ankauf (#ankauf)")}
-                  className="text-[10px] text-amber-400 hover:underline flex items-center gap-1"
-                >
-                  <Send className="w-3 h-3" /> Test senden
-                </button>
-              </div>
-              <input
-                type="url"
-                value={bulkUrl}
-                onChange={(e) => setBulkUrl(e.target.value)}
-                placeholder="https://discord.com/api/webhooks/..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs"
-              />
+                  <div>
+                    <p className="font-semibold text-white">{channelItem.name}</p>
+                    <p className="text-[10px] text-neutral-500 font-mono">{channelItem.env}</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={testingChannel !== null}
+                    onClick={() => handleTestChannel(channelItem.id as any)}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] flex items-center gap-1 transition-all disabled:opacity-50"
+                  >
+                    <Send className="w-3 h-3" /> Test senden
+                  </button>
+                </div>
+              ))}
             </div>
 
             {testStatus && (
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 text-[11px]">
-                {testStatus}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-neutral-200 text-[11px] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+                <span>{testStatus}</span>
               </div>
             )}
-
-            <button
-              type="submit"
-              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-indigo-600/30"
-            >
-              <Save className="w-4 h-4" />
-              {savedSuccess ? "Webhooks gespeichert! ✓" : "Einstellungen speichern"}
-            </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
