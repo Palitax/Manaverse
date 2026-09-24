@@ -84,13 +84,13 @@ export async function POST(request: Request) {
               }))
             : [],
           image: embed.image?.url ? { url: String(embed.image.url) } : undefined,
-          footer: { text: "Manaverse Community • Whatnot & Discord" },
+          footer: { text: "Manaforge Community • Discord Sync" },
           timestamp: new Date().toISOString(),
         }
       : undefined;
 
     const payload = {
-      username: "Manaverse Bot",
+      username: "Manaforge Bot",
       avatar_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
       content: content ? String(content).slice(0, 2000) : undefined,
       embeds: sanitizedEmbed ? [sanitizedEmbed] : undefined,

@@ -46,7 +46,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Load saved state from localStorage safely (only public listings)
   useEffect(() => {
     try {
-      const savedListings = localStorage.getItem("manaverse_listings");
+      const savedListings = localStorage.getItem("manaforge_listings") || localStorage.getItem("manaverse_listings");
       if (savedListings) {
         setListings(JSON.parse(savedListings));
       }
@@ -95,7 +95,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           channel,
           embed: {
             title: `[${typeLabel}] ${listing.name}`,
-            description: listing.description || "Neues Angebot auf Manaverse!",
+            description: listing.description || "Neues Angebot auf Manaforge!",
             color: embedColor,
             fields: [
               { name: "Zustand", value: listing.condition, inline: true },
@@ -145,7 +145,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setListings((prev) => {
       const updated = [newListing, ...prev];
       try {
-        localStorage.setItem("manaverse_listings", JSON.stringify(updated));
+        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
       } catch (e) {
         console.error(e);
       }
@@ -163,7 +163,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setListings((prev) => {
       const updated = prev.filter((l) => l.id !== listingId);
       try {
-        localStorage.setItem("manaverse_listings", JSON.stringify(updated));
+        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
       } catch (e) {
         console.error(e);
       }

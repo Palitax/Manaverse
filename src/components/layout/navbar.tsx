@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { HoloAvatarFrame } from "../frames/holo-avatar-frame";
 import {
-  Sparkles,
   ShoppingBag,
   ArrowLeftRight,
   Search,
@@ -13,7 +12,7 @@ import {
   ShieldCheck,
   Settings,
   ChevronDown,
-  Layers,
+  Home,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -24,7 +23,7 @@ export function Navbar() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const navItems = [
-    { label: "Dashboard", href: "/", icon: <Layers className="w-4 h-4" /> },
+    { label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
     { label: "Sell", href: "/sell", icon: <PlusCircle className="w-4 h-4" /> },
     { label: "Buy", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
     { label: "Trade", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
@@ -32,24 +31,23 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090b10]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090b10]/85 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-[1.5px] shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-300">
-            <div className="w-full h-full bg-[#090b10] rounded-[10px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-indigo-400 group-hover:text-pink-400 transition-colors" />
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden p-[1.5px] bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 shadow-[0_0_15px_rgba(56,189,248,0.35)] group-hover:shadow-[0_0_24px_rgba(99,102,241,0.6)] group-hover:scale-105 transition-all duration-300">
+            <div className="w-full h-full bg-black rounded-[9px] overflow-hidden flex items-center justify-center">
+              <img
+                src="/manaforge-icon.png"
+                alt="Manaforge Logo"
+                className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300"
+              />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-300">
-                MANAVERSE
-              </span>
-              <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-widest">
-                Whatnot
-              </span>
-            </div>
+            <span className="font-black text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-300">
+              MANAFORGE
+            </span>
           </div>
         </Link>
 
@@ -191,8 +189,8 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav bar */}
-      <div className="md:hidden flex items-center justify-around py-2 border-t border-white/5 bg-[#090b10]">
+      {/* Mobile nav bar fixed at bottom */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around py-1.5 px-1 border-t border-white/10 bg-[#090b10]/95 backdrop-blur-xl pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-2xl">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -200,12 +198,14 @@ export function Navbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 text-[10px] font-medium py-1 px-2 rounded-lg",
-                isActive ? "text-indigo-400" : "text-neutral-400"
+                "flex flex-col items-center justify-center min-w-[54px] min-h-[44px] gap-1 text-[11px] font-semibold py-1 px-1 rounded-xl transition-all active:scale-95",
+                isActive
+                  ? "text-cyan-400 bg-white/10 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
+                  : "text-neutral-400 hover:text-neutral-200"
               )}
             >
-              {item.icon}
-              {item.label}
+              <div className="w-4 h-4 flex items-center justify-center">{item.icon}</div>
+              <span className="truncate max-w-[64px]">{item.label}</span>
             </Link>
           );
         })}
