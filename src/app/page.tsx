@@ -13,7 +13,6 @@ export default function HomePage() {
       id: "sell",
       categoryNum: "01",
       sidebarText: "SELL // VERKAUFEN",
-      pokemonTag: "GENGAR • #094",
       title: "VERKAUFEN",
       nameGradient: "holo-text-sell",
       description: "Einzelkarten verkaufen oder ganze Sammlungen bei Manacards einreichen.",
@@ -30,7 +29,6 @@ export default function HomePage() {
       id: "buy",
       categoryNum: "02",
       sidebarText: "BUY // KAUFEN",
-      pokemonTag: "PIKACHU • #025",
       title: "KAUFEN",
       nameGradient: "holo-text-buy",
       description: "Karten und Angebote aus der Community erwerben.",
@@ -47,7 +45,6 @@ export default function HomePage() {
       id: "trade",
       categoryNum: "03",
       sidebarText: "TRADE // TAUSCHEN",
-      pokemonTag: "MEWTU • #150",
       title: "TAUSCHEN",
       nameGradient: "holo-text-trade",
       description: "Karten fair 1:1 innerhalb der Community tauschen.",
@@ -64,7 +61,6 @@ export default function HomePage() {
       id: "looking-for",
       categoryNum: "04",
       sidebarText: "SEEK // GESUCHE",
-      pokemonTag: "GLURAK • #006",
       title: "GESUCHE",
       nameGradient: "holo-text-look",
       description: "Eigene Wunschkarten ausschreiben.",
@@ -137,11 +133,6 @@ export default function HomePage() {
                 <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-2.5 sm:p-4 pr-1.5 sm:pr-2 pb-3 sm:pb-4">
                   {/* Translucent dark gradient behind text for high legibility */}
                   <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/95 via-black/60 to-transparent -z-10" />
-
-                  {/* Pokemon Tag Line (e.g. GENGAR • #094) */}
-                  <div className="text-[8.5px] sm:text-[10px] font-bold tracking-wider text-neutral-300 uppercase flex items-center gap-1 drop-shadow">
-                    <span>{card.pokemonTag}</span>
-                  </div>
 
                   {/* Category Title with Adjusted Sizing so VERKAUFEN never cuts off */}
                   <h2
