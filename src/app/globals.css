@@ -143,50 +143,32 @@ body {
   scrollbar-width: none;
 }
 
-/* Arcane Precise Polygonal Sheared Cards */
-.arcane-clip-1 {
-  clip-path: polygon(0% 1.5%, 100% 5.5%, 88% 99.5%, 0% 94.5%);
+/* Tech & 3D Popout Card Utilities */
+.writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
-.arcane-clip-2 {
-  clip-path: polygon(8% 5%, 100% 0.5%, 94% 96%, 0% 100%);
+.halftone-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 8px 8px;
 }
 
-.arcane-clip-3 {
-  clip-path: polygon(0% 0.5%, 100% 3.5%, 89% 99%, 0% 95.5%);
+.holo-text-jinx {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f472b6 25%,
+    #67e8f9 50%,
+    #ffffff 75%,
+    #f472b6 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
 }
 
-.arcane-clip-4 {
-  clip-path: polygon(6% 4.5%, 100% 1%, 93% 96.5%, 0% 99.5%);
-}
-
-.arcane-filter-sell {
-  filter: drop-shadow(0 0 1px rgba(245, 158, 11, 0.9)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8));
-}
-.arcane-filter-sell:hover {
-  filter: drop-shadow(0 0 2px rgba(245, 158, 11, 1)) drop-shadow(0 0 15px rgba(245, 158, 11, 0.6)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.9));
-}
-
-.arcane-filter-buy {
-  filter: drop-shadow(0 0 1px rgba(6, 182, 212, 0.9)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8));
-}
-.arcane-filter-buy:hover {
-  filter: drop-shadow(0 0 2px rgba(6, 182, 212, 1)) drop-shadow(0 0 15px rgba(6, 182, 212, 0.6)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.9));
-}
-
-.arcane-filter-trade {
-  filter: drop-shadow(0 0 1px rgba(217, 70, 239, 0.9)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8));
-}
-.arcane-filter-trade:hover {
-  filter: drop-shadow(0 0 2px rgba(217, 70, 239, 1)) drop-shadow(0 0 20px rgba(217, 70, 239, 0.7)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.9));
-}
-
-.arcane-filter-look {
-  filter: drop-shadow(0 0 1px rgba(16, 185, 129, 0.9)) drop-shadow(0 15px 25px rgba(0, 0, 0, 0.8));
-}
-.arcane-filter-look:hover {
-  filter: drop-shadow(0 0 2px rgba(16, 185, 129, 1)) drop-shadow(0 0 15px rgba(16, 185, 129, 0.6)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.9));
-}
 
 
 
