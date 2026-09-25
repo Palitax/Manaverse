@@ -9,22 +9,17 @@ import {
   ArrowLeftRight,
   Search,
   Flame,
-  Crown,
-  Sparkles,
-  ShieldCheck,
   Star,
-  ChevronRight,
 } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const { listings, deals, users } = useStore();
+  const { listings } = useStore();
 
   const sellCount = listings.filter((l) => l.type === "sell").length;
   const buyCount = listings.filter((l) => l.type === "sell").length;
   const tradeCount = listings.filter((l) => l.type === "trade").length;
   const lookingForCount = listings.filter((l) => l.type === "looking_for").length;
-  const verifiedCount = users.filter((u) => u.verified).length;
 
   const cards = [
     {
@@ -32,80 +27,66 @@ export default function HomePage() {
       act: "Acto I",
       title: "VERKAUFEN",
       subtitle: "SELL",
-      description: "Biete Einzelkarten zum Festpreis an oder reiche Sammlungen ein.",
+      countText: `${sellCount} Angebote`,
       href: "/sell",
       bgImage: "/tiles/tile-sell.jpg",
       shadowClass: "arcane-card-shadow-sell",
-      borderColor: "border-amber-500/50 group-hover:border-amber-400",
+      borderColor: "border-amber-400/60 group-hover:border-amber-300",
       accentGlow: "rgba(245, 158, 11, 0.4)",
-      bottomFlare: "from-amber-500/40 via-amber-600/20 to-transparent",
-      accentBadge: "bg-amber-500/20 text-amber-300 border-amber-500/40",
-      taglineColor: "text-amber-300",
-      countText: `${sellCount} Angebote`,
-      icon: <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />,
-      hasBulkLink: true,
-      slantClass: "sm:-skew-y-2 sm:-rotate-1",
+      bottomFlare: "from-amber-500/60 via-amber-600/30 to-transparent",
+      icon: <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />,
+      slantClass: "sm:-skew-y-[2.8deg] sm:-rotate-[1deg]",
     },
     {
       id: "buy",
       act: "Acto II",
       title: "KAUFEN",
       subtitle: "BUY",
-      description: "Entdecke seltene Einzelkarten aus der aktiven Community.",
+      countText: `${buyCount} Karten`,
       href: "/buy",
       bgImage: "/tiles/tile-buy.jpg",
       shadowClass: "arcane-card-shadow-buy",
-      borderColor: "border-cyan-500/50 group-hover:border-cyan-400",
+      borderColor: "border-cyan-400/60 group-hover:border-cyan-300",
       accentGlow: "rgba(6, 182, 212, 0.4)",
-      bottomFlare: "from-cyan-500/40 via-cyan-600/20 to-transparent",
-      accentBadge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
-      taglineColor: "text-cyan-300",
-      countText: `${buyCount} Karten`,
-      icon: <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />,
-      slantClass: "sm:-skew-y-2",
+      bottomFlare: "from-cyan-500/60 via-cyan-600/30 to-transparent",
+      icon: <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-300" />,
+      slantClass: "sm:-skew-y-[2.8deg]",
     },
     {
       id: "trade",
       act: "Acto III",
       title: "TAUSCHEN",
       subtitle: "TRADE",
-      description: "Tausche Karten 1:1 mit transparentem ETV-Wertvergleich.",
+      countText: `${tradeCount} Trades`,
       href: "/trade",
       bgImage: "/tiles/tile-trade.jpg",
       shadowClass: "arcane-card-shadow-trade",
-      borderColor: "border-fuchsia-500/50 group-hover:border-fuchsia-400",
+      borderColor: "border-fuchsia-400/60 group-hover:border-fuchsia-300",
       accentGlow: "rgba(217, 70, 239, 0.4)",
-      bottomFlare: "from-fuchsia-500/40 via-purple-600/20 to-transparent",
-      accentBadge: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40",
-      taglineColor: "text-fuchsia-300",
-      countText: `${tradeCount} Trades`,
-      icon: <ArrowLeftRight className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />,
-      slantClass: "sm:-skew-y-2",
-      showStar: true,
+      bottomFlare: "from-fuchsia-500/60 via-purple-600/30 to-transparent",
+      icon: <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white fill-white" />,
+      slantClass: "sm:-skew-y-[2.8deg]",
     },
     {
       id: "looking-for",
       act: "Acto IV",
       title: "GESUCHE",
       subtitle: "SEEK",
-      description: "Finde Grail-Karten und lass Verkäufer dich direkt kontaktieren.",
+      countText: `${lookingForCount} Gesuche`,
       href: "/looking-for",
       bgImage: "/tiles/tile-looking-for.jpg",
       shadowClass: "arcane-card-shadow-look",
-      borderColor: "border-emerald-500/50 group-hover:border-emerald-400",
+      borderColor: "border-emerald-400/60 group-hover:border-emerald-300",
       accentGlow: "rgba(16, 185, 129, 0.4)",
-      bottomFlare: "from-emerald-500/40 via-teal-600/20 to-transparent",
-      accentBadge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-      taglineColor: "text-emerald-300",
-      countText: `${lookingForCount} Gesuche`,
-      icon: <Search className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />,
-      slantClass: "sm:-skew-y-2 sm:rotate-1",
+      bottomFlare: "from-emerald-500/60 via-teal-600/30 to-transparent",
+      icon: <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300" />,
+      slantClass: "sm:-skew-y-[2.8deg] sm:rotate-[1deg]",
     },
   ];
 
   return (
-    <div className="relative min-h-[calc(100dvh-4rem)] flex flex-col justify-between overflow-x-hidden select-none">
-      {/* Background Video with Dark Moody Backdrop */}
+    <div className="relative min-h-[calc(100dvh-4rem)] flex items-center justify-center overflow-x-hidden select-none py-8">
+      {/* High Visibility Background Video */}
       <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
         <video
           autoPlay
@@ -113,239 +94,92 @@ export default function HomePage() {
           muted
           playsInline
           preload="auto"
-          className="w-full h-full object-cover object-center filter brightness-[0.55] contrast-[1.15]"
+          className="w-full h-full object-cover object-center filter brightness-[0.88] contrast-[1.05]"
         >
           <source src="/Dragon_BG.mp4" type="video/mp4" />
         </video>
-        {/* Deep atmospheric overlay matching screenshot ambience */}
-        <div className="absolute inset-0 bg-[#07090e]/85 backdrop-blur-[1px]" />
+        {/* Subtle cinematic gradient so background dragon is clearly visible */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#090b10]/40 via-black/25 to-[#090b10]/70 backdrop-blur-[0.5px]" />
       </div>
 
-      {/* Central Ambient Radial Glow behind the cards */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[550px] bg-gradient-to-r from-purple-900/25 via-fuchsia-900/20 to-cyan-900/20 blur-[120px] -z-20" />
-
-      {/* Ambient Graphic Doodles matching the Screenshot */}
-      {/* Left side: Dotted spiral loop & Neon Magenta Cross */}
-      <div className="pointer-events-none absolute left-2 lg:left-8 top-1/3 -translate-y-1/2 w-48 h-64 -z-10 hidden sm:block opacity-60">
-        <svg
-          viewBox="0 0 150 200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full stroke-white/40"
-        >
-          <path
-            d="M20 180 C 10 130, 80 110, 70 60 C 60 20, 10 30, 20 70 C 30 110, 120 130, 130 170"
-            strokeWidth="2"
-            strokeDasharray="4 6"
-            strokeLinecap="round"
-          />
-        </svg>
-        {/* Magenta cross doodle */}
-        <div className="absolute bottom-6 left-6 text-fuchsia-400 text-3xl font-black rotate-12 drop-shadow-[0_0_12px_rgba(236,72,153,0.9)] animate-pulse">
-          ✕
-        </div>
-      </div>
-
-      {/* Right side: Dashed trajectory, pink dot, white circle ring */}
-      <div className="pointer-events-none absolute right-2 lg:right-8 top-1/2 -translate-y-1/2 w-40 h-64 -z-10 hidden sm:block opacity-70">
-        <svg
-          viewBox="0 0 120 180"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full stroke-white/40"
-        >
-          <path
-            d="M10 30 C 50 40, 90 90, 80 140 C 70 170, 40 160, 30 140"
-            strokeWidth="2"
-            strokeDasharray="4 6"
-            strokeLinecap="round"
-          />
-        </svg>
-        {/* Glowing pink dot */}
-        <div className="absolute top-16 right-10 w-3 h-3 rounded-full bg-fuchsia-500 shadow-[0_0_16px_rgba(236,72,153,1)]" />
-        {/* Crisp hollow circle ring */}
-        <div className="absolute top-28 right-8 w-4 h-4 rounded-full border-2 border-white/80 shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-      </div>
-
-      {/* Top Header Bar styled like Screenshot */}
-      <header className="pt-6 sm:pt-8 pb-4 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          {/* Top Left: Stylized Neon/Graffiti Header ("LÍNEA TEMPORAL" aesthetic) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-start"
-          >
-            {/* Top Brush Neon Script */}
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-400 to-rose-400 arcane-title-brush drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">
-              MANA
-            </span>
-            {/* Heavy Condensed White Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] -mt-1 sm:-mt-2">
-              BEREICHE
-            </h1>
-          </motion.div>
-
-          {/* Top Right: Screenshot-style Minimalist Line & "SINOPSIS" */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-4 sm:gap-6 self-start sm:self-end pb-2 w-full sm:w-auto"
-          >
-            <div className="h-[1.5px] bg-gradient-to-r from-transparent via-white/30 to-white/70 flex-1 sm:w-48 lg:w-72" />
-            <span className="text-xs sm:text-sm font-bold tracking-[0.25em] text-neutral-300 uppercase whitespace-nowrap">
-              SINOPSIS
-            </span>
-          </motion.div>
-        </div>
-      </header>
+      {/* Subtle Central Violet/Magenta Ambient Glow */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-r from-purple-900/20 via-fuchsia-900/15 to-cyan-900/15 blur-[100px] -z-20" />
 
       {/* Main 4 Cards in ONE Horizontal Line */}
-      <main className="px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full py-4 sm:py-6 flex-1 flex flex-col justify-center">
-        {/* Cards Row: Horizontal Grid on sm/md/lg/xl, Horizontal Snap Row on Mobile */}
-        <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-6 no-scrollbar snap-x snap-mandatory pt-4 pb-8 sm:pb-4 px-1 -mx-1">
+      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 overflow-visible">
+        {/* Horizontal Container: Centered on desktop, snap scroll on mobile */}
+        <div className="flex flex-row items-center justify-start sm:justify-center overflow-x-auto sm:overflow-visible snap-x snap-mandatory gap-3 sm:gap-4 md:gap-5 lg:gap-6 no-scrollbar py-12 px-2">
           {cards.map((card, index) => (
             <motion.div
               key={card.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.08 * index }}
+              transition={{ duration: 0.45, delay: 0.07 * index }}
               onClick={() => router.push(card.href)}
-              className={`group relative w-[76vw] max-w-[280px] sm:w-auto shrink-0 snap-center cursor-pointer transition-all duration-400 ease-out hover:-translate-y-4 hover:scale-[1.03] ${card.slantClass} hover:skew-y-0 hover:rotate-0`}
+              className={`group relative w-[160px] min-[420px]:w-[180px] sm:w-[195px] md:w-[220px] lg:w-[240px] h-[270px] min-[420px]:h-[300px] sm:h-[330px] md:h-[360px] lg:h-[385px] shrink-0 snap-center cursor-pointer transition-all duration-300 ease-out hover:-translate-y-3 hover:scale-[1.04] ${card.slantClass} hover:skew-y-0 hover:rotate-0`}
             >
-              {/* Outer Glow Backlight at Bottom */}
+              {/* Outer Neon Glow Flare beneath the card */}
               <div
-                className={`absolute -bottom-4 left-1/2 -translate-x-1/2 w-4/5 h-10 rounded-full blur-xl opacity-70 group-hover:opacity-100 group-hover:w-full group-hover:h-14 transition-all duration-400 pointer-events-none bg-gradient-to-t ${card.bottomFlare}`}
+                className={`absolute -bottom-3 left-1/2 -translate-x-1/2 w-4/5 h-8 rounded-full blur-md opacity-65 group-hover:opacity-100 group-hover:h-12 group-hover:w-full transition-all duration-300 pointer-events-none bg-gradient-to-t ${card.bottomFlare}`}
               />
 
-              {/* Main Card Container with Slanted Border & Glow */}
+              {/* Sharp Slanted Card Frame (Zero roundness / sharp polygon cut aesthetic) */}
               <div
-                className={`relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 ${card.borderColor} bg-[#0a0d14] ${card.shadowClass} flex flex-col justify-between aspect-[9/14] sm:aspect-[9/15] lg:aspect-[9/14.5] min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] transition-all duration-400`}
+                className={`relative w-full h-full overflow-hidden rounded-none border ${card.borderColor} bg-[#07090f] ${card.shadowClass} flex flex-col justify-between transition-all duration-300`}
               >
                 {/* Full-Bleed Artwork Image Background */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
                   <img
                     src={card.bgImage}
                     alt={card.title}
-                    className="w-full h-full object-cover object-center scale-100 group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover object-center scale-100 group-hover:scale-108 transition-transform duration-500 ease-out"
                   />
                   {/* Subtle Top Vignette */}
-                  <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent z-10" />
+                  <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/60 to-transparent z-10" />
 
-                  {/* Dark Cinematic Bottom Gradient for High Legibility */}
-                  <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#06080d] via-[#06080d]/85 to-transparent z-10" />
+                  {/* Dark Cinematic Bottom Gradient */}
+                  <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black via-black/75 to-transparent z-10" />
 
                   {/* Neon Color Accent Light Glow */}
                   <div
-                    className="absolute inset-0 opacity-20 mix-blend-screen group-hover:opacity-45 transition-opacity duration-400 z-10"
+                    className="absolute inset-0 opacity-20 mix-blend-screen group-hover:opacity-40 transition-opacity duration-300 z-10"
                     style={{
                       background: `radial-gradient(circle at 50% 90%, ${card.accentGlow}, transparent 70%)`,
                     }}
                   />
                 </div>
 
-                {/* Top Header inside Card */}
-                <div className="relative z-20 p-4 sm:p-5 flex items-center justify-between">
-                  {/* Category Pill Tag */}
-                  <span
-                    className={`text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md shadow-sm ${card.accentBadge}`}
-                  >
-                    {card.countText}
-                  </span>
-
-                  {/* Top-Right Circular Badge (Star / Category icon in Glowing Ring) */}
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white/80 bg-black/40 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:border-white group-hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-all duration-300">
-                    {card.showStar ? (
-                      <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white" />
-                    ) : (
-                      card.icon
-                    )}
+                {/* Top-Right Circular Badge */}
+                <div className="relative z-20 p-3 sm:p-3.5 flex justify-end">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/80 bg-black/45 backdrop-blur-sm flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:border-white group-hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-200">
+                    {card.icon}
                   </div>
                 </div>
 
-                {/* Bottom Content Area matching Screenshot */}
-                <div className="relative z-20 p-4 sm:p-5 pt-0 space-y-1.5 sm:space-y-2">
+                {/* Bottom Content Area: Subtitle + Large Condensed Bold Title */}
+                <div className="relative z-20 p-3.5 sm:p-4 pb-4 sm:pb-5 space-y-0.5">
                   {/* "Acto I", "Acto II", "Acto III", "Acto IV" Small Tracked Subtitle */}
-                  <div className="text-[11px] sm:text-xs font-semibold text-neutral-300/90 tracking-wider uppercase drop-shadow">
+                  <div className="text-[10px] sm:text-[11px] font-semibold text-neutral-300 uppercase tracking-widest drop-shadow">
                     {card.act}
                   </div>
 
                   {/* Large Bold Condensed Main Title (e.g. INICIOS / VERKAUFEN) */}
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] group-hover:text-white transition-colors">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight uppercase leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     {card.title}
                   </h2>
 
-                  {/* Subtitle / Description */}
-                  <p className="text-[11px] sm:text-xs text-neutral-300/80 line-clamp-2 leading-snug pt-0.5">
-                    {card.description}
-                  </p>
-
-                  {/* Action Link & Bulk Ankauf Option */}
-                  <div className="pt-2 flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(card.href);
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white text-xs font-bold backdrop-blur-md transition-all duration-200 min-h-[44px] flex-1 group-hover:border-white/40"
-                    >
-                      <span>Öffnen</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-cyan-300 group-hover:translate-x-1 transition-transform" />
-                    </button>
-
-                    {/* Quick Link for Bulk-Ankauf on Sell */}
-                    {card.hasBulkLink && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push("/sell/bulk");
-                        }}
-                        title="Bulk-Ankauf durch Manacards"
-                        className="inline-flex items-center justify-center px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 border border-amber-500/40 text-amber-300 text-xs font-bold backdrop-blur-md transition-all duration-200 min-h-[44px] shrink-0"
-                      >
-                        <Crown className="w-3.5 h-3.5 text-amber-300" />
-                        <span className="hidden xl:inline ml-1">Bulk</span>
-                      </button>
-                    )}
+                  {/* Active Count / Quick Info */}
+                  <div className="text-[10px] sm:text-[11px] font-medium text-neutral-300/80 tracking-wide pt-0.5 opacity-90">
+                    {card.countText}
                   </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
-
-        {/* Mobile Swipe Hint Indicator */}
-        <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2">
-          <span>Horizontal wischen für alle 4 Bereiche</span>
-          <ChevronRight className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" />
-        </div>
       </main>
-
-      {/* Footer Stats Pill Bar */}
-      <footer className="py-4 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-neutral-300"
-        >
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{listings.length} Aktive Angebote</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{verifiedCount} Verifizierte Sammler</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>{deals.length} Erfolgreiche Deals</span>
-          </div>
-        </motion.div>
-      </footer>
     </div>
   );
 }
+
 

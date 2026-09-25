@@ -143,39 +143,33 @@ body {
   scrollbar-width: none;
 }
 
-/* Arcane / Graffiti Styling */
-.arcane-title-brush {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.02em;
-  text-shadow: 0 0 16px rgba(236, 72, 153, 0.8), 0 0 32px rgba(217, 70, 239, 0.5);
-  font-style: italic;
-}
-
+/* Arcane / Sharp Card Styling */
 .arcane-card-shadow-sell {
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px -3px rgba(245, 158, 11, 0.3);
 }
 .arcane-card-shadow-sell:hover {
-  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.9), 0 0 45px 0px rgba(245, 158, 11, 0.55);
+  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.9), 0 0 35px 2px rgba(245, 158, 11, 0.6);
 }
 
 .arcane-card-shadow-buy {
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px -3px rgba(6, 182, 212, 0.3);
 }
 .arcane-card-shadow-buy:hover {
-  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.9), 0 0 45px 0px rgba(6, 182, 212, 0.55);
+  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.9), 0 0 35px 2px rgba(6, 182, 212, 0.6);
 }
 
 .arcane-card-shadow-trade {
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(217, 70, 239, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px -3px rgba(217, 70, 239, 0.3);
 }
 .arcane-card-shadow-trade:hover {
-  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.9), 0 0 45px 0px rgba(217, 70, 239, 0.55);
+  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.9), 0 0 35px 2px rgba(217, 70, 239, 0.6);
 }
 
 .arcane-card-shadow-look {
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 25px -5px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px -3px rgba(16, 185, 129, 0.3);
 }
 .arcane-card-shadow-look:hover {
-  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.9), 0 0 45px 0px rgba(16, 185, 129, 0.55);
+  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.9), 0 0 35px 2px rgba(16, 185, 129, 0.6);
 }
+
 
