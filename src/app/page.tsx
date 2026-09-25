@@ -60,8 +60,8 @@ export default function HomePage() {
     {
       id: "looking-for",
       categoryNum: "04",
-      sidebarText: "SEEK // GESUCHE",
-      title: "GESUCHE",
+      sidebarText: "SEEK // GESUCHT",
+      title: "GESUCHT",
       nameGradient: "holo-text-look",
       description: "Eigene Wunschkarten ausschreiben.",
       href: "/looking-for",
