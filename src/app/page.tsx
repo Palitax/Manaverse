@@ -15,8 +15,8 @@ export default function HomePage() {
       sidebarText: "SELL // VERKAUFEN",
       pokemonTag: "GENGAR • #094",
       title: "VERKAUFEN",
-      nameGradient: "from-rose-400 via-pink-200 to-white",
-      description: "Einzelkarten & Sammlungen anbieten.",
+      nameGradient: "holo-text-sell",
+      description: "Einzelkarten zum Festpreis anbieten oder Sammlungen via Ankauf einreichen.",
       href: "/sell",
       pokemonImg: "/pokemon/gengar.png",
       cardBg: "from-pink-950/25 via-purple-950/15 to-black/40",
@@ -24,6 +24,7 @@ export default function HomePage() {
       borderColor: "border-pink-500/30 group-hover:border-pink-400/80",
       glowColor: "group-hover:shadow-[0_0_35px_rgba(236,72,153,0.45)]",
       patternColor: "rgba(244, 114, 182, 0.05)",
+      imgClass: "w-[85%] sm:w-[88%]",
     },
     {
       id: "buy",
@@ -31,8 +32,8 @@ export default function HomePage() {
       sidebarText: "BUY // KAUFEN",
       pokemonTag: "PIKACHU • #025",
       title: "KAUFEN",
-      nameGradient: "from-cyan-300 via-amber-200 to-white",
-      description: "Seltene Karten im Markt entdecken.",
+      nameGradient: "holo-text-buy",
+      description: "Seltene Karten der Community mit Sofort-Filtern blitzschnell entdecken.",
       href: "/buy",
       pokemonImg: "/pokemon/pikachu.png",
       cardBg: "from-cyan-950/25 via-sky-950/15 to-black/40",
@@ -40,6 +41,7 @@ export default function HomePage() {
       borderColor: "border-cyan-400/30 group-hover:border-cyan-300/80",
       glowColor: "group-hover:shadow-[0_0_35px_rgba(6,182,212,0.45)]",
       patternColor: "rgba(6, 182, 212, 0.05)",
+      imgClass: "w-[85%] sm:w-[88%]",
     },
     {
       id: "trade",
@@ -47,8 +49,8 @@ export default function HomePage() {
       sidebarText: "TRADE // TAUSCHEN",
       pokemonTag: "MEWTU • #150",
       title: "TAUSCHEN",
-      nameGradient: "holo-text-jinx",
-      description: "Karten 1:1 mit ETV-Ausgleich tauschen.",
+      nameGradient: "holo-text-trade",
+      description: "Karten 1:1 mit transparentem ETV-Wertausgleich im Nexus tauschen.",
       href: "/trade",
       pokemonImg: "/pokemon/mewtwo.png",
       cardBg: "from-purple-950/25 via-fuchsia-950/15 to-black/40",
@@ -56,6 +58,7 @@ export default function HomePage() {
       borderColor: "border-purple-400/30 group-hover:border-fuchsia-300/80",
       glowColor: "group-hover:shadow-[0_0_35px_rgba(217,70,239,0.45)]",
       patternColor: "rgba(217, 70, 239, 0.05)",
+      imgClass: "w-[95%] sm:w-[98%] scale-[1.08]",
     },
     {
       id: "looking-for",
@@ -63,8 +66,8 @@ export default function HomePage() {
       sidebarText: "SEEK // GESUCHE",
       pokemonTag: "GLURAK • #006",
       title: "GESUCHE",
-      nameGradient: "from-amber-400 via-orange-200 to-white",
-      description: "Holy Grail Gesuche live schalten.",
+      nameGradient: "holo-text-look",
+      description: "Holy Grail Gesuche mit Budget live schalten und finden lassen.",
       href: "/looking-for",
       pokemonImg: "/pokemon/charizard.png",
       cardBg: "from-amber-950/25 via-orange-950/15 to-black/40",
@@ -72,6 +75,7 @@ export default function HomePage() {
       borderColor: "border-orange-400/30 group-hover:border-amber-300/80",
       glowColor: "group-hover:shadow-[0_0_35px_rgba(249,115,22,0.45)]",
       patternColor: "rgba(249, 115, 22, 0.05)",
+      imgClass: "w-[98%] sm:w-[102%] scale-[1.10]",
     },
   ];
 
@@ -103,14 +107,14 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.08 * index }}
               onClick={() => router.push(card.href)}
-              className="group relative w-[160px] min-[400px]:w-[178px] sm:w-[195px] md:w-[218px] lg:w-[238px] h-[280px] min-[400px]:h-[310px] sm:h-[330px] md:h-[360px] lg:h-[385px] shrink-0 snap-center cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-3"
+              className="group relative w-[160px] min-[400px]:w-[178px] sm:w-[195px] md:w-[218px] lg:w-[238px] h-[285px] min-[400px]:h-[315px] sm:h-[335px] md:h-[365px] lg:h-[390px] shrink-0 snap-center cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-3"
             >
               {/* 3D Popping Pokemon (Extends ABOVE top edge and expands on hover for all 4!) */}
-              <div className="absolute -top-10 sm:-top-14 inset-x-0 h-[75%] sm:h-[78%] z-20 flex items-center justify-center pointer-events-none">
+              <div className="absolute -top-11 sm:-top-15 inset-x-0 h-[75%] sm:h-[78%] z-20 flex items-center justify-center pointer-events-none">
                 <img
                   src={card.pokemonImg}
                   alt={card.title}
-                  className="w-[86%] sm:w-[90%] h-auto max-h-full object-contain filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.9)] transform scale-100 group-hover:scale-115 sm:group-hover:scale-120 group-hover:-translate-y-3 transition-all duration-300 ease-out"
+                  className={`${card.imgClass} h-auto max-h-full object-contain filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.9)] transform group-hover:scale-120 sm:group-hover:scale-125 group-hover:-translate-y-3.5 transition-all duration-300 ease-out`}
                 />
               </div>
 
@@ -132,26 +136,22 @@ export default function HomePage() {
                 {/* Left/Center Content Area */}
                 <div className="relative z-30 flex-1 flex flex-col justify-end p-3.5 sm:p-4 pr-1.5 pb-3.5 sm:pb-4">
                   {/* Translucent dark gradient behind text for high legibility */}
-                  <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/85 via-black/50 to-transparent -z-10" />
+                  <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/55 to-transparent -z-10" />
 
                   {/* Pokemon Tag Line (e.g. GENGAR • #094) */}
                   <div className="text-[9px] sm:text-[10px] font-bold tracking-wider text-neutral-300 uppercase flex items-center gap-1 drop-shadow">
                     <span>{card.pokemonTag}</span>
                   </div>
 
-                  {/* Large Bold Category Title (VERKAUFEN, KAUFEN, TAUSCHEN, GESUCHE) */}
+                  {/* Large Bold Category Title with Animated Holo Shimmer */}
                   <h2
-                    className={`text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-tight leading-none pt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${
-                      card.nameGradient.includes("holo")
-                        ? card.nameGradient
-                        : `text-transparent bg-clip-text bg-gradient-to-r ${card.nameGradient}`
-                    } group-hover:scale-105 transition-transform origin-left`}
+                    className={`text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-tight leading-none pt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${card.nameGradient} group-hover:scale-105 transition-transform origin-left`}
                   >
                     {card.title}
                   </h2>
 
-                  {/* Short Description */}
-                  <p className="text-[9px] sm:text-[11px] text-neutral-200/80 line-clamp-1 leading-tight pt-1 font-normal">
+                  {/* Short 2-Line Description (Never Cut Off) */}
+                  <p className="text-[9.5px] sm:text-[11px] text-neutral-200/90 line-clamp-2 leading-snug pt-1 font-normal">
                     {card.description}
                   </p>
                 </div>
@@ -166,7 +166,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Middle Vertical Rotated Title */}
-                  <div className="writing-vertical font-black tracking-widest text-[9px] sm:text-[10px] text-black uppercase select-none my-auto">
+                  <div className="writing-vertical font-black tracking-wider text-[9px] sm:text-[10px] text-black uppercase select-none my-auto whitespace-nowrap">
                     {card.sidebarText}
                   </div>
 
@@ -183,6 +183,7 @@ export default function HomePage() {
     </div>
   );
 }
+
 
 
 
