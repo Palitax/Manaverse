@@ -16,7 +16,7 @@ export default function HomePage() {
       pokemonTag: "GENGAR • #094",
       title: "VERKAUFEN",
       nameGradient: "holo-text-sell",
-      description: "Einzelkarten zum Festpreis anbieten oder Sammlungen via Ankauf einreichen.",
+      description: "Einzelkarten anbieten oder Sammlungen per Ankauf einreichen.",
       href: "/sell",
       pokemonImg: "/pokemon/gengar.png",
       cardBg: "from-pink-950/25 via-purple-950/15 to-black/40",
@@ -33,7 +33,7 @@ export default function HomePage() {
       pokemonTag: "PIKACHU • #025",
       title: "KAUFEN",
       nameGradient: "holo-text-buy",
-      description: "Seltene Karten der Community mit Sofort-Filtern blitzschnell entdecken.",
+      description: "Seltene Karten der Community im Marktplatz entdecken.",
       href: "/buy",
       pokemonImg: "/pokemon/pikachu.png",
       cardBg: "from-cyan-950/25 via-sky-950/15 to-black/40",
@@ -50,7 +50,7 @@ export default function HomePage() {
       pokemonTag: "MEWTU • #150",
       title: "TAUSCHEN",
       nameGradient: "holo-text-trade",
-      description: "Karten 1:1 mit transparentem ETV-Wertausgleich im Nexus tauschen.",
+      description: "Karten 1:1 mit transparentem ETV-Wertausgleich tauschen.",
       href: "/trade",
       pokemonImg: "/pokemon/mewtwo.png",
       cardBg: "from-purple-950/25 via-fuchsia-950/15 to-black/40",
@@ -67,7 +67,7 @@ export default function HomePage() {
       pokemonTag: "GLURAK • #006",
       title: "GESUCHE",
       nameGradient: "holo-text-look",
-      description: "Holy Grail Gesuche mit Budget live schalten und finden lassen.",
+      description: "Gesuche für deine Holy Grails live ins Netzwerk stellen.",
       href: "/looking-for",
       pokemonImg: "/pokemon/charizard.png",
       cardBg: "from-amber-950/25 via-orange-950/15 to-black/40",
@@ -107,10 +107,10 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.08 * index }}
               onClick={() => router.push(card.href)}
-              className="group relative w-[160px] min-[400px]:w-[178px] sm:w-[195px] md:w-[218px] lg:w-[238px] h-[285px] min-[400px]:h-[315px] sm:h-[335px] md:h-[365px] lg:h-[390px] shrink-0 snap-center cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-3"
+              className="group relative w-[165px] min-[400px]:w-[185px] sm:w-[200px] md:w-[225px] lg:w-[245px] h-[290px] min-[400px]:h-[320px] sm:h-[345px] md:h-[375px] lg:h-[400px] shrink-0 snap-center cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-3"
             >
               {/* 3D Popping Pokemon (Extends ABOVE top edge and expands on hover for all 4!) */}
-              <div className="absolute -top-11 sm:-top-15 inset-x-0 h-[75%] sm:h-[78%] z-20 flex items-center justify-center pointer-events-none">
+              <div className="absolute -top-11 sm:-top-15 inset-x-0 h-[72%] sm:h-[75%] z-20 flex items-center justify-center pointer-events-none">
                 <img
                   src={card.pokemonImg}
                   alt={card.title}
@@ -133,10 +133,10 @@ export default function HomePage() {
                 {/* Subtle Top Glass Reflection */}
                 <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
 
-                {/* Left/Center Content Area */}
-                <div className="relative z-30 flex-1 flex flex-col justify-end p-3.5 sm:p-4 pr-1.5 pb-3.5 sm:pb-4">
+                {/* Left/Center Content Area (with min-w-0 to prevent pushing the fixed sidebar) */}
+                <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-3 sm:p-4 pr-2 pb-3.5 sm:pb-4">
                   {/* Translucent dark gradient behind text for high legibility */}
-                  <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/55 to-transparent -z-10" />
+                  <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/95 via-black/60 to-transparent -z-10" />
 
                   {/* Pokemon Tag Line (e.g. GENGAR • #094) */}
                   <div className="text-[9px] sm:text-[10px] font-bold tracking-wider text-neutral-300 uppercase flex items-center gap-1 drop-shadow">
@@ -150,18 +150,18 @@ export default function HomePage() {
                     {card.title}
                   </h2>
 
-                  {/* Short 2-Line Description (Never Cut Off) */}
-                  <p className="text-[9.5px] sm:text-[11px] text-neutral-200/90 line-clamp-2 leading-snug pt-1 font-normal">
+                  {/* Short Full Description (Completely Visible, No Ellipsis Cutoff) */}
+                  <p className="text-[9.5px] sm:text-[10.5px] md:text-[11px] text-neutral-200/90 leading-snug pt-1 font-normal">
                     {card.description}
                   </p>
                 </div>
 
-                {/* Right-Side Vertical Tech Stripe */}
+                {/* Right-Side Vertical Tech Stripe (Strictly fixed uniform width across all cards) */}
                 <div
-                  className={`relative z-30 w-8 sm:w-9 lg:w-10 h-full ${card.sidebarBg} flex flex-col items-center justify-between py-3 sm:py-3.5 px-0.5 shrink-0 shadow-lg border-l border-black/10`}
+                  className={`relative z-30 w-[36px] sm:w-[40px] md:w-[44px] min-w-[36px] sm:min-w-[40px] md:min-w-[44px] max-w-[36px] sm:max-w-[40px] md:max-w-[44px] h-full ${card.sidebarBg} flex flex-col items-center justify-between py-3 sm:py-3.5 px-0.5 shrink-0 shadow-lg border-l border-black/10`}
                 >
                   {/* Top Category Number Pill */}
-                  <div className="bg-black text-white font-black text-[9px] sm:text-[10px] px-1 py-0.5 rounded-[2px] tracking-wider leading-none shadow">
+                  <div className="bg-black text-white font-black text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-[2px] tracking-wider leading-none shadow">
                     {card.categoryNum}
                   </div>
 
@@ -183,6 +183,7 @@ export default function HomePage() {
     </div>
   );
 }
+
 
 
 
