@@ -8,11 +8,12 @@ import {
   ShoppingBag,
   ArrowLeftRight,
   Search,
-  ArrowRight,
-  ShieldCheck,
-  Sparkles,
   Flame,
   Crown,
+  Sparkles,
+  ShieldCheck,
+  Star,
+  ChevronRight,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -25,245 +26,326 @@ export default function HomePage() {
   const lookingForCount = listings.filter((l) => l.type === "looking_for").length;
   const verifiedCount = users.filter((u) => u.verified).length;
 
-  const tiles = [
+  const cards = [
     {
       id: "sell",
-      title: "Sell (Verkaufen)",
-      tagline: "SCHMIEDE DEIN ANGEBOT",
-      description:
-        "Biete Einzelkarten zum Festpreis an oder reiche ganze Sammlungen zur schnellen Prüfung und Übernahme an Manacards ein.",
+      act: "Acto I",
+      title: "VERKAUFEN",
+      subtitle: "SELL",
+      description: "Biete Einzelkarten zum Festpreis an oder reiche Sammlungen ein.",
       href: "/sell",
       bgImage: "/tiles/tile-sell.jpg",
-      accentColor: "from-amber-500/30 to-emerald-500/30",
-      borderColor: "border-amber-500/30 group-hover:border-amber-400/60",
-      badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(245,158,11,0.25)]",
-      badgeText: `${sellCount} Angebote aktiv`,
-      icon: <Flame className="w-5 h-5 text-amber-400" />,
-      ctaText: "Karten anbieten",
+      shadowClass: "arcane-card-shadow-sell",
+      borderColor: "border-amber-500/50 group-hover:border-amber-400",
+      accentGlow: "rgba(245, 158, 11, 0.4)",
+      bottomFlare: "from-amber-500/40 via-amber-600/20 to-transparent",
+      accentBadge: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+      taglineColor: "text-amber-300",
+      countText: `${sellCount} Angebote`,
+      icon: <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />,
       hasBulkLink: true,
+      slantClass: "sm:-skew-y-2 sm:-rotate-1",
     },
     {
       id: "buy",
-      title: "Buy (Kaufen)",
-      tagline: "MYSTISCHER MARKTPLATZ",
-      description:
-        "Entdecke seltene Einzelkarten aus der Community. Filtere blitzschnell nach Edition, Sprache und Erhaltungszustand.",
+      act: "Acto II",
+      title: "KAUFEN",
+      subtitle: "BUY",
+      description: "Entdecke seltene Einzelkarten aus der aktiven Community.",
       href: "/buy",
       bgImage: "/tiles/tile-buy.jpg",
-      accentColor: "from-cyan-500/30 to-blue-500/30",
-      borderColor: "border-cyan-500/30 group-hover:border-cyan-400/60",
-      badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(6,182,212,0.25)]",
-      badgeText: `${buyCount} Karten verfügbar`,
-      icon: <ShoppingBag className="w-5 h-5 text-cyan-400" />,
-      ctaText: "Marktplatz entdecken",
+      shadowClass: "arcane-card-shadow-buy",
+      borderColor: "border-cyan-500/50 group-hover:border-cyan-400",
+      accentGlow: "rgba(6, 182, 212, 0.4)",
+      bottomFlare: "from-cyan-500/40 via-cyan-600/20 to-transparent",
+      accentBadge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
+      taglineColor: "text-cyan-300",
+      countText: `${buyCount} Karten`,
+      icon: <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />,
+      slantClass: "sm:-skew-y-2",
     },
     {
       id: "trade",
-      title: "Trade (Tauschen)",
-      tagline: "CARD SWAP NEXUS",
-      description:
-        "Stelle eigene Tauschkarten ein und erhalte faire Gegenangebote anderer Sammler inklusive transparentem ETV-Wert.",
+      act: "Acto III",
+      title: "TAUSCHEN",
+      subtitle: "TRADE",
+      description: "Tausche Karten 1:1 mit transparentem ETV-Wertvergleich.",
       href: "/trade",
       bgImage: "/tiles/tile-trade.jpg",
-      accentColor: "from-purple-500/30 to-pink-500/30",
-      borderColor: "border-purple-500/30 group-hover:border-purple-400/60",
-      badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(168,85,247,0.25)]",
-      badgeText: `${tradeCount} Trades offen`,
-      icon: <ArrowLeftRight className="w-5 h-5 text-purple-400" />,
-      ctaText: "Trades ansehen & tauschen",
+      shadowClass: "arcane-card-shadow-trade",
+      borderColor: "border-fuchsia-500/50 group-hover:border-fuchsia-400",
+      accentGlow: "rgba(217, 70, 239, 0.4)",
+      bottomFlare: "from-fuchsia-500/40 via-purple-600/20 to-transparent",
+      accentBadge: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40",
+      taglineColor: "text-fuchsia-300",
+      countText: `${tradeCount} Trades`,
+      icon: <ArrowLeftRight className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />,
+      slantClass: "sm:-skew-y-2",
+      showStar: true,
     },
     {
       id: "looking-for",
-      title: "Looking For (Gesuche)",
-      tagline: "RADAR & WANT-LIST",
-      description:
-        "Fehlt dir noch das Master-Set Piece oder dein Holy Grail? Starte ein Gesuch mit deinem Budget und lass Verkäufer dich finden.",
+      act: "Acto IV",
+      title: "GESUCHE",
+      subtitle: "SEEK",
+      description: "Finde Grail-Karten und lass Verkäufer dich direkt kontaktieren.",
       href: "/looking-for",
       bgImage: "/tiles/tile-looking-for.jpg",
-      accentColor: "from-teal-500/30 to-emerald-500/30",
-      borderColor: "border-teal-500/30 group-hover:border-teal-400/60",
-      badgeColor: "bg-teal-500/20 text-teal-300 border-teal-500/30",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(20,184,166,0.25)]",
-      badgeText: `${lookingForCount} Gesuche aktiv`,
-      icon: <Search className="w-5 h-5 text-teal-400" />,
-      ctaText: "Gesuche durchstöbern",
+      shadowClass: "arcane-card-shadow-look",
+      borderColor: "border-emerald-500/50 group-hover:border-emerald-400",
+      accentGlow: "rgba(16, 185, 129, 0.4)",
+      bottomFlare: "from-emerald-500/40 via-teal-600/20 to-transparent",
+      accentBadge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+      taglineColor: "text-emerald-300",
+      countText: `${lookingForCount} Gesuche`,
+      icon: <Search className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />,
+      slantClass: "sm:-skew-y-2 sm:rotate-1",
     },
   ];
 
   return (
-    <div className="relative min-h-[calc(100dvh-4rem)] flex flex-col justify-between overflow-x-hidden">
-      {/* Background Video with Mobile & Desktop Optimization */}
-      <div className="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
+    <div className="relative min-h-[calc(100dvh-4rem)] flex flex-col justify-between overflow-x-hidden select-none">
+      {/* Background Video with Dark Moody Backdrop */}
+      <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
         <video
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-          className="w-full h-full object-cover object-center filter brightness-[0.7] contrast-[1.05]"
+          className="w-full h-full object-cover object-center filter brightness-[0.55] contrast-[1.15]"
         >
           <source src="/Dragon_BG.mp4" type="video/mp4" />
         </video>
-        {/* Dark cinematic gradient scrim for high contrast and legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#090b10]/80 via-[#090b10]/70 to-[#090b10]/95 backdrop-blur-[0.5px]" />
+        {/* Deep atmospheric overlay matching screenshot ambience */}
+        <div className="absolute inset-0 bg-[#07090e]/85 backdrop-blur-[1px]" />
       </div>
 
-      {/* Ambient background glow matching the Manaforge blue aesthetic */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-gradient-to-b from-cyan-600/15 via-indigo-600/10 to-transparent blur-3xl -z-10" />
+      {/* Central Ambient Radial Glow behind the cards */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[550px] bg-gradient-to-r from-purple-900/25 via-fuchsia-900/20 to-cyan-900/20 blur-[120px] -z-20" />
 
-      {/* Hero Welcome Header */}
-      <section className="pt-8 pb-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
-        {/* Glowing Flask Emblem */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 backdrop-blur-md mb-4 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+      {/* Ambient Graphic Doodles matching the Screenshot */}
+      {/* Left side: Dotted spiral loop & Neon Magenta Cross */}
+      <div className="pointer-events-none absolute left-2 lg:left-8 top-1/3 -translate-y-1/2 w-48 h-64 -z-10 hidden sm:block opacity-60">
+        <svg
+          viewBox="0 0 150 200"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full stroke-white/40"
         >
-          <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center">
-            <img
-              src="/manaforge-icon.png"
-              alt="Manaforge Flask"
-              className="w-full h-full object-cover scale-110"
-            />
-          </div>
-          <span className="text-xs sm:text-sm font-bold tracking-wide text-cyan-200">
-            Willkommen in der Manaforge
-          </span>
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-        </motion.div>
+          <path
+            d="M20 180 C 10 130, 80 110, 70 60 C 60 20, 10 30, 20 70 C 30 110, 120 130, 130 170"
+            strokeWidth="2"
+            strokeDasharray="4 6"
+            strokeLinecap="round"
+          />
+        </svg>
+        {/* Magenta cross doodle */}
+        <div className="absolute bottom-6 left-6 text-fuchsia-400 text-3xl font-black rotate-12 drop-shadow-[0_0_12px_rgba(236,72,153,0.9)] animate-pulse">
+          ✕
+        </div>
+      </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight"
+      {/* Right side: Dashed trajectory, pink dot, white circle ring */}
+      <div className="pointer-events-none absolute right-2 lg:right-8 top-1/2 -translate-y-1/2 w-40 h-64 -z-10 hidden sm:block opacity-70">
+        <svg
+          viewBox="0 0 120 180"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full stroke-white/40"
         >
-          Wähle deinen{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-indigo-300 to-purple-300">
-            Bereich
-          </span>
-        </motion.h1>
+          <path
+            d="M10 30 C 50 40, 90 90, 80 140 C 70 170, 40 160, 30 140"
+            strokeWidth="2"
+            strokeDasharray="4 6"
+            strokeLinecap="round"
+          />
+        </svg>
+        {/* Glowing pink dot */}
+        <div className="absolute top-16 right-10 w-3 h-3 rounded-full bg-fuchsia-500 shadow-[0_0_16px_rgba(236,72,153,1)]" />
+        {/* Crisp hollow circle ring */}
+        <div className="absolute top-28 right-8 w-4 h-4 rounded-full border-2 border-white/80 shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
+      </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-3 text-sm sm:text-base text-neutral-300 max-w-xl mx-auto leading-relaxed"
-        >
-          Die offizielle Community-Plattform für Sammelkarten. Kaufe, verkaufe, tausche oder finde deine Traumkarten direkt im Netzwerk.
-        </motion.p>
+      {/* Top Header Bar styled like Screenshot */}
+      <header className="pt-6 sm:pt-8 pb-4 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          {/* Top Left: Stylized Neon/Graffiti Header ("LÍNEA TEMPORAL" aesthetic) */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-start"
+          >
+            {/* Top Brush Neon Script */}
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-400 to-rose-400 arcane-title-brush drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">
+              MANA
+            </span>
+            {/* Heavy Condensed White Title */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] -mt-1 sm:-mt-2">
+              BEREICHE
+            </h1>
+          </motion.div>
 
-        {/* Compact stats pill bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-neutral-300"
-        >
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{listings.length} Aktive Angebote</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{verifiedCount} Verifizierte Sammler</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>{deals.length} Erfolgreiche Deals</span>
-          </div>
-        </motion.div>
-      </section>
+          {/* Top Right: Screenshot-style Minimalist Line & "SINOPSIS" */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-4 sm:gap-6 self-start sm:self-end pb-2 w-full sm:w-auto"
+          >
+            <div className="h-[1.5px] bg-gradient-to-r from-transparent via-white/30 to-white/70 flex-1 sm:w-48 lg:w-72" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.25em] text-neutral-300 uppercase whitespace-nowrap">
+              SINOPSIS
+            </span>
+          </motion.div>
+        </div>
+      </header>
 
-      {/* The 4 Graphical Tiles (Core Selection) */}
-      <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full py-4 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 lg:gap-7">
-          {tiles.map((tile, index) => (
+      {/* Main 4 Cards in ONE Horizontal Line */}
+      <main className="px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full py-4 sm:py-6 flex-1 flex flex-col justify-center">
+        {/* Cards Row: Horizontal Grid on sm/md/lg/xl, Horizontal Snap Row on Mobile */}
+        <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-6 no-scrollbar snap-x snap-mandatory pt-4 pb-8 sm:pb-4 px-1 -mx-1">
+          {cards.map((card, index) => (
             <motion.div
-              key={tile.id}
-              initial={{ opacity: 0, y: 20 }}
+              key={card.id}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 + index * 0.08 }}
-              onClick={() => router.push(tile.href)}
-              className={`group relative overflow-hidden rounded-3xl border ${tile.borderColor} ${tile.glowColor} bg-[#0c1019] shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between min-h-[310px] sm:min-h-[350px] lg:min-h-[370px]`}
+              transition={{ duration: 0.5, delay: 0.08 * index }}
+              onClick={() => router.push(card.href)}
+              className={`group relative w-[76vw] max-w-[280px] sm:w-auto shrink-0 snap-center cursor-pointer transition-all duration-400 ease-out hover:-translate-y-4 hover:scale-[1.03] ${card.slantClass} hover:skew-y-0 hover:rotate-0`}
             >
-              {/* High-Resolution Artwork Background */}
-              <div className="absolute inset-0 z-0 overflow-hidden">
-                <img
-                  src={tile.bgImage}
-                  alt={tile.title}
-                  className="w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
-                {/* Multi-layered dark gradient overlay for optimal text contrast */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080b11] via-[#080b11]/80 to-[#080b11]/35 group-hover:via-[#080b11]/70 transition-colors duration-300" />
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${tile.accentColor} opacity-20 mix-blend-screen group-hover:opacity-40 transition-opacity duration-300`}
-                />
-              </div>
+              {/* Outer Glow Backlight at Bottom */}
+              <div
+                className={`absolute -bottom-4 left-1/2 -translate-x-1/2 w-4/5 h-10 rounded-full blur-xl opacity-70 group-hover:opacity-100 group-hover:w-full group-hover:h-14 transition-all duration-400 pointer-events-none bg-gradient-to-t ${card.bottomFlare}`}
+              />
 
-              {/* Card Header Content */}
-              <div className="relative z-10 p-5 sm:p-7 flex items-start justify-between gap-3">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] sm:text-[11px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-white/90 border border-white/10">
-                      {tile.tagline}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2 pt-1 group-hover:text-cyan-200 transition-colors">
-                    {tile.title}
-                  </h2>
+              {/* Main Card Container with Slanted Border & Glow */}
+              <div
+                className={`relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 ${card.borderColor} bg-[#0a0d14] ${card.shadowClass} flex flex-col justify-between aspect-[9/14] sm:aspect-[9/15] lg:aspect-[9/14.5] min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] transition-all duration-400`}
+              >
+                {/* Full-Bleed Artwork Image Background */}
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                  <img
+                    src={card.bgImage}
+                    alt={card.title}
+                    className="w-full h-full object-cover object-center scale-100 group-hover:scale-110 transition-transform duration-700 ease-out"
+                  />
+                  {/* Subtle Top Vignette */}
+                  <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent z-10" />
+
+                  {/* Dark Cinematic Bottom Gradient for High Legibility */}
+                  <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#06080d] via-[#06080d]/85 to-transparent z-10" />
+
+                  {/* Neon Color Accent Light Glow */}
+                  <div
+                    className="absolute inset-0 opacity-20 mix-blend-screen group-hover:opacity-45 transition-opacity duration-400 z-10"
+                    style={{
+                      background: `radial-gradient(circle at 50% 90%, ${card.accentGlow}, transparent 70%)`,
+                    }}
+                  />
                 </div>
 
-                {/* Badge with count */}
-                <span
-                  className={`text-xs font-bold px-3 py-1 rounded-full border backdrop-blur-md shadow-sm shrink-0 ${tile.badgeColor}`}
-                >
-                  {tile.badgeText}
-                </span>
-              </div>
-
-              {/* Card Body & Action Bottom */}
-              <div className="relative z-10 p-5 sm:p-7 pt-0 space-y-4">
-                <p className="text-xs sm:text-sm text-neutral-300/90 leading-relaxed font-normal max-w-lg">
-                  {tile.description}
-                </p>
-
-                {/* Interactive Action Row */}
-                <div className="pt-2 flex flex-wrap items-center gap-2.5">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(tile.href);
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white text-xs sm:text-sm font-bold backdrop-blur-md shadow-lg transition-all duration-200 min-h-[44px] group-hover:border-white/40"
+                {/* Top Header inside Card */}
+                <div className="relative z-20 p-4 sm:p-5 flex items-center justify-between">
+                  {/* Category Pill Tag */}
+                  <span
+                    className={`text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md shadow-sm ${card.accentBadge}`}
                   >
-                    <span>{tile.ctaText}</span>
-                    <ArrowRight className="w-4 h-4 text-cyan-300 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                    {card.countText}
+                  </span>
 
-                  {/* Special secondary link for Sell (Bulk collection purchase by Manacards) */}
-                  {tile.hasBulkLink && (
+                  {/* Top-Right Circular Badge (Star / Category icon in Glowing Ring) */}
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white/80 bg-black/40 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:border-white group-hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-all duration-300">
+                    {card.showStar ? (
+                      <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white" />
+                    ) : (
+                      card.icon
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Content Area matching Screenshot */}
+                <div className="relative z-20 p-4 sm:p-5 pt-0 space-y-1.5 sm:space-y-2">
+                  {/* "Acto I", "Acto II", "Acto III", "Acto IV" Small Tracked Subtitle */}
+                  <div className="text-[11px] sm:text-xs font-semibold text-neutral-300/90 tracking-wider uppercase drop-shadow">
+                    {card.act}
+                  </div>
+
+                  {/* Large Bold Condensed Main Title (e.g. INICIOS / VERKAUFEN) */}
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] group-hover:text-white transition-colors">
+                    {card.title}
+                  </h2>
+
+                  {/* Subtitle / Description */}
+                  <p className="text-[11px] sm:text-xs text-neutral-300/80 line-clamp-2 leading-snug pt-0.5">
+                    {card.description}
+                  </p>
+
+                  {/* Action Link & Bulk Ankauf Option */}
+                  <div className="pt-2 flex items-center gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push("/sell/bulk");
+                        router.push(card.href);
                       }}
-                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 active:scale-95 border border-amber-500/30 text-amber-300 text-xs font-bold backdrop-blur-md transition-all duration-200 min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white text-xs font-bold backdrop-blur-md transition-all duration-200 min-h-[44px] flex-1 group-hover:border-white/40"
                     >
-                      <Crown className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Bulk-Ankauf</span>
+                      <span>Öffnen</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-cyan-300 group-hover:translate-x-1 transition-transform" />
                     </button>
-                  )}
+
+                    {/* Quick Link for Bulk-Ankauf on Sell */}
+                    {card.hasBulkLink && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push("/sell/bulk");
+                        }}
+                        title="Bulk-Ankauf durch Manacards"
+                        className="inline-flex items-center justify-center px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 border border-amber-500/40 text-amber-300 text-xs font-bold backdrop-blur-md transition-all duration-200 min-h-[44px] shrink-0"
+                      >
+                        <Crown className="w-3.5 h-3.5 text-amber-300" />
+                        <span className="hidden xl:inline ml-1">Bulk</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
-      </section>
+
+        {/* Mobile Swipe Hint Indicator */}
+        <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2">
+          <span>Horizontal wischen für alle 4 Bereiche</span>
+          <ChevronRight className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" />
+        </div>
+      </main>
+
+      {/* Footer Stats Pill Bar */}
+      <footer className="py-4 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-neutral-300"
+        >
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{listings.length} Aktive Angebote</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{verifiedCount} Verifizierte Sammler</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span>{deals.length} Erfolgreiche Deals</span>
+          </div>
+        </motion.div>
+      </footer>
     </div>
   );
 }
+
