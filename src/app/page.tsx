@@ -16,7 +16,7 @@ export default function HomePage() {
       pokemonTag: "GENGAR • #094",
       title: "VERKAUFEN",
       nameGradient: "holo-text-sell",
-      description: "Einzelkarten anbieten oder Sammlungen per Ankauf einreichen.",
+      description: "Einzelkarten verkaufen oder ganze Sammlungen bei Manacards einreichen.",
       href: "/sell",
       pokemonImg: "/pokemon/gengar.png",
       cardBg: "from-pink-950/25 via-purple-950/15 to-black/40",
@@ -33,7 +33,7 @@ export default function HomePage() {
       pokemonTag: "PIKACHU • #025",
       title: "KAUFEN",
       nameGradient: "holo-text-buy",
-      description: "Seltene Karten der Community im Marktplatz entdecken.",
+      description: "Karten und Angebote aus der Community erwerben.",
       href: "/buy",
       pokemonImg: "/pokemon/pikachu.png",
       cardBg: "from-cyan-950/25 via-sky-950/15 to-black/40",
@@ -50,7 +50,7 @@ export default function HomePage() {
       pokemonTag: "MEWTU • #150",
       title: "TAUSCHEN",
       nameGradient: "holo-text-trade",
-      description: "Karten 1:1 mit transparentem ETV-Wertausgleich tauschen.",
+      description: "Karten fair 1:1 innerhalb der Community tauschen.",
       href: "/trade",
       pokemonImg: "/pokemon/mewtwo.png",
       cardBg: "from-purple-950/25 via-fuchsia-950/15 to-black/40",
@@ -67,7 +67,7 @@ export default function HomePage() {
       pokemonTag: "GLURAK • #006",
       title: "GESUCHE",
       nameGradient: "holo-text-look",
-      description: "Gesuche für deine Holy Grails live ins Netzwerk stellen.",
+      description: "Eigene Wunschkarten ausschreiben.",
       href: "/looking-for",
       pokemonImg: "/pokemon/charizard.png",
       cardBg: "from-amber-950/25 via-orange-950/15 to-black/40",
@@ -134,23 +134,23 @@ export default function HomePage() {
                 <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
 
                 {/* Left/Center Content Area (with min-w-0 to prevent pushing the fixed sidebar) */}
-                <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-3 sm:p-4 pr-2 pb-3.5 sm:pb-4">
+                <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-2.5 sm:p-4 pr-1.5 sm:pr-2 pb-3 sm:pb-4">
                   {/* Translucent dark gradient behind text for high legibility */}
                   <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/95 via-black/60 to-transparent -z-10" />
 
                   {/* Pokemon Tag Line (e.g. GENGAR • #094) */}
-                  <div className="text-[9px] sm:text-[10px] font-bold tracking-wider text-neutral-300 uppercase flex items-center gap-1 drop-shadow">
+                  <div className="text-[8.5px] sm:text-[10px] font-bold tracking-wider text-neutral-300 uppercase flex items-center gap-1 drop-shadow">
                     <span>{card.pokemonTag}</span>
                   </div>
 
-                  {/* Large Bold Category Title with Animated Holo Shimmer */}
+                  {/* Category Title with Adjusted Sizing so VERKAUFEN never cuts off */}
                   <h2
-                    className={`text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-tight leading-none pt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${card.nameGradient} group-hover:scale-105 transition-transform origin-left`}
+                    className={`text-lg min-[400px]:text-xl sm:text-xl md:text-2xl font-black uppercase tracking-tight leading-none pt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${card.nameGradient} group-hover:scale-105 transition-transform origin-left`}
                   >
                     {card.title}
                   </h2>
 
-                  {/* Short Full Description (Completely Visible, No Ellipsis Cutoff) */}
+                  {/* Short Full Description */}
                   <p className="text-[9.5px] sm:text-[10.5px] md:text-[11px] text-neutral-200/90 leading-snug pt-1 font-normal">
                     {card.description}
                   </p>
