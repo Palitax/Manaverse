@@ -24,6 +24,13 @@ import {
 
 export default function HomePage() {
   const router = useRouter();
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.7;
+    }
+  }, []);
 
   // Top 4 Hero Action Cards
   const heroCards = [
@@ -219,14 +226,20 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden select-none">
-      {/* High-Clarity Holographic Background Video */}
+      {/* High-Clarity Holographic Background Video (Playback speed reduced by 30% to 0.7x) */}
       <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
+          onLoadedData={() => {
+            if (videoRef.current) {
+              videoRef.current.playbackRate = 0.7;
+            }
+          }}
           className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
         >
           <source src="/Abstract_holographic_foil_bg.mp4" type="video/mp4" />
