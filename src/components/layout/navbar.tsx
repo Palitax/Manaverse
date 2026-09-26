@@ -31,28 +31,24 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090b10]/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-b from-black/70 via-black/30 to-transparent backdrop-blur-md border-b border-white/5 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand / Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden p-[1.5px] bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 shadow-[0_0_15px_rgba(56,189,248,0.35)] group-hover:shadow-[0_0_24px_rgba(99,102,241,0.6)] group-hover:scale-105 transition-all duration-300">
-            <div className="w-full h-full bg-black rounded-[9px] overflow-hidden flex items-center justify-center">
-              <img
-                src="/manaforge-icon.png"
-                alt="Manaforge Logo"
-                className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300"
-              />
-            </div>
-          </div>
+        {/* Brand / Logo (Standalone without frame or black box) */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <img
+            src="/manaforge-logo.png"
+            alt="Manaforge Logo"
+            className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.6)] group-hover:scale-110 group-hover:drop-shadow-[0_0_18px_rgba(99,102,241,0.85)] transition-all duration-300"
+          />
           <div>
-            <span className="font-black text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-300">
+            <span className="font-black text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               MANAFORGE
             </span>
           </div>
         </Link>
 
-        {/* Center Nav items */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        {/* Center Nav items (High-contrast glass pills) */}
+        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -60,10 +56,10 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 backdrop-blur-md",
                   isActive
-                    ? "bg-indigo-500/15 text-white border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.25)]"
-                    : "text-neutral-400 hover:text-neutral-200 hover:bg-white/5"
+                    ? "bg-white/20 text-white border border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.2)] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
+                    : "text-white/85 hover:text-white bg-black/35 hover:bg-black/55 border border-white/10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
                 )}
               >
                 {item.icon}
@@ -78,13 +74,13 @@ export function Navbar() {
           {/* Deals / Verified Progress Pill */}
           <Link
             href="/profile"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-neutral-300 hover:border-indigo-500/50 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 border border-white/15 backdrop-blur-md text-xs text-neutral-200 hover:border-indigo-500/50 hover:bg-black/60 transition-all drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
           >
             {currentUser.verified ? (
               <>
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                 <span className="text-blue-300 font-semibold">Verified</span>
-                <span className="text-neutral-500">({currentUser.dealsCount} Deals)</span>
+                <span className="text-neutral-400">({currentUser.dealsCount} Deals)</span>
               </>
             ) : (
               <>
@@ -98,7 +94,7 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-2.5 p-1 rounded-full hover:bg-white/5 transition-colors focus:outline-none"
+              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
             >
               <HoloAvatarFrame
                 avatarUrl={currentUser.avatarUrl}
@@ -107,10 +103,10 @@ export function Navbar() {
                 verified={currentUser.verified}
                 size="sm"
               />
-              <span className="hidden sm:inline-block text-sm font-medium text-neutral-200">
+              <span className="hidden sm:inline-block text-sm font-semibold text-white">
                 {currentUser.username}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
             </button>
 
             {userDropdownOpen && (
