@@ -31,7 +31,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-gradient-to-b from-black/70 via-black/30 to-transparent backdrop-blur-md border-b border-white/5 transition-colors">
+    <header className="sticky top-0 z-50 w-full bg-transparent border-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Logo (Standalone without frame or black box) */}
         <Link href="/" className="flex items-center gap-2.5 group">
@@ -41,7 +41,7 @@ export function Navbar() {
             className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.6)] group-hover:scale-110 group-hover:drop-shadow-[0_0_18px_rgba(99,102,241,0.85)] transition-all duration-300"
           />
           <div>
-            <span className="font-black text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-indigo-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            <span className="font-[family-name:var(--font-orbitron)] font-black text-lg sm:text-xl tracking-widest uppercase bg-gradient-to-r from-white via-cyan-100 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               MANAFORGE
             </span>
           </div>
@@ -71,25 +71,6 @@ export function Navbar() {
 
         {/* Right side: Profile & Role Switcher */}
         <div className="flex items-center gap-3">
-          {/* Deals / Verified Progress Pill */}
-          <Link
-            href="/profile"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 border border-white/15 backdrop-blur-md text-xs text-neutral-200 hover:border-indigo-500/50 hover:bg-black/60 transition-all drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
-          >
-            {currentUser.verified ? (
-              <>
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-                <span className="text-blue-300 font-semibold">Verified</span>
-                <span className="text-neutral-400">({currentUser.dealsCount} Deals)</span>
-              </>
-            ) : (
-              <>
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span>{currentUser.dealsCount}/3 Deals bis Verified</span>
-              </>
-            )}
-          </Link>
-
           {/* User selector dropdown */}
           <div className="relative">
             <button
