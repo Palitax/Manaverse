@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   CircleDot,
   ChevronDown,
@@ -25,6 +25,12 @@ import {
 export default function HomePage() {
   const router = useRouter();
   const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  const { scrollY } = useScroll();
+  // Gradually fade out scroll indicator as user begins scrolling down
+  const indicatorOpacity = useTransform(scrollY, [0, 140], [1, 0]);
+  const indicatorScale = useTransform(scrollY, [0, 140], [1, 0.85]);
+  const indicatorY = useTransform(scrollY, [0, 140], [0, 15]);
 
   React.useEffect(() => {
     if (videoRef.current) {
@@ -331,12 +337,14 @@ export default function HomePage() {
           </div>
         </main>
 
-        {/* Floating Scroll Indicator guiding down to the detailed Bento Grid */}
+        {/* Floating Scroll Indicator that progressively fades out on scroll */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.8 }}
-          className="w-full flex flex-col items-center justify-center pb-2 z-20"
+          style={{
+            opacity: indicatorOpacity,
+            scale: indicatorScale,
+            y: indicatorY,
+          }}
+          className="w-full flex flex-col items-center justify-center pb-2 z-20 pointer-events-auto"
         >
           <a
             href="#ecosystem-bento"
@@ -371,11 +379,6 @@ export default function HomePage() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 space-y-3"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-lg shadow-cyan-500/10">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Das Manaforge Ökosystem</span>
-          </div>
-
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             Alle 4 Kernbereiche{" "}
             <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-500 bg-clip-text text-transparent">
