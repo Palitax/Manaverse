@@ -219,7 +219,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden select-none">
-      {/* High-Clarity Background Video */}
+      {/* High-Clarity Holographic Background Video */}
       <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
         <video
           autoPlay
@@ -227,12 +227,12 @@ export default function HomePage() {
           muted
           playsInline
           preload="auto"
-          className="w-full h-full object-cover object-center filter brightness-[0.95] contrast-[1.05]"
+          className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
         >
-          <source src="/Dragon_BG.mp4" type="video/mp4" />
+          <source src="/Abstract_holographic_foil_bg.mp4" type="video/mp4" />
         </video>
-        {/* Ultra-light cinematic gradient scrim so dragon is prominently visible */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
+        {/* Ultra-light cinematic gradient scrim */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
       </div>
 
       {/* ========================================================
@@ -344,12 +344,11 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================
-          DETAILED BENTO GRID SECTION (4 CARDS, UNIFORM SIZE,
-          ALTERNATING LEFT / RIGHT / LEFT / RIGHT ALIGNMENT)
+          DETAILED UNIFIED 4-TIER HORIZONTAL BENTO GRID
          ======================================================== */}
       <section
         id="ecosystem-bento"
-        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
+        className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
       >
         {/* Section Header with Scroll Reveal Animation */}
         <motion.div
@@ -357,7 +356,7 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center max-w-3xl mx-auto mb-14 sm:mb-20 space-y-4"
+          className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 space-y-3"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-lg shadow-cyan-500/10">
             <Sparkles className="w-3.5 h-3.5" />
@@ -371,14 +370,13 @@ export default function HomePage() {
             </span>
           </h2>
 
-          <p className="text-sm sm:text-base text-neutral-300/90 max-w-2xl mx-auto leading-relaxed">
-            Egal ob du deine Karten zu Höchstpreisen verkaufen, geprüfte Schätze erwerben,
-            fair 1:1 tauschen oder seltene Grails suchen möchtest – hier erfährst du, wie es funktioniert.
+          <p className="text-xs sm:text-sm text-neutral-300/90 max-w-2xl mx-auto leading-relaxed">
+            Transparenter Ankauf, sicherer Marktplatz, 1:1 Tauschsystem und Live-Bounties in einer zusammenhängenden TCG-Plattform.
           </p>
         </motion.div>
 
-        {/* 4 Detailed Horizontal Cards Stacked Vertically (Uniform Dimensions, Alternating Left / Right) */}
-        <div className="flex flex-col gap-8 sm:gap-10 w-full">
+        {/* Unified 4-Tier Horizontal Bento Grid (Seamless, Connected Single Grid with Smooth Gradient Fades) */}
+        <div className="w-full rounded-3xl border border-white/10 bg-[#080b11]/85 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/5">
           {bentoDetails.map((bento, index) => {
             const isLeft = bento.align === "left";
 
@@ -387,118 +385,115 @@ export default function HomePage() {
                 key={bento.id}
                 initial={{
                   opacity: 0,
-                  x: isLeft ? -40 : 40,
-                  y: 20,
+                  x: isLeft ? -30 : 30,
+                  y: 15,
                 }}
                 whileInView={{
                   opacity: 1,
                   x: 0,
                   y: 0,
                 }}
-                viewport={{ once: true, margin: "-70px" }}
+                viewport={{ once: true, margin: "-60px" }}
                 transition={{
-                  duration: 0.7,
-                  delay: index * 0.1,
+                  duration: 0.6,
+                  delay: index * 0.08,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                className={`group relative rounded-2xl sm:rounded-3xl border ${bento.theme.border} bg-[#0a0d14]/90 backdrop-blur-xl flex flex-col ${
+                className={`group relative flex flex-col ${
                   isLeft ? "md:flex-row" : "md:flex-row-reverse"
-                } items-stretch justify-between overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-1.5 ${
-                  bento.theme.cardGlow
-                } min-h-[300px] sm:min-h-[320px]`}
+                } items-center justify-between overflow-hidden transition-all duration-300 hover:bg-white/[0.02] p-4 sm:p-6 md:p-7 min-h-[220px] sm:min-h-[240px]`}
               >
-                {/* Ambient Radial Mesh Gradient behind card */}
+                {/* Soft Gradient Fade from Pokemon side into the Dark Card Background (NO vertical dividing bar) */}
                 <div
-                  className={`absolute -inset-px bg-gradient-to-r ${bento.theme.glow} opacity-60 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none -z-10`}
+                  className={`absolute inset-0 pointer-events-none -z-10 transition-opacity duration-500 opacity-70 group-hover:opacity-100 ${
+                    isLeft
+                      ? `bg-gradient-to-r ${bento.theme.glow}`
+                      : `bg-gradient-to-l ${bento.theme.glow}`
+                  }`}
                 />
 
-                {/* Subtle Glass Noise & Grid Accent */}
-                <div className="absolute inset-0 halftone-pattern opacity-10 pointer-events-none -z-10" />
+                {/* Ambient Halftone Grid Noise */}
+                <div className="absolute inset-0 halftone-pattern opacity-5 pointer-events-none -z-10" />
 
-                {/* ================= POKEMON ARTWORK SECTION (LEFT OR RIGHT) ================= */}
+                {/* ================= POKEMON ARTWORK (FLUSH LEFT OR FLUSH RIGHT) ================= */}
                 <div
-                  className={`relative w-full md:w-[300px] lg:w-[350px] xl:w-[380px] shrink-0 p-6 sm:p-8 flex flex-col items-center justify-center overflow-visible bg-black/25 ${
+                  className={`relative w-full md:w-[240px] lg:w-[280px] shrink-0 py-2 sm:py-0 flex items-center ${
                     isLeft
-                      ? "md:border-r border-b md:border-b-0 border-white/10"
-                      : "md:border-l border-b md:border-b-0 border-white/10"
-                  }`}
+                      ? "justify-center md:justify-start md:pl-2 lg:pl-4"
+                      : "justify-center md:justify-end md:pr-2 lg:pr-4"
+                  } overflow-visible`}
                 >
-                  {/* Pulsing Glowing Aura Orb */}
+                  {/* Glowing Ambient Aura Orb */}
                   <div
-                    className={`absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full ${bento.theme.orbGlow} blur-3xl group-hover:scale-130 transition-transform duration-500`}
+                    className={`absolute w-32 h-32 sm:w-40 sm:h-40 rounded-full ${bento.theme.orbGlow} blur-2xl group-hover:scale-125 transition-transform duration-500`}
                   />
 
-                  {/* Character Artwork */}
+                  {/* Pokemon Character Image */}
                   <img
                     src={bento.pokemonImg}
                     alt={bento.pokemonName}
-                    className="relative z-10 h-36 sm:h-44 md:h-48 lg:h-52 w-auto object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.95)] transform group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-500 ease-out"
+                    className="relative z-10 h-28 sm:h-36 md:h-40 lg:h-44 w-auto object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.95)] transform group-hover:scale-110 group-hover:-translate-y-1.5 transition-all duration-300 ease-out"
                   />
-
-                  {/* Pokemon Character Label Pill */}
-                  <div className="relative z-10 mt-3 px-3 py-0.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[10px] font-mono font-bold tracking-widest text-neutral-300 uppercase shadow">
-                    {bento.tag}
-                  </div>
                 </div>
 
-                {/* ================= DETAILED CONTENT & BULLETS SECTION ================= */}
+                {/* ================= CONTENT & FEATURES SECTION ================= */}
                 <div
-                  className={`flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between ${
+                  className={`flex-1 w-full px-2 sm:px-6 md:px-8 py-2 flex flex-col justify-between ${
                     isLeft ? "items-start text-left" : "items-end text-right"
                   }`}
                 >
-                  {/* Top Category Badge & Number */}
+                  {/* Category Pill Tag & Index */}
                   <div
-                    className={`w-full flex items-center gap-3 mb-2.5 ${
+                    className={`flex items-center gap-2 mb-1.5 ${
                       isLeft ? "flex-row justify-start" : "flex-row-reverse justify-start"
                     }`}
                   >
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase border backdrop-blur-md ${bento.theme.badge}`}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase border backdrop-blur-md ${bento.theme.badge}`}
                     >
                       {bento.categoryName}
                     </span>
-                    <span className="text-xs font-mono font-bold text-neutral-400">
+                    <span className="text-[11px] font-mono font-bold text-neutral-400">
                       // {bento.categoryNum}
                     </span>
                   </div>
 
-                  {/* Headings */}
+                  {/* Title & Subtitle */}
                   <div className={`w-full ${isLeft ? "text-left" : "text-right"}`}>
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
                       {bento.title}
                     </h3>
-                    <p className={`text-xs sm:text-sm font-bold ${bento.theme.accent} mt-1`}>
+                    <p className={`text-[11px] sm:text-xs font-bold ${bento.theme.accent} mt-0.5`}>
                       {bento.subtitle}
                     </p>
                   </div>
 
-                  {/* Comprehensive Explanation Description */}
+                  {/* Detailed Description */}
                   <p
-                    className={`text-xs sm:text-sm text-neutral-300/90 leading-relaxed my-3 max-w-3xl ${
+                    className={`text-[11px] sm:text-xs text-neutral-300/90 leading-relaxed my-2 max-w-2xl ${
                       isLeft ? "text-left" : "text-right"
                     }`}
                   >
                     {bento.description}
                   </p>
 
-                  {/* 3 Highlights / Feature Bullets */}
-                  <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 my-3">
+                  {/* Compact 3 Highlights Pills */}
+                  <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2 my-2">
                     {bento.bullets.map((bullet, bIndex) => (
                       <div
                         key={bIndex}
-                        className={`p-2.5 sm:p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center gap-2.5 transition-colors group-hover:border-white/10 ${
+                        className={`px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 flex items-center gap-2 transition-colors group-hover:border-white/10 ${
                           isLeft
                             ? "flex-row text-left justify-start"
                             : "flex-row-reverse text-right justify-start"
                         }`}
                       >
                         <div
-                          className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${bento.theme.bulletIcon}`}
+                          className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${bento.theme.bulletIcon}`}
                         >
-                          <CheckCircle2 className="w-3 h-3" />
+                          <CheckCircle2 className="w-2.5 h-2.5" />
                         </div>
-                        <span className="text-[11px] sm:text-xs font-medium text-neutral-200 leading-tight">
+                        <span className="text-[10.5px] sm:text-[11px] font-medium text-neutral-200 leading-tight">
                           {bullet}
                         </span>
                       </div>
@@ -507,18 +502,18 @@ export default function HomePage() {
 
                   {/* Action CTA Button */}
                   <div
-                    className={`w-full pt-2 flex ${
+                    className={`w-full pt-1.5 flex ${
                       isLeft ? "justify-start" : "justify-end"
                     }`}
                   >
                     <button
                       onClick={() => router.push(bento.href)}
-                      className={`h-11 min-h-[44px] px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer text-white ${
+                      className={`h-9 sm:h-10 min-h-[38px] sm:min-h-[44px] px-5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer text-white ${
                         bento.theme.btn
                       } ${isLeft ? "flex-row" : "flex-row-reverse"}`}
                     >
                       <span>{bento.cta}</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 </div>
