@@ -24,10 +24,10 @@ export function Navbar() {
 
   const navItems = [
     { label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
-    { label: "Sell", href: "/sell", icon: <PlusCircle className="w-4 h-4" /> },
-    { label: "Buy", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
-    { label: "Trade", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
-    { label: "Looking For", href: "/looking-for", icon: <Search className="w-4 h-4" /> },
+    { label: "Verkaufen", href: "/sell", icon: <PlusCircle className="w-4 h-4" /> },
+    { label: "Kaufen", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
+    { label: "Tauschen", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
+    { label: "Gesucht", href: "/looking-for", icon: <Search className="w-4 h-4" /> },
   ];
 
   return (
@@ -169,8 +169,6 @@ export function Navbar() {
         >
           {navItems.map((item) => {
             const isActive = pathname === item.href;
-            const displayLabel = item.label === "Looking For" ? "Gesucht" : item.label;
-
             return (
               <Link
                 key={item.href}
@@ -184,7 +182,7 @@ export function Navbar() {
               >
                 <div className="w-4 h-4 flex items-center justify-center">{item.icon}</div>
                 <span className="text-[10px] tracking-tight leading-tight mt-0.5 whitespace-nowrap">
-                  {displayLabel}
+                  {item.label}
                 </span>
               </Link>
             );
