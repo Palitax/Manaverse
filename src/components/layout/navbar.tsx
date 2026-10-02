@@ -33,18 +33,13 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full bg-transparent border-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand / Logo (Standalone without frame or black box) */}
-        <Link href="/" className="flex items-center gap-2.5 group">
+        {/* Brand / Logo (The epic custom Manaforge Wordmark) */}
+        <Link href="/" className="flex items-center group py-0.5">
           <img
             src="/manaforge-logo.png"
-            alt="Manaforge Logo"
-            className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.6)] group-hover:scale-110 group-hover:drop-shadow-[0_0_18px_rgba(99,102,241,0.85)] transition-all duration-300"
+            alt="MANAFORGE"
+            className="h-9 sm:h-11 md:h-12 w-auto max-w-[170px] sm:max-w-[210px] object-contain drop-shadow-[0_2px_14px_rgba(249,115,22,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_4px_22px_rgba(249,115,22,0.85)] transition-all duration-300"
           />
-          <div>
-            <span className="font-[family-name:var(--font-orbitron)] font-black text-lg sm:text-xl tracking-widest uppercase bg-gradient-to-r from-white via-cyan-100 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
-              MANAFORGE
-            </span>
-          </div>
         </Link>
 
         {/* Center Nav items (High-contrast glass pills) */}

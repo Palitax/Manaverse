@@ -232,7 +232,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden select-none">
-      {/* High-Clarity Holographic Background Video (Playback speed reduced by 30% to 0.7x) */}
+      {/* High-Clarity Slow Motion Ambient Gradient Video */}
       <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
         <video
           ref={videoRef}
@@ -243,12 +243,12 @@ export default function HomePage() {
           preload="auto"
           onLoadedData={() => {
             if (videoRef.current) {
-              videoRef.current.playbackRate = 0.7;
+              videoRef.current.playbackRate = 0.75;
             }
           }}
-          className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]"
+          className="w-full h-full object-cover object-center filter brightness-[0.95] contrast-[1.05]"
         >
-          <source src="/Abstract_holographic_foil_bg.mp4" type="video/mp4" />
+          <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
         </video>
         {/* Ultra-light cinematic gradient scrim */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
