@@ -166,26 +166,35 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav bar fixed at bottom */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around py-1.5 px-1 border-t border-white/10 bg-[#090b10]/95 backdrop-blur-xl pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-2xl">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center min-w-[54px] min-h-[44px] gap-1 text-[11px] font-semibold py-1 px-1 rounded-xl transition-all active:scale-95",
-                isActive
-                  ? "text-cyan-400 bg-white/10 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
-                  : "text-neutral-400 hover:text-neutral-200"
-              )}
-            >
-              <div className="w-4 h-4 flex items-center justify-center">{item.icon}</div>
-              <span className="truncate max-w-[64px]">{item.label}</span>
-            </Link>
-          );
-        })}
+      {/* Modern iOS 26 Floating Island Tab Bar */}
+      <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 max-w-sm mx-auto z-50 pointer-events-auto">
+        <nav
+          aria-label="Mobile Navigation"
+          className="flex items-center justify-around p-1.5 rounded-2xl bg-[#080c14]/80 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]"
+        >
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const displayLabel = item.label === "Looking For" ? "Gesucht" : item.label;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition-all duration-200 active:scale-90",
+                  isActive
+                    ? "bg-white/15 text-cyan-300 shadow-[0_0_14px_rgba(34,211,238,0.25)] border border-white/10 font-bold"
+                    : "text-neutral-400 hover:text-white"
+                )}
+              >
+                <div className="w-4 h-4 flex items-center justify-center">{item.icon}</div>
+                <span className="text-[10px] tracking-tight leading-tight mt-0.5 whitespace-nowrap">
+                  {displayLabel}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </header>
   );
