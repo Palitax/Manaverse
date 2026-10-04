@@ -107,12 +107,19 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
             className="w-full relative aspect-[3/4] rounded-xl overflow-hidden bg-neutral-950 border border-white/10 shadow-inner group/art cursor-pointer"
             onClick={() => setModalOpen(true)}
           >
-            <img
-              src={card.photos[0] || "https://images.pokemontcg.io/base1/4_hires.png"}
-              alt={card.name}
-              className="w-full h-full object-contain p-2 group-hover/art:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
+            {card.photos[0] ? (
+              <img
+                src={card.photos[0]}
+                alt={card.name}
+                className="w-full h-full object-contain p-2 group-hover/art:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-neutral-500">
+                <Tag className="w-8 h-8 mb-2 opacity-40 text-neutral-400" />
+                <span className="text-[11px] font-medium text-neutral-400">Kein Foto verfügbar</span>
+              </div>
+            )}
             {card.videoUrl && (
               <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-md p-1.5 rounded-full text-white border border-white/20">
                 <Play className="w-3 h-3 fill-current" />

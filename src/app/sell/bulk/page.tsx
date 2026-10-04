@@ -23,15 +23,6 @@ import confetti from "canvas-confetti";
 export default function BulkSellPage() {
   const { addBulkSubmission, currentUser } = useStore();
 
-  // Preset sample images for quick testing or user custom images
-  const sampleBatchImages = [
-    "https://images.pokemontcg.io/base1/4_hires.png",
-    "https://images.pokemontcg.io/swsh7/215_hires.png",
-    "https://images.pokemontcg.io/swsh7/218_hires.png",
-    "https://images.pokemontcg.io/sv3pt5/199_hires.png",
-    "https://images.pokemontcg.io/neo1/9_hires.png",
-  ];
-
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [cardsData, setCardsData] = useState<BulkCardItem[]>([]);
@@ -40,21 +31,6 @@ export default function BulkSellPage() {
   const [notes, setNotes] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
-  // Initialize or add images
-  const handleLoadSampleBatch = () => {
-    setImages(sampleBatchImages);
-    setCardsData(
-      sampleBatchImages.map((img, i) => ({
-        id: `card-${i + 1}`,
-        name: i === 0 ? "Glurak Base Set" : i === 1 ? "Nachtara VMAX Alt Art" : "",
-        language: "DE",
-        condition: "NM",
-        image: img,
-        estimatedValue: i === 0 ? 300 : i === 1 ? 800 : undefined,
-      }))
-    );
-  };
 
   const handleAddImageUrl = () => {
     if (!newImageUrl) return;
@@ -201,16 +177,6 @@ export default function BulkSellPage() {
                 className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors"
               >
                 Hinzufügen
-              </button>
-            </div>
-
-            <div className="pt-4">
-              <button
-                onClick={handleLoadSampleBatch}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 border border-white/10 text-xs font-semibold transition-all hover:scale-105"
-              >
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                Beispiel-Sammlung (5 High-End Karten) laden
               </button>
             </div>
           </div>

@@ -203,16 +203,29 @@ export default function BuyPage() {
           <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto text-neutral-500">
             <Search className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-bold text-white">Keine passenden Karten gefunden</h3>
+          <h3 className="text-lg font-bold text-white">
+            {sellListings.length === 0 ? "Noch keine Karten auf dem Marktplatz" : "Keine passenden Karten gefunden"}
+          </h3>
           <p className="text-xs text-neutral-400">
-            Passe deine Suchbegriffe oder Filter an, um mehr Angebote zu sehen.
+            {sellListings.length === 0
+              ? "Aktuell sind noch keine Verkaufskarten eingestellt. Sei der Erste und erstelle ein Inserat!"
+              : "Passe deine Suchbegriffe oder Filter an, um mehr Angebote zu sehen."}
           </p>
-          <button
-            onClick={resetFilters}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all"
-          >
-            Alle Filter zurücksetzen
-          </button>
+          {sellListings.length === 0 ? (
+            <a
+              href="/sell"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all"
+            >
+              + Erste Karte einstellen
+            </a>
+          ) : (
+            <button
+              onClick={resetFilters}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all"
+            >
+              Alle Filter zurücksetzen
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

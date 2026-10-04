@@ -257,10 +257,26 @@ export default function HomePage() {
       {/* ========================================================
           HERO SECTION: 4 COMPACT ACTION CARDS
          ======================================================== */}
-      <section className="relative min-h-[calc(100dvh-4rem)] flex flex-col justify-between items-center py-4 sm:py-6 overflow-visible">
+      <section className="relative min-h-[calc(100dvh-4rem)] flex flex-col justify-between items-center py-2 sm:py-4 md:py-6 overflow-visible">
+        {/* ========================================================
+            HERO BRAND LOGO: Centered at top of website in grand size
+           ======================================================== */}
+        <motion.div
+          initial={{ opacity: 0, y: -24, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full flex flex-col items-center justify-center pt-1 sm:pt-2 md:pt-4 pb-2 sm:pb-3 px-4 z-30 pointer-events-auto"
+        >
+          <img
+            src="/manaforge-logo.png"
+            alt="MANAFORGE"
+            className="w-[280px] min-[390px]:w-[320px] sm:w-[420px] md:w-[500px] lg:w-[560px] max-w-[92vw] h-auto object-contain filter drop-shadow-[0_4px_30px_rgba(249,115,22,0.65)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.95)] hover:scale-105 transition-all duration-300 select-none"
+          />
+        </motion.div>
+
         {/* Main 4 Cards: 2x2 Grid on Mobile (Zero horizontal scrolling), 4-in-a-row on Desktop */}
         <main className="w-full max-w-5xl mx-auto px-3 sm:px-6 overflow-visible flex items-center justify-center my-auto">
-          <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3 min-[390px]:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 pt-10 sm:pt-14 pb-4 sm:pb-6 px-1 max-w-[390px] min-[410px]:max-w-[420px] sm:max-w-none w-full">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3 min-[390px]:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 pt-8 sm:pt-11 pb-3 sm:pb-5 px-1 max-w-[390px] min-[410px]:max-w-[420px] sm:max-w-none w-full">
             {heroCards.map((card, index) => (
               <motion.div
                 key={card.id}

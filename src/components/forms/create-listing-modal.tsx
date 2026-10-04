@@ -55,7 +55,7 @@ export function CreateListingModal({
 
     setIsSubmitting(true);
     const validPhotos = photos.filter((p) => p.trim() !== "");
-    const finalPhotos = validPhotos.length > 0 ? validPhotos : ["https://images.pokemontcg.io/base1/4_hires.png"];
+    const finalPhotos = validPhotos;
 
     try {
       await addListing({

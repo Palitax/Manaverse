@@ -46,10 +46,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Load saved state from localStorage safely (only public listings)
   useEffect(() => {
     try {
-      const savedListings = localStorage.getItem("manaforge_listings") || localStorage.getItem("manaverse_listings");
+      // Clear legacy key
+      localStorage.removeItem("manaverse_listings");
+
+      const savedListings = localStorage.getItem("manaforge_listings");
       if (savedListings) {
-        setListings(JSON.parse(savedListings));
+        const parsed = JSON.parse(savedListings);
+        if (Array.isArray(parsed)) {
+          // Purge any legacy mock listing items
+          const nonMockListings = parsed.filter(
+            (l: CardListing) =>
+              l &&
+              l.id &&
+              !["list-1", "list-2", "list-3", "list-4", "list-5", "list-6"].includes(l.id)
+          );
+          setListings(nonMockListings);
+          localStorage.setItem("manaforge_listings", JSON.stringify(nonMockListings));
+          return;
+        }
       }
+      setListings([]);
     } catch (e) {
       console.error("Failed to load local storage state:", e);
     }

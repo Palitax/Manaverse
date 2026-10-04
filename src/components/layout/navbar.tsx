@@ -14,13 +14,23 @@ import {
   ChevronDown,
   Home,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
   const { currentUser, users, switchUser } = useStore();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 120);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems = [
     { label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
@@ -34,7 +44,15 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full bg-transparent border-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Logo (The epic custom Manaforge Wordmark) */}
-        <Link href="/" className="flex items-center group py-0.5">
+        <Link
+          href="/"
+          className={cn(
+            "flex items-center group py-0.5 transition-all duration-300",
+            isHome && !scrolled
+              ? "opacity-0 pointer-events-none -translate-x-2"
+              : "opacity-100 translate-x-0"
+          )}
+        >
           <img
             src="/manaforge-logo.png"
             alt="MANAFORGE"
@@ -123,38 +141,40 @@ export function Navbar() {
                   Manacards Postfach & Discord
                 </Link>
 
-                <div className="border-t border-white/10 my-1 pt-1">
-                  <p className="px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
-                    Account wechseln (Testing)
-                  </p>
-                  {users.map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => switchUser(u.id)}
-                      className={cn(
-                        "w-full text-left flex items-center justify-between px-3 py-1.5 text-xs rounded-lg transition-colors",
-                        u.id === currentUser.id
-                          ? "bg-indigo-600/30 text-white font-semibold"
-                          : "text-neutral-400 hover:bg-white/5 hover:text-neutral-200"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <HoloAvatarFrame
-                          avatarUrl={u.avatarUrl}
-                          username={u.username}
-                          role={u.role}
-                          verified={u.verified}
-                          size="sm"
-                          showBadges={false}
-                        />
-                        <span>{u.username}</span>
-                      </div>
-                      <span className="text-[10px] capitalize opacity-70">
-                        {u.role} • {u.dealsCount}d
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                {users.length > 1 && (
+                  <div className="border-t border-white/10 my-1 pt-1">
+                    <p className="px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
+                      Account wechseln
+                    </p>
+                    {users.map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => switchUser(u.id)}
+                        className={cn(
+                          "w-full text-left flex items-center justify-between px-3 py-1.5 text-xs rounded-lg transition-colors",
+                          u.id === currentUser.id
+                            ? "bg-indigo-600/30 text-white font-semibold"
+                            : "text-neutral-400 hover:bg-white/5 hover:text-neutral-200"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <HoloAvatarFrame
+                            avatarUrl={u.avatarUrl}
+                            username={u.username}
+                            role={u.role}
+                            verified={u.verified}
+                            size="sm"
+                            showBadges={false}
+                          />
+                          <span>{u.username}</span>
+                        </div>
+                        <span className="text-[10px] capitalize opacity-70">
+                          {u.role} • {u.dealsCount}d
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
