@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Orbitron } from "next/font/google";
 import "./globals.css";
+import "./blue-hour.css";
 import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
 
@@ -27,10 +28,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" className={`dark h-full antialiased ${orbitron.variable}`}>
-      <body className="min-h-full flex flex-col bg-[#090b10] text-[#f3f4f6]">
+      <body className="min-h-full flex flex-col text-[#f3f4f6] relative">
+        {/* Blue Hour CSS Background */}
+        <div className="fixed inset-0 -z-50 gradient-blue-hour pointer-events-none" />
+        <div className="fixed inset-0 -z-40 bg-gradient-to-b from-black/25 via-transparent to-black/45 pointer-events-none" />
         <StoreProvider>
           <Navbar />
-          <main className="flex-1 pb-20 md:pb-0">{children}</main>
+          <main className="flex-1 pb-20 md:pb-0 relative z-10">{children}</main>
         </StoreProvider>
       </body>
     </html>

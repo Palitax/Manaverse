@@ -24,19 +24,11 @@ import {
 
 export default function HomePage() {
   const router = useRouter();
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-
   const { scrollY } = useScroll();
   // Gradually fade out scroll indicator as user begins scrolling down
   const indicatorOpacity = useTransform(scrollY, [0, 140], [1, 0]);
   const indicatorScale = useTransform(scrollY, [0, 140], [1, 0.85]);
   const indicatorY = useTransform(scrollY, [0, 140], [0, 15]);
-
-  React.useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = 0.7;
-    }
-  }, []);
 
   // Top 4 Hero Action Cards
   const heroCards = [
@@ -232,27 +224,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden select-none">
-      {/* High-Clarity Slow Motion Ambient Gradient Video */}
-      <div className="fixed inset-0 -z-30 overflow-hidden pointer-events-none">
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          onLoadedData={() => {
-            if (videoRef.current) {
-              videoRef.current.playbackRate = 0.75;
-            }
-          }}
-          className="w-full h-full object-cover object-center filter brightness-[0.95] contrast-[1.05]"
-        >
-          <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
-        </video>
-        {/* Ultra-light cinematic gradient scrim */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
-      </div>
+      {/* Blue Hour Background is applied site-wide in layout.tsx */}
 
       {/* ========================================================
           HERO SECTION: 4 COMPACT ACTION CARDS
