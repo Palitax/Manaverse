@@ -11,7 +11,8 @@
   /* soft fallback: CSS cannot draw the strips. Export SVG or PNG for the real thing. */
 }
 
-.gradient-blue-hour::after {
+.gradient-blue-hour::after,
+.blue-hour-grain {
   content: '';
   position: absolute;
   inset: 0;
@@ -19,6 +20,6 @@
   background-size: 256px 256px;
   image-rendering: pixelated;
   mix-blend-mode: overlay;
-  opacity: 0.010;
+  opacity: 0.02;
   pointer-events: none;
 }
