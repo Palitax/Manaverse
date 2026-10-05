@@ -234,15 +234,15 @@ export default function HomePage() {
             HERO BRAND LOGO: Centered at top of website in grand size
            ======================================================== */}
         <motion.div
-          initial={{ opacity: 0, y: -24, scale: 0.94 }}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex flex-col items-center justify-center pt-1 sm:pt-2 md:pt-4 pb-2 sm:pb-3 px-4 z-30 pointer-events-auto"
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full flex flex-col items-center justify-center pt-1 sm:pt-2 pb-1 sm:pb-2 px-4 z-30 pointer-events-auto"
         >
           <img
             src="/manaforge-logo.png"
             alt="MANAFORGE"
-            className="w-[280px] min-[390px]:w-[320px] sm:w-[420px] md:w-[500px] lg:w-[560px] max-w-[92vw] h-auto object-contain filter drop-shadow-[0_4px_30px_rgba(249,115,22,0.65)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.95)] hover:scale-105 transition-all duration-300 select-none"
+            className="w-[145px] min-[390px]:w-[165px] sm:w-[210px] md:w-[250px] lg:w-[280px] max-w-[85vw] h-auto object-contain filter drop-shadow-[0_3px_20px_rgba(249,115,22,0.6)] drop-shadow-[0_8px_20px_rgba(0,0,0,0.9)] hover:scale-105 transition-all duration-300 select-none"
           />
         </motion.div>
 
