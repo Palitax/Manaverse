@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Orbitron } from "next/font/google";
 import "./globals.css";
-import "./blue-hour.css";
 import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
-import { BlueHourPrism } from "@/components/background/blue-hour-prism";
+import { NeatVideoBackground } from "@/components/background/neat-video-background";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -30,8 +29,8 @@ export default function RootLayout({
   return (
     <html lang="de" className={`dark h-full antialiased ${orbitron.variable}`}>
       <body className="min-h-full flex flex-col text-[#f3f4f6] relative">
-        {/* Animated Blue Hour Prism Background */}
-        <BlueHourPrism />
+        {/* Animated Neat.firecms Video Background */}
+        <NeatVideoBackground />
         <StoreProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative z-10">{children}</main>

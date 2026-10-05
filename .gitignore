@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 /Dragon_BG.mp4
+/neat.firecms.co.webm
 
 # debug
 npm-debug.log*
