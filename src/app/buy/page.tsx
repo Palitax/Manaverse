@@ -2,46 +2,47 @@
 
 import React, { useState, useMemo } from "react";
 import { useStore } from "@/lib/store";
-import { CardItemView } from "@/components/cards/card-item-view";
-import { CardLanguage, CardCondition } from "@/types";
-import {
-  Search,
-  SlidersHorizontal,
-  ShoppingBag,
-  ShieldCheck,
-  RotateCcw,
-  Sparkles,
-} from "lucide-react";
+import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
+import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
+import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
+import { CreateListingModal } from "@/components/forms/create-listing-modal";
+import { BorderBeam } from "@/components/magicui/border-beam";
+import { Tag, Sparkles, Plus, ArrowRight, ShieldCheck, Crown } from "lucide-react";
+import Link from "next/link";
 
 export default function BuyPage() {
-  const { listings } = useStore();
+  const { listings, currentUser, openAuthModal } = useStore();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "deck">("grid");
 
-  // Filter states
+  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("ALL");
   const [selectedCondition, setSelectedCondition] = useState<string>("ALL");
-  const [selectedSet, setSelectedSet] = useState<string>("ALL");
   const [onlyVerified, setOnlyVerified] = useState(false);
 
-  // All community sell listings
+  // Counts across all categories
+  const counts = useMemo(() => {
+    const sellCount = listings.filter((l) => l.type === "sell" && l.status === "active").length;
+    const tradeCount = listings.filter((l) => l.type === "trade" && l.status === "active").length;
+    const wantCount = listings.filter((l) => l.type === "looking_for" && l.status === "active").length;
+    return {
+      sell: sellCount,
+      trade: tradeCount,
+      looking_for: wantCount,
+      all: sellCount + tradeCount + wantCount,
+    };
+  }, [listings]);
+
+  // All active sell listings
   const sellListings = useMemo(
     () => listings.filter((l) => l.type === "sell" && l.status === "active"),
     [listings]
   );
 
-  // Extract distinct sets for dropdown
-  const availableSets = useMemo(() => {
-    const sets = new Set<string>();
-    sellListings.forEach((l) => {
-      if (l.set) sets.add(l.set);
-    });
-    return Array.from(sets);
-  }, [sellListings]);
-
-  // Apply filters
+  // Filtered
   const filteredListings = useMemo(() => {
     return sellListings.filter((card) => {
-      // Search query (Pokemon name, set, card number, seller username)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = card.name.toLowerCase().includes(q);
@@ -50,190 +51,130 @@ export default function BuyPage() {
         if (!matchesName && !matchesSet && !matchesSeller) return false;
       }
 
-      // Language filter
       if (selectedLanguage !== "ALL" && card.language !== selectedLanguage) {
         return false;
       }
 
-      // Condition filter
       if (selectedCondition !== "ALL" && card.condition !== selectedCondition) {
         return false;
       }
 
-      // Set filter
-      if (selectedSet !== "ALL" && card.set !== selectedSet) {
-        return false;
-      }
-
-      // Verified seller filter
       if (onlyVerified && !card.user.verified) {
         return false;
       }
 
       return true;
     });
-  }, [sellListings, searchQuery, selectedLanguage, selectedCondition, selectedSet, onlyVerified]);
+  }, [sellListings, searchQuery, selectedLanguage, selectedCondition, onlyVerified]);
 
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedLanguage("ALL");
     setSelectedCondition("ALL");
-    setSelectedSet("ALL");
     setOnlyVerified(false);
   };
 
+  const handleOpenCreate = () => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+    setCreateModalOpen(true);
+  };
+
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-24">
-      {/* Title & Introduction */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
-          <ShoppingBag className="w-4 h-4" /> Community Marktplatz
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-white">
-          Karten kaufen
-        </h1>
-        <p className="text-sm text-neutral-400 mt-1">
-          Entdecke Karten aus der Whatnot-Community. Direkt verhandeln oder kaufen.
-        </p>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className="p-4 sm:p-5 rounded-3xl glass-panel border border-white/10 mb-8 space-y-4">
-        {/* Search Input */}
-        <div className="relative w-full">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Nach Pokémon-Namen, Set oder Verkäufer suchen..."
-            className="w-full bg-[#0d111d] border border-white/10 rounded-2xl px-4 py-3 pl-11 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-          />
-          <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-neutral-400 hover:text-white"
-            >
-              Löschen
-            </button>
-          )}
-        </div>
-
-        {/* Filter Controls Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 items-center text-xs">
-          {/* Language filter */}
-          <div>
-            <label className="block text-neutral-400 mb-1 font-semibold">Sprache</label>
-            <select
-              value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-            >
-              <option value="ALL">Alle Sprachen</option>
-              <option value="DE">Deutsch (DE)</option>
-              <option value="EN">Englisch (EN)</option>
-              <option value="JP">Japanisch (JP)</option>
-              <option value="OTHER">Sonstige</option>
-            </select>
+    <div className="min-h-screen py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-28">
+      {/* Hero Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
+            <Tag className="w-4 h-4" /> Sammler-Vault • Sofortkauf & Inserate
           </div>
-
-          {/* Condition filter */}
-          <div>
-            <label className="block text-neutral-400 mb-1 font-semibold">Zustand</label>
-            <select
-              value={selectedCondition}
-              onChange={(e) => setSelectedCondition(e.target.value)}
-              className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-            >
-              <option value="ALL">Alle Zustände</option>
-              <option value="NM">Near Mint (NM)</option>
-              <option value="EX">Excellent (EX)</option>
-              <option value="GD">Good (GD)</option>
-              <option value="LP">Light Played (LP)</option>
-              <option value="PL">Played (PL)</option>
-            </select>
-          </div>
-
-          {/* Set filter */}
-          <div>
-            <label className="block text-neutral-400 mb-1 font-semibold">Set</label>
-            <select
-              value={selectedSet}
-              onChange={(e) => setSelectedSet(e.target.value)}
-              className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-            >
-              <option value="ALL">Alle Sets</option>
-              {availableSets.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Verified Seller Switch */}
-          <div className="flex items-center gap-2 pt-4">
-            <input
-              type="checkbox"
-              id="verifiedOnly"
-              checked={onlyVerified}
-              onChange={(e) => setOnlyVerified(e.target.checked)}
-              className="w-4 h-4 accent-indigo-500 rounded"
-            />
-            <label htmlFor="verifiedOnly" className="text-neutral-300 font-medium cursor-pointer flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" /> Nur Verifizierte
-            </label>
-          </div>
-
-          {/* Reset Filters */}
-          <div className="pt-4 flex justify-end">
-            <button
-              onClick={resetFilters}
-              className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" /> Filter zurücksetzen
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Listings Grid or Empty State */}
-      {filteredListings.length === 0 ? (
-        <div className="py-16 text-center glass-panel rounded-3xl border border-white/10 p-8 space-y-4 max-w-md mx-auto">
-          <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto text-neutral-500">
-            <Search className="w-7 h-7" />
-          </div>
-          <h3 className="text-lg font-bold text-white">
-            {sellListings.length === 0 ? "Noch keine Karten auf dem Marktplatz" : "Keine passenden Karten gefunden"}
-          </h3>
-          <p className="text-xs text-neutral-400">
-            {sellListings.length === 0
-              ? "Aktuell sind noch keine Verkaufskarten eingestellt. Sei der Erste und erstelle ein Inserat!"
-              : "Passe deine Suchbegriffe oder Filter an, um mehr Angebote zu sehen."}
+          <h1 className="text-2xl sm:text-4xl font-black text-white">
+            Karten kaufen & verkaufen
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            Entdecke verifizierte Einzelkarten im Collector-Slab-Format oder verkaufe ganze Sammlungen.
           </p>
-          {sellListings.length === 0 ? (
-            <a
-              href="/sell"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all"
+        </div>
+
+        {/* Bulk Trade-In Link */}
+        <Link
+          href="/sell/bulk"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-600/20 border border-amber-500/40 text-amber-300 hover:text-white hover:border-amber-400 font-bold text-xs transition-all shadow-md shadow-amber-500/10 min-h-[44px]"
+        >
+          <Crown className="w-4 h-4 text-amber-400" />
+          <span>Sammlung verkaufen (Bulk-Ankauf)</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Mode Hub & Navigation */}
+      <MarketHubNavigation
+        activeMode="sell"
+        counts={counts}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
+        selectedCondition={selectedCondition}
+        onConditionChange={setSelectedCondition}
+        onlyVerified={onlyVerified}
+        onVerifiedChange={setOnlyVerified}
+        onOpenCreate={handleOpenCreate}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onResetFilters={resetFilters}
+      />
+
+      {/* Content */}
+      {filteredListings.length === 0 ? (
+        <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
+          <BorderBeam size={200} duration={8} colorFrom="#10b981" colorTo="#38bdf8" />
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+            <Tag className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-black text-white">Keine passenden Verkaufskarten</h3>
+          <p className="text-xs text-neutral-400 leading-relaxed">
+            Es wurden keine Inserate für deine aktuellen Filtereinstellungen gefunden. Sei der Erste und stelle eine Karte ein!
+          </p>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button
+              onClick={handleOpenCreate}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all min-h-[44px]"
             >
-              + Erste Karte einstellen
-            </a>
-          ) : (
+              + Neue Karte verkaufen
+            </button>
             <button
               onClick={resetFilters}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all min-h-[44px]"
             >
-              Alle Filter zurücksetzen
+              Filter zurücksetzen
             </button>
-          )}
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredListings.map((card) => (
-            <CardItemView key={card.id} card={card} />
-          ))}
-        </div>
+        <>
+          {/* Mobile Swipe Deck View (if toggled on mobile) */}
+          {viewMode === "deck" ? (
+            <MobileSwipeDeck cards={filteredListings} />
+          ) : (
+            /* Luxury Slab Cards Grid */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+              {filteredListings.map((card) => (
+                <CollectorSlabCard key={card.id} card={card} />
+              ))}
+            </div>
+          )}
+        </>
       )}
+
+      {/* Create Listing Modal */}
+      <CreateListingModal
+        initialType="sell"
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </div>
   );
 }
