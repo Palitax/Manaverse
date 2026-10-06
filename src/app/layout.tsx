@@ -33,7 +33,7 @@ export default function RootLayout({
         <NeatVideoBackground />
         <StoreProvider>
           <Navbar />
-          <main className="flex-1 pb-20 md:pb-0 relative z-10">{children}</main>
+          <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
         </StoreProvider>
       </body>
     </html>

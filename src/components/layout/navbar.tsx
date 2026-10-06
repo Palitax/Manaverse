@@ -41,7 +41,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-transparent border-none">
+    <header className="sticky top-0 z-40 w-full bg-transparent border-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Logo (The epic custom Manaforge Wordmark) */}
         <Link

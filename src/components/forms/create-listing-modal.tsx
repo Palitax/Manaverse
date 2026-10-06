@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ListingType, CardLanguage, CardCondition, PokemonApiCard } from "@/types";
 import { useStore } from "@/lib/store";
 import {
@@ -85,15 +86,26 @@ export function CreateListingModal({
   // Mobile multi-step state (1 to 4)
   const [mobileStep, setMobileStep] = useState<number>(1);
   const [showManualFields, setShowManualFields] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       setType(initialType);
       setMobileStep(1);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen, initialType]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSelectApiCard = (card: PokemonApiCard) => {
     setName(card.name);
@@ -161,12 +173,12 @@ export function CreateListingModal({
     ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-emerald-600/30 hover:shadow-emerald-600/50"
     : "bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 shadow-purple-600/30 hover:shadow-purple-600/50";
 
-  return (
+  return createPortal(
     <>
       {/* ======================================================== */}
       {/* 📱 MOBILE VIEW: STEP-BY-STEP ERSTELLUNGS-FLOW ( < md )  */}
       {/* ======================================================== */}
-      <div className="fixed inset-0 z-50 flex flex-col bg-[#080b12] text-white md:hidden h-[100dvh] overflow-hidden">
+      <div className="fixed inset-0 z-[9999] flex flex-col bg-[#080b12] text-white md:hidden h-[100dvh] overflow-hidden">
         {/* Top Header & Progress */}
         <div className="flex-shrink-0 bg-[#0e1320] border-b border-white/10 px-4 pt-3 pb-3">
           <div className="flex items-center justify-between mb-2">
@@ -629,8 +641,8 @@ export function CreateListingModal({
       {/* ======================================================== */}
       {/* 🖥️ DESKTOP VIEW: 2-SPALTEN LAYOUT MIT LIVE-VORSCHAU ( >= md ) */}
       {/* ======================================================== */}
-      <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-        <div className="relative w-full max-w-5xl my-6 rounded-3xl glass-panel p-6 border border-white/15 shadow-2xl bg-[#0b0f1a] max-h-[92vh] overflow-y-auto">
+      <div className="hidden md:flex fixed inset-0 z-[9999] justify-center p-4 sm:p-6 sm:py-10 bg-black/85 backdrop-blur-md overflow-y-auto">
+        <div className="relative w-full max-w-5xl my-auto rounded-3xl glass-panel p-6 border border-white/15 shadow-2xl bg-[#0b0f1a] max-h-[90vh] overflow-y-auto">
           {/* Header Bar */}
           <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -1050,6 +1062,7 @@ export function CreateListingModal({
           </form>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
