@@ -38,15 +38,14 @@ export default function HomePage() {
       sidebarText: "SELL // VERKAUFEN",
       title: "VERKAUFEN",
       nameGradient: "holo-text-sell",
-      description: "Einzelkarten verkaufen oder ganze Sammlungen bei Manacards einreichen.",
+      description: "Einzelkarten verkaufen oder ganze Sammlungen bei Manaforge einreichen.",
       href: "/sell",
-      pokemonImg: "/pokemon/gengar.png",
-      cardBg: "from-pink-950/20 via-purple-950/10 to-black/35",
-      sidebarBg: "bg-gradient-to-b from-pink-500/90 via-rose-500/90 to-fuchsia-600/90",
-      borderColor: "border-pink-500/30 group-hover:border-pink-400/80",
-      glowColor: "group-hover:shadow-[0_0_30px_rgba(236,72,153,0.4)]",
-      patternColor: "rgba(244, 114, 182, 0.04)",
-      imgClass: "w-[85%] sm:w-[88%]",
+      bgImage: "/pokemon/rayquaza.jpg",
+      cardBg: "from-emerald-950/40 via-teal-950/20 to-black/60",
+      sidebarBg: "bg-gradient-to-b from-emerald-400/90 via-green-500/90 to-teal-600/90",
+      borderColor: "border-emerald-500/40 group-hover:border-emerald-400/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(16,185,129,0.45)]",
+      patternColor: "rgba(16, 185, 129, 0.05)",
     },
     {
       id: "buy",
@@ -56,13 +55,12 @@ export default function HomePage() {
       nameGradient: "holo-text-buy",
       description: "Karten und Angebote aus der Community erwerben.",
       href: "/buy",
-      pokemonImg: "/pokemon/pikachu.png",
-      cardBg: "from-cyan-950/20 via-sky-950/10 to-black/35",
-      sidebarBg: "bg-gradient-to-b from-cyan-400/90 via-sky-400/90 to-teal-400/90",
-      borderColor: "border-cyan-400/30 group-hover:border-cyan-300/80",
-      glowColor: "group-hover:shadow-[0_0_30px_rgba(6,182,212,0.4)]",
-      patternColor: "rgba(6, 182, 212, 0.04)",
-      imgClass: "w-[85%] sm:w-[88%]",
+      bgImage: "/pokemon/pikachu.jpg",
+      cardBg: "from-cyan-950/40 via-sky-950/20 to-black/60",
+      sidebarBg: "bg-gradient-to-b from-yellow-400/90 via-amber-400/90 to-cyan-400/90",
+      borderColor: "border-cyan-400/40 group-hover:border-yellow-300/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(6,182,212,0.45)]",
+      patternColor: "rgba(6, 182, 212, 0.05)",
     },
     {
       id: "trade",
@@ -72,13 +70,12 @@ export default function HomePage() {
       nameGradient: "holo-text-trade",
       description: "Karten fair 1:1 innerhalb der Community tauschen.",
       href: "/trade",
-      pokemonImg: "/pokemon/mewtwo.png",
-      cardBg: "from-purple-950/20 via-fuchsia-950/10 to-black/35",
+      bgImage: "/pokemon/mewtwo.jpg",
+      cardBg: "from-purple-950/40 via-fuchsia-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-purple-400/90 via-fuchsia-400/90 to-pink-500/90",
-      borderColor: "border-purple-400/30 group-hover:border-fuchsia-300/80",
-      glowColor: "group-hover:shadow-[0_0_30px_rgba(217,70,239,0.4)]",
-      patternColor: "rgba(217, 70, 239, 0.04)",
-      imgClass: "w-[95%] sm:w-[98%] scale-[1.08]",
+      borderColor: "border-purple-400/40 group-hover:border-fuchsia-300/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(217,70,239,0.45)]",
+      patternColor: "rgba(217, 70, 239, 0.05)",
     },
     {
       id: "looking-for",
@@ -88,13 +85,12 @@ export default function HomePage() {
       nameGradient: "holo-text-look",
       description: "Eigene Wunschkarten ausschreiben.",
       href: "/looking-for",
-      pokemonImg: "/pokemon/charizard.png",
-      cardBg: "from-amber-950/20 via-orange-950/10 to-black/35",
+      bgImage: "/pokemon/charizard.jpg",
+      cardBg: "from-amber-950/40 via-orange-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-amber-400/90 via-orange-500/90 to-red-500/90",
-      borderColor: "border-orange-400/30 group-hover:border-amber-300/80",
-      glowColor: "group-hover:shadow-[0_0_30px_rgba(249,115,22,0.4)]",
-      patternColor: "rgba(249, 115, 22, 0.04)",
-      imgClass: "w-[98%] sm:w-[102%] scale-[1.10]",
+      borderColor: "border-orange-400/40 group-hover:border-amber-300/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(249,115,22,0.45)]",
+      patternColor: "rgba(249, 115, 22, 0.05)",
     },
   ];
 
@@ -105,8 +101,8 @@ export default function HomePage() {
       align: "left", // Card 1: Left Aligned
       categoryNum: "01",
       categoryName: "ANKAUF & VERKAUF",
-      pokemonName: "Gengar",
-      pokemonImg: "/pokemon/gengar.png",
+      pokemonName: "Rayquaza",
+      pokemonImg: "/pokemon/rayquaza.jpg",
       title: "Einzelkarten & Sammlungen",
       subtitle: "Maximaler Erlös & Schnelle Auszahlung",
       description:
@@ -116,18 +112,18 @@ export default function HomePage() {
         "24h Express-Auszahlung via PayPal oder IBAN",
         "Graded Slabs & Raw-Bulk Sammlungen willkommen",
       ],
-      tag: "GENGAR // 01",
+      tag: "RAYQUAZA // 01",
       cta: "Jetzt verkaufen",
       href: "/sell",
       theme: {
-        glow: "from-pink-500/15 via-rose-500/5 to-transparent",
-        orbGlow: "bg-pink-500/20",
-        border: "border-pink-500/30 hover:border-pink-400/70",
-        badge: "bg-pink-500/10 text-pink-400 border-pink-500/30",
-        btn: "bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 shadow-pink-600/30",
-        accent: "text-pink-400",
-        bulletIcon: "text-pink-400 bg-pink-500/10 border-pink-500/30",
-        cardGlow: "group-hover:shadow-[0_0_40px_rgba(236,72,153,0.3)]",
+        glow: "from-emerald-500/15 via-teal-500/5 to-transparent",
+        orbGlow: "bg-emerald-500/20",
+        border: "border-emerald-500/30 hover:border-emerald-400/70",
+        badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        btn: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/30",
+        accent: "text-emerald-400",
+        bulletIcon: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+        cardGlow: "group-hover:shadow-[0_0_40px_rgba(16,185,129,0.3)]",
       },
     },
     {
@@ -136,7 +132,7 @@ export default function HomePage() {
       categoryNum: "02",
       categoryName: "MARKTPLATZ & COMMUNITY",
       pokemonName: "Pikachu",
-      pokemonImg: "/pokemon/pikachu.png",
+      pokemonImg: "/pokemon/pikachu.jpg",
       title: "Verifizierter Marktplatz",
       subtitle: "Geprüfte Karten & Exklusive Drops",
       description:
@@ -166,7 +162,7 @@ export default function HomePage() {
       categoryNum: "03",
       categoryName: "1:1 FAIR-TRADE",
       pokemonName: "Mewtu",
-      pokemonImg: "/pokemon/mewtwo.png",
+      pokemonImg: "/pokemon/mewtwo.jpg",
       title: "1:1 Tausch & ETV-Ausgleich",
       subtitle: "Faire Deals auf Augenhöhe",
       description:
@@ -196,7 +192,7 @@ export default function HomePage() {
       categoryNum: "04",
       categoryName: "LIVE BOUNTIES & SUCHE",
       pokemonName: "Glurak",
-      pokemonImg: "/pokemon/charizard.png",
+      pokemonImg: "/pokemon/charizard.jpg",
       title: "Want-Lists & Bounties",
       subtitle: "Finde deine Holy Grails gezielt",
       description:
@@ -248,7 +244,7 @@ export default function HomePage() {
 
         {/* Main 4 Cards: 2x2 Grid on Mobile (Zero horizontal scrolling), 4-in-a-row on Desktop */}
         <main className="w-full max-w-5xl mx-auto px-3 sm:px-6 overflow-visible flex items-center justify-center my-auto">
-          <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3 min-[390px]:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 pt-8 sm:pt-11 pb-3 sm:pb-5 px-1 max-w-[390px] min-[410px]:max-w-[420px] sm:max-w-none w-full">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3 min-[390px]:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 pt-3 sm:pt-6 pb-3 sm:pb-5 px-1 max-w-[390px] min-[410px]:max-w-[420px] sm:max-w-none w-full">
             {heroCards.map((card, index) => (
               <motion.div
                 key={card.id}
@@ -256,37 +252,35 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.08 * index }}
                 onClick={() => router.push(card.href)}
-                className="group relative w-full sm:w-[170px] md:w-[195px] lg:w-[215px] h-[195px] min-[390px]:h-[210px] min-[420px]:h-[225px] sm:h-[285px] md:h-[325px] lg:h-[350px] shrink-0 cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-2.5 active:scale-95"
+                className="group relative w-full sm:w-[170px] md:w-[195px] lg:w-[215px] h-[205px] min-[390px]:h-[220px] min-[420px]:h-[235px] sm:h-[295px] md:h-[335px] lg:h-[360px] shrink-0 cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-2.5 active:scale-95"
               >
-                {/* 3D Popping Pokemon (Extends ABOVE top edge and expands on hover for all 4!) */}
-                <div className="absolute -top-7 min-[390px]:-top-8 sm:-top-11 md:-top-13 inset-x-0 h-[68%] sm:h-[72%] z-20 flex items-center justify-center pointer-events-none">
-                  <img
-                    src={card.pokemonImg}
-                    alt={card.title}
-                    className={`${card.imgClass} h-auto max-h-full object-contain filter drop-shadow-[0_10px_16px_rgba(0,0,0,0.85)] transform group-hover:scale-120 sm:group-hover:scale-125 group-hover:-translate-y-2 sm:group-hover:-translate-y-3 transition-all duration-300 ease-out`}
-                  />
-                </div>
-
-                {/* Main Card Box Container (Transparent Glass with Backdrop Blur) */}
+                {/* Main Card Box Container (Pokemon Artwork as Background) */}
                 <div
-                  className={`relative w-full h-full rounded-xl sm:rounded-2xl border ${card.borderColor} bg-gradient-to-br ${card.cardBg} backdrop-blur-sm ${card.glowColor} overflow-hidden shadow-xl flex flex-row justify-between transition-all duration-300`}
+                  className={`relative w-full h-full rounded-xl sm:rounded-2xl border ${card.borderColor} bg-black/75 backdrop-blur-md ${card.glowColor} overflow-hidden shadow-2xl flex flex-row justify-between transition-all duration-300`}
                 >
-                  {/* Background Tech Texture / Halftone Grid */}
+                  {/* Pokemon Artwork Background with smooth hover zoom */}
+                  <img
+                    src={card.bgImage}
+                    alt={card.title}
+                    className="absolute inset-0 w-full h-full object-cover object-top sm:object-center transform group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none select-none z-0"
+                  />
+
+                  {/* Dark Vignette Gradient for High-Contrast Text Legibility */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
+
+                  {/* Top Glass Sheen */}
+                  <div className="absolute inset-x-0 top-0 h-12 sm:h-16 bg-gradient-to-b from-white/15 to-transparent pointer-events-none z-10" />
+
+                  {/* Background Tech Texture / Halftone Grid (Subtle overlay) */}
                   <div
-                    className="absolute inset-0 z-0 opacity-15 halftone-pattern pointer-events-none"
+                    className="absolute inset-0 z-10 opacity-15 halftone-pattern pointer-events-none"
                     style={{
                       backgroundColor: card.patternColor,
                     }}
                   />
 
-                  {/* Subtle Top Glass Reflection */}
-                  <div className="absolute inset-x-0 top-0 h-10 sm:h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
-
                   {/* Left/Center Content Area (with min-w-0 to prevent pushing the fixed sidebar) */}
-                  <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-2 min-[390px]:p-2.5 sm:p-3 pr-1 sm:pr-1.5 pb-2 min-[390px]:pb-2.5 sm:pb-3.5">
-                    {/* Translucent dark gradient behind text for high legibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-32 sm:h-36 bg-gradient-to-t from-black/95 via-black/55 to-transparent -z-10" />
-
+                  <div className="relative z-30 flex-1 min-w-0 flex flex-col justify-end p-2.5 min-[390px]:p-3 sm:p-3.5 pr-1 sm:pr-1.5 pb-2.5 min-[390px]:pb-3 sm:pb-3.5">
                     {/* Category Title with Adjusted Sizing */}
                     <h2
                       className={`text-xs min-[390px]:text-sm sm:text-lg md:text-xl font-black uppercase tracking-tight leading-none pt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${card.nameGradient} group-hover:scale-105 transition-transform origin-left`}
@@ -295,14 +289,14 @@ export default function HomePage() {
                     </h2>
 
                     {/* Short Full Description */}
-                    <p className="text-[7.5px] min-[390px]:text-[8.5px] sm:text-[9.5px] md:text-[10px] text-neutral-200/90 leading-tight pt-1 font-normal line-clamp-2 min-[390px]:line-clamp-3 sm:line-clamp-none">
+                    <p className="text-[7.5px] min-[390px]:text-[8.5px] sm:text-[9.5px] md:text-[10px] text-neutral-200 leading-tight pt-1 font-normal line-clamp-2 min-[390px]:line-clamp-3 sm:line-clamp-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                       {card.description}
                     </p>
                   </div>
 
                   {/* Right-Side Vertical Tech Stripe (Strictly fixed uniform width across all cards) */}
                   <div
-                    className={`relative z-30 w-[24px] min-[390px]:w-[26px] sm:w-[34px] md:w-[40px] min-w-[24px] min-[390px]:min-w-[26px] sm:min-w-[34px] md:min-w-[40px] max-w-[24px] min-[390px]:max-w-[26px] sm:max-w-[34px] md:max-w-[40px] h-full ${card.sidebarBg} flex flex-col items-center justify-between py-2 min-[390px]:py-2.5 sm:py-3 px-0.5 shrink-0 shadow-lg border-l border-black/10`}
+                    className={`relative z-30 w-[24px] min-[390px]:w-[26px] sm:w-[34px] md:w-[40px] min-w-[24px] min-[390px]:min-w-[26px] sm:min-w-[34px] md:min-w-[40px] max-w-[24px] min-[390px]:max-w-[26px] sm:max-w-[34px] md:max-w-[40px] h-full ${card.sidebarBg} flex flex-col items-center justify-between py-2 min-[390px]:py-2.5 sm:py-3 px-0.5 shrink-0 shadow-lg border-l border-black/20 backdrop-blur-md`}
                   >
                     {/* Top Category Number Pill */}
                     <div className="bg-black text-white font-black text-[7px] min-[390px]:text-[8px] sm:text-[9px] px-1 py-0.5 rounded-[2px] tracking-wider leading-none shadow">
@@ -432,12 +426,20 @@ export default function HomePage() {
                     className={`absolute w-32 h-32 sm:w-40 sm:h-40 rounded-full ${bento.theme.orbGlow} blur-2xl group-hover:scale-125 transition-transform duration-500`}
                   />
 
-                  {/* Pokemon Character Image */}
-                  <img
-                    src={bento.pokemonImg}
-                    alt={bento.pokemonName}
-                    className="relative z-10 h-28 sm:h-36 md:h-40 lg:h-44 w-auto object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.95)] transform group-hover:scale-110 group-hover:-translate-y-1.5 transition-all duration-300 ease-out"
-                  />
+                  {/* Pokemon Character Artwork Card */}
+                  <div className="relative z-10 w-24 sm:w-28 md:w-32 h-36 sm:h-40 md:h-44 rounded-2xl overflow-hidden border border-white/15 shadow-2xl group-hover:scale-105 group-hover:border-white/30 transition-all duration-300 bg-black">
+                    <img
+                      src={bento.pokemonImg}
+                      alt={bento.pokemonName}
+                      className="w-full h-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-1.5 inset-x-0 text-center">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-white/90 drop-shadow">
+                        {bento.pokemonName}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* ================= CONTENT & FEATURES SECTION ================= */}

@@ -24,4 +24,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - Mobile Navigationsleiste unten oder saubere Dropdowns für eine intuitive Bedienung wie in einer nativen App.
   - Verwendung dynamischer Viewport-Einheiten (`dvh`) bei Vollbildansichten, um die Adressleiste von mobilen Browsern sauber einzuberechnen.
 
+## 🚀 Automatischer Git Push (STRIKTE REGEL)
+- **Immer zu Git pushen:** Nach jedem erfolgreich umgesetzten Feature, Bugfix, Design- oder Code-Update MÜSSEN alle Änderungen und neuen Dateien umgehend mit einer präzisen Commit-Message committed und direkt auf das Remote-Repository gepusht werden (`git push`).
+- **Keine offenen Arbeitsstände:** Beende niemals einen Auftrag oder eine Antwort an den User, ohne die vorgenommenen Änderungen committet und gepusht zu haben.
+
 

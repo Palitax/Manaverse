@@ -153,11 +153,11 @@ body {
   background: linear-gradient(
     135deg,
     #ffffff 0%,
-    #fb7185 25%,
-    #fda4af 45%,
-    #fbbf24 65%,
+    #34d399 25%,
+    #a7f3d0 45%,
+    #fef08a 65%,
     #ffffff 80%,
-    #f43f5e 100%
+    #10b981 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
