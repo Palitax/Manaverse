@@ -30,7 +30,7 @@ export default function LookingForPage() {
             <Search className="w-4 h-4" /> Gesuche der Community
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white">
-            Looking For (Gesuche)
+            Gesuchte Karten
           </h1>
           <p className="text-sm text-neutral-400 mt-1">
             Suchst du noch Karten für deine Sammlung? Starte ein Gesuch oder hilf anderen Sammlern ihre Wunschkarten zu finden.

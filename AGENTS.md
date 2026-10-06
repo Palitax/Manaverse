@@ -24,6 +24,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - Mobile Navigationsleiste unten oder saubere Dropdowns für eine intuitive Bedienung wie in einer nativen App.
   - Verwendung dynamischer Viewport-Einheiten (`dvh`) bei Vollbildansichten, um die Adressleiste von mobilen Browsern sauber einzuberechnen.
 
+## 📱 Mobile Extralocke & Adaptive UX (STRIKTE REGEL)
+- **Extralocken-Prüfung bei jeder Implementierung:** Bei JEDER Implementierung und jedem neuen oder überarbeiteten Feature MUSS geprüft werden, ob für mobile Geräte (Smartphones) eine dedizierte "Extralocke" (angepasste mobile UX) erforderlich ist, anstatt Desktop-Layouts lediglich zusammenzustauchen.
+- **Wann ist eine Mobile Extralocke Pflicht?**
+  - **Umfangreiche Formulare & Erstellungs-Dialoge:** Müssen auf Mobile als geführter Step-by-Step Wizard (Mehrschritt-Flow), Bottom Sheet oder Screen mit klarem Fortschrittsbalken und logisch portionierten Schritten umgesetzt werden, anstatt als endlos scrollende Riesen-Popups.
+  - **Dichte Tabellen & Datenlisten:** Müssen auf Mobile in kartenbasierte Swipe- oder Akkordeon-Ansichten transformiert werden.
+  - **Große Medien & Live-Previews:** Müssen auf Mobile kompakt zusammengefasst oder in einklappbare Bereiche / Tabs ausgelagert werden, damit Formularfelder nicht durch virtuelle Tastaturen aus dem Blickfeld geschoben werden.
+  - **Daumenfreundliche Steuerung:** Primäre Aktionen (z.B. "Weiter", "Zurück", "Abschließen") müssen am unteren Bildschirmrand fixiert ("Sticky Bottom Navigation" mit Safe-Area-Insets) und mit mindestens 44×44px Touch-Targets bedienbar sein.
+
 ## 🚀 Automatischer Git Push (STRIKTE REGEL)
 - **Immer zu Git pushen:** Nach jedem erfolgreich umgesetzten Feature, Bugfix, Design- oder Code-Update MÜSSEN alle Änderungen und neuen Dateien umgehend mit einer präzisen Commit-Message committed und direkt auf das Remote-Repository gepusht werden (`git push`).
 - **Keine offenen Arbeitsstände:** Beende niemals einen Auftrag oder eine Antwort an den User, ohne die vorgenommenen Änderungen committet und gepusht zu haben.
