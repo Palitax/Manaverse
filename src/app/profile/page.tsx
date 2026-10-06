@@ -15,6 +15,8 @@ import {
   ArrowRight,
   Clock,
   Save,
+  Zap,
+  Lock,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
@@ -148,6 +150,12 @@ export default function ProfilePage() {
               {currentUser.verified && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold shadow-md shadow-blue-500/20">
                   <ShieldCheck className="w-4 h-4 text-blue-400" /> Verifizierter User
+                </span>
+              )}
+
+              {selectedRole === "admin" && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-xs font-black shadow-[0_0_12px_rgba(0,240,255,0.4)]">
+                  <Zap className="w-3.5 h-3.5 fill-cyan-400" /> Administrator ⚡
                 </span>
               )}
 
@@ -290,32 +298,96 @@ export default function ProfilePage() {
             </div>
 
             {/* Avatar Frame Selector */}
-            <div>
-              <label className="block text-neutral-300 font-semibold mb-2">
-                Spezial-Avatarrahmen wählen
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "founder", label: "Founder (Gold)", icon: <Crown className="w-3.5 h-3.5 text-amber-400" /> },
-                  { id: "beta", label: "Beta (Holo)", icon: <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> },
-                  { id: "member", label: "Standard", icon: null },
-                ].map((roleOption) => (
-                  <button
-                    key={roleOption.id}
-                    type="button"
-                    onClick={() => setSelectedRole(roleOption.id as UserRole)}
-                    className={cn(
-                      "p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all",
-                      selectedRole === roleOption.id
-                        ? "bg-indigo-600/20 border-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
-                    )}
-                  >
-                    {roleOption.icon}
-                    <span>{roleOption.label}</span>
-                  </button>
-                ))}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-neutral-300 font-semibold">
+                  Spezial-Avatarrahmen
+                </label>
+                {currentUser?.role === "admin" && (
+                  <span className="text-[10px] text-cyan-400 font-bold flex items-center gap-1">
+                    <Zap className="w-3 h-3 fill-cyan-400" /> Admin-Blitzrahmen aktiv
+                  </span>
+                )}
               </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  {
+                    id: "admin",
+                    label: "Admin ⚡",
+                    sublabel: "Anime-Blitz",
+                    icon: <Zap className="w-3.5 h-3.5 fill-cyan-400 text-cyan-300" />,
+                    isLocked: currentUser?.role !== "admin" && currentUser?.role !== "founder",
+                  },
+                  {
+                    id: "founder",
+                    label: "Founder",
+                    sublabel: "Gold-Glanz",
+                    icon: <Crown className="w-3.5 h-3.5 text-amber-400" />,
+                    isLocked: currentUser?.role !== "founder",
+                  },
+                  {
+                    id: "beta",
+                    label: "Beta",
+                    sublabel: "Holo-Effekt",
+                    icon: <Sparkles className="w-3.5 h-3.5 text-cyan-400" />,
+                    isLocked: false,
+                  },
+                  {
+                    id: "member",
+                    label: "Standard",
+                    sublabel: "Schlicht",
+                    icon: null,
+                    isLocked: false,
+                  },
+                ].map((roleOption) => {
+                  const isSelected = selectedRole === roleOption.id;
+
+                  if (roleOption.isLocked) {
+                    return (
+                      <div
+                        key={roleOption.id}
+                        title="Exklusiv für Administratoren. Kann nur durch einen bestehenden Administrator manuell zugewiesen werden."
+                        className="p-2.5 rounded-xl border border-white/5 bg-black/40 text-neutral-500 flex flex-col items-center justify-center gap-0.5 opacity-60 cursor-not-allowed select-none min-h-[58px]"
+                      >
+                        <div className="flex items-center gap-1 text-xs font-bold text-neutral-400">
+                          <Lock className="w-3 h-3 text-neutral-500" />
+                          <span>{roleOption.label}</span>
+                        </div>
+                        <span className="text-[9px] text-neutral-500">Gesperrt</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={roleOption.id}
+                      type="button"
+                      onClick={() => setSelectedRole(roleOption.id as UserRole)}
+                      className={cn(
+                        "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all min-h-[58px] cursor-pointer",
+                        isSelected
+                          ? roleOption.id === "admin"
+                            ? "bg-cyan-950/40 border-cyan-400 text-white font-black shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+                            : "bg-indigo-600/20 border-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20"
+                          : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        {roleOption.icon}
+                        <span>{roleOption.label}</span>
+                      </div>
+                      <span className="text-[10px] text-neutral-400">{roleOption.sublabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {currentUser?.role !== "admin" && currentUser?.role !== "founder" && (
+                <p className="text-[11px] text-neutral-500 italic">
+                  ⚡ Der animierte Blitzrahmen ist exklusiv für Administratoren und muss manuell von einem Admin im Dashboard vergeben werden.
+                </p>
+              )}
             </div>
 
             <div>

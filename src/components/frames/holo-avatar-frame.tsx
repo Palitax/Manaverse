@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { UserRole } from "@/types";
 import { ShieldCheck, Sparkles, Crown } from "lucide-react";
 import Image from "next/image";
+import { AdminLightningFrame } from "./admin-lightning-frame";
 
 interface HoloAvatarFrameProps {
   avatarUrl: string;
@@ -24,6 +25,20 @@ export function HoloAvatarFrame({
   showBadges = true,
   className,
 }: HoloAvatarFrameProps) {
+  // EXCLUSIVE ADMIN LIGHTNING FRAME
+  if (role === "admin") {
+    return (
+      <AdminLightningFrame
+        avatarUrl={avatarUrl}
+        username={username}
+        size={size}
+        verified={verified}
+        showBadges={showBadges}
+        className={className}
+      />
+    );
+  }
+
   const sizeMap = {
     sm: "w-8 h-8 text-xs",
     md: "w-11 h-11 text-sm",

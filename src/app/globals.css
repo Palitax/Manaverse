@@ -213,7 +213,191 @@ body {
   animation: shimmer 4s linear infinite;
 }
 
+/* ==============================================================================
+   ELECTRIC LIGHTNING ANIMATIONS (Admin Avatar Frame)
+   ============================================================================== */
 
+@keyframes lightning-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
+@keyframes lightning-spin-reverse {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
 
+@keyframes lightning-strike-inward {
+  0%, 68% {
+    opacity: 0;
+    transform: scale(1.04) rotate(0deg);
+  }
+  69% {
+    opacity: 0.95;
+    transform: scale(0.99) translate(-1px, 1px) rotate(-1deg);
+  }
+  71% {
+    opacity: 0.2;
+    transform: scale(1.02) translate(1px, -1px);
+  }
+  73% {
+    opacity: 1;
+    transform: scale(0.98) translate(-1.5px, 0.5px) rotate(1deg);
+  }
+  76% {
+    opacity: 0.85;
+    transform: scale(1) translate(0.5px, -0.5px);
+  }
+  80% {
+    opacity: 0.15;
+    transform: scale(1.01);
+  }
+  82% {
+    opacity: 0.9;
+    transform: scale(0.99) translate(1px, 1px);
+  }
+  86% {
+    opacity: 0.4;
+  }
+  88% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}
 
+@keyframes avatar-impact-flash {
+  0%, 68% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  69% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+  71% {
+    opacity: 0.25;
+  }
+  73% {
+    opacity: 0.95;
+    transform: scale(0.99);
+  }
+  76% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.1;
+  }
+  82% {
+    opacity: 0.8;
+  }
+  86% {
+    opacity: 0.3;
+  }
+  89% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes electric-shockwave {
+  0%, 68% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    opacity: 0.95;
+    transform: scale(0.6);
+  }
+  86% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes lightning-crackle-fast {
+  0%, 100% {
+    opacity: 0.85;
+    transform: translate(0, 0) scale(1);
+  }
+  20% {
+    opacity: 0.4;
+    transform: translate(-0.8px, 0.5px) scale(0.99);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(0.6px, -0.7px) scale(1.01);
+  }
+  60% {
+    opacity: 0.5;
+    transform: translate(-0.5px, -0.6px) scale(0.99);
+  }
+  80% {
+    opacity: 0.95;
+    transform: translate(0.8px, 0.6px) scale(1.01);
+  }
+}
+
+@keyframes electric-pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.6)) drop-shadow(0 0 20px rgba(2, 132, 199, 0.4));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 18px rgba(0, 240, 255, 0.9)) drop-shadow(0 0 32px rgba(2, 132, 199, 0.7));
+  }
+}
+
+.animate-lightning-spin {
+  animation: lightning-spin 5s linear infinite;
+}
+
+.animate-lightning-spin-fast {
+  animation: lightning-spin 2.2s linear infinite;
+}
+
+.animate-lightning-spin-reverse {
+  animation: lightning-spin-reverse 7s linear infinite;
+}
+
+.animate-lightning-strike {
+  animation: lightning-strike-inward 2.8s cubic-bezier(0.1, 0.9, 0.2, 1) infinite;
+}
+
+.animate-avatar-flash {
+  animation: avatar-impact-flash 2.8s cubic-bezier(0.1, 0.9, 0.2, 1) infinite;
+}
+
+.animate-electric-shockwave {
+  animation: electric-shockwave 2.8s ease-out infinite;
+}
+
+.animate-lightning-crackle {
+  animation: lightning-crackle-fast 0.35s steps(2, start) infinite;
+}
+
+.animate-electric-pulse {
+  animation: electric-pulse-subtle 2.4s ease-in-out infinite;
+}
+
+.electric-glow {
+  box-shadow: 0 0 20px -2px rgba(0, 240, 255, 0.65), 0 0 35px 2px rgba(2, 132, 199, 0.4);
+}

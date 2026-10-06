@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   UserProfile,
+  UserRole,
   CardListing,
   TradeOffer,
   BulkSubmission,
@@ -34,6 +35,7 @@ interface StoreContextType {
   tradeOffers: TradeOffer[];
   switchUser: (userId: string) => void;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  assignUserRole: (userId: string, newRole: UserRole) => Promise<{ success: boolean; error?: string }>;
   loginWithDiscord: () => Promise<{ error?: string }>;
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   registerWithEmail: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
@@ -87,7 +89,7 @@ function mapDBListingToCardListing(item: any): CardListing {
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
   const [sessionUser, setSessionUser] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -444,6 +446,55 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         console.error("Supabase updateProfile error:", err);
       }
     }
+  };
+
+  const assignUserRole = async (
+    userId: string,
+    newRole: UserRole
+  ): Promise<{ success: boolean; error?: string }> => {
+    // Only founder or admin can assign roles
+    if (!currentUser || (currentUser.role !== "founder" && currentUser.role !== "admin")) {
+      return { success: false, error: "Nur Administratoren dürfen Rollen zuweisen." };
+    }
+
+    // Update users array in local state
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+    );
+
+    // If updating current user / session user
+    if (sessionUser && sessionUser.id === userId) {
+      setSessionUser((prev) => (prev ? { ...prev, role: newRole } : null));
+    }
+
+    // Also update any listings created by this user so their avatar frame reflects instantly
+    setListings((prev) =>
+      prev.map((l) =>
+        l.userId === userId
+          ? { ...l, user: { ...l.user, role: newRole } }
+          : l
+      )
+    );
+
+    // Update in Supabase if configured
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ role: newRole })
+          .eq("id", userId);
+
+        if (error) {
+          console.error("Fehler beim Aktualisieren der Benutzerrolle in Supabase:", error);
+          return { success: false, error: error.message };
+        }
+      } catch (err) {
+        console.error("Supabase assignUserRole exception:", err);
+        return { success: false, error: (err as Error).message };
+      }
+    }
+
+    return { success: true };
   };
 
   // Dispatch through secure server proxy - client NEVER sees raw webhook URLs
@@ -888,6 +939,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         tradeOffers,
         switchUser,
         updateProfile,
+        assignUserRole,
         loginWithDiscord,
         loginWithEmail,
         registerWithEmail,
