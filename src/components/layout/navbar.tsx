@@ -15,6 +15,7 @@ import {
   Home,
   LogOut,
   Zap,
+  Flame,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ export function Navbar() {
 
   const navItems = [
     { label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
+    { label: "Schmiede", href: "/create", icon: <Flame className="w-4 h-4 text-amber-400" /> },
     { label: "Verkaufen", href: "/sell", icon: <PlusCircle className="w-4 h-4" /> },
     { label: "Kaufen", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
     { label: "Tauschen", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
@@ -206,7 +208,7 @@ export function Navbar() {
       </div>
 
       {/* Modern iOS 26 Floating Island Tab Bar */}
-      <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 max-w-sm mx-auto z-50 pointer-events-auto">
+      <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-2.5 right-2.5 max-w-md mx-auto z-50 pointer-events-auto">
         <nav
           aria-label="Mobile Navigation"
           className="flex items-center justify-around p-1.5 rounded-2xl bg-[#080c14]/80 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]"

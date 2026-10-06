@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useStore } from "@/lib/store";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
-import { CreateListingModal } from "@/components/forms/create-listing-modal";
+import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Tag,
@@ -15,12 +15,14 @@ import {
   TrendingUp,
   ShieldCheck,
   Coins,
+  X,
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function SellPage() {
   const { currentUser, listings, openAuthModal } = useStore();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
 
   // User's own active sell listings
   const mySellListings = useMemo(() => {
@@ -52,7 +54,12 @@ export default function SellPage() {
       openAuthModal("register");
       return;
     }
-    setCreateModalOpen(true);
+    setStudioOpen((prev) => !prev);
+    if (!studioOpen) {
+      setTimeout(() => {
+        document.getElementById("forge-studio-section")?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
   };
 
   return (
@@ -119,6 +126,18 @@ export default function SellPage() {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
+
+      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {studioOpen && (
+        <div id="forge-studio-section" className="mb-10 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardForgeStudio
+            initialType="sell"
+            mode="inline"
+            onSuccess={() => setStudioOpen(false)}
+            onCancel={() => setStudioOpen(false)}
+          />
+        </div>
+      )}
 
       {/* Content */}
       {mySellListings.length === 0 ? (
@@ -188,13 +207,6 @@ export default function SellPage() {
           <Plus className="w-7 h-7" />
         </button>
       </div>
-
-      {/* Create Listing Modal */}
-      <CreateListingModal
-        initialType="sell"
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-      />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { CardListing } from "@/types";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
-import { CreateListingModal } from "@/components/forms/create-listing-modal";
+import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { TradeBalanceDrawer } from "@/components/cards/trade-balance-drawer";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 export default function TradePage() {
   const { listings, tradeOffers, currentUser, openAuthModal } = useStore();
   const [activeTab, setActiveTab] = useState<"browse" | "offers">("browse");
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const [selectedTradeCard, setSelectedTradeCard] = useState<CardListing | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "deck">("grid");
 
@@ -101,7 +101,12 @@ export default function TradePage() {
       openAuthModal("register");
       return;
     }
-    setCreateModalOpen(true);
+    setStudioOpen((prev) => !prev);
+    if (!studioOpen) {
+      setTimeout(() => {
+        document.getElementById("trade-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
   };
 
   const handleTradeClick = (card: CardListing) => {
@@ -150,6 +155,18 @@ export default function TradePage() {
         onViewModeChange={setViewMode}
         onResetFilters={resetFilters}
       />
+
+      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {studioOpen && (
+        <div id="trade-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardForgeStudio
+            initialType="trade"
+            mode="inline"
+            onSuccess={() => setStudioOpen(false)}
+            onCancel={() => setStudioOpen(false)}
+          />
+        </div>
+      )}
 
       {/* Tabs: Browse vs My Offers */}
       <div className="flex items-center gap-2 p-1.5 bg-black/40 rounded-2xl border border-white/10 w-fit mb-6 text-xs font-bold">
@@ -320,13 +337,6 @@ export default function TradePage() {
         listing={selectedTradeCard}
         isOpen={Boolean(selectedTradeCard)}
         onClose={() => setSelectedTradeCard(null)}
-      />
-
-      {/* Create Listing Modal */}
-      <CreateListingModal
-        initialType="trade"
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
       />
     </div>
   );

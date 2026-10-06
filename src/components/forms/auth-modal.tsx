@@ -136,22 +136,29 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl bg-[#0c111d] border border-white/15 p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.85)] max-h-[92dvh] overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-3xl bg-[#121316] border border-orange-500/25 p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(249,115,22,0.12)] max-h-[92dvh] overflow-y-auto">
+        {/* Subtle orange ambient glow in background */}
+        <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-orange-500/10 via-amber-500/5 to-transparent pointer-events-none rounded-t-3xl" />
+
         {/* Close Button */}
         <button
           type="button"
           onClick={closeAuthModal}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center z-20"
           aria-label="Dialog schließen"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
-        <div className="text-center space-y-1.5 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
-            <Sparkles className="w-6 h-6 text-amber-200" />
+        <div className="text-center space-y-2 mb-6 relative z-10">
+          <div className="flex justify-center mb-1">
+            <img
+              src="/manaforge-logo.png"
+              alt="MANAFORGE"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_16px_rgba(249,115,22,0.4)]"
+            />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             {tab === "register" ? "Konto erstellen" : "Willkommen zurück"}
@@ -164,7 +171,7 @@ export function AuthModal() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex rounded-xl bg-white/5 p-1 mb-5 border border-white/10">
+        <div className="flex rounded-xl bg-black/40 p-1 mb-5 border border-white/10 relative z-10">
           <button
             type="button"
             onClick={() => {
@@ -172,9 +179,9 @@ export function AuthModal() {
               setErrorMsg(null);
             }}
             className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px]",
+              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px] cursor-pointer",
               tab === "register"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/30"
                 : "text-neutral-400 hover:text-white"
             )}
           >
@@ -187,9 +194,9 @@ export function AuthModal() {
               setErrorMsg(null);
             }}
             className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px]",
+              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px] cursor-pointer",
               tab === "login"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/30"
                 : "text-neutral-400 hover:text-white"
             )}
           >
@@ -198,7 +205,7 @@ export function AuthModal() {
         </div>
 
         {/* 1-Click Discord OAuth Option */}
-        <div className="space-y-3 mb-5">
+        <div className="space-y-3 mb-5 relative z-10">
           <button
             type="button"
             onClick={handleDiscordClick}
@@ -210,36 +217,36 @@ export function AuthModal() {
               {tab === "register" ? "Mit Discord registrieren" : "Mit Discord anmelden"}
             </span>
           </button>
-          <p className="text-[11px] text-center text-neutral-500">
+          <p className="text-[11px] text-center text-neutral-400">
             Schnellster Weg: Übernimmt automatisch deinen Avatar & Discord-Tag.
           </p>
         </div>
 
         {/* Divider */}
-        <div className="relative flex items-center justify-center my-4">
+        <div className="relative flex items-center justify-center my-4 z-10">
           <div className="border-t border-white/10 w-full" />
-          <span className="bg-[#0c111d] px-3 text-[11px] uppercase tracking-wider text-neutral-500 font-semibold absolute">
+          <span className="bg-[#121316] px-3 text-[11px] uppercase tracking-wider text-neutral-400 font-semibold absolute">
             oder mit E-Mail
           </span>
         </div>
 
         {/* Error / Success Feedback */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 animate-in fade-in">
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 animate-in fade-in relative z-10">
             <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 animate-in fade-in">
+          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 animate-in fade-in relative z-10">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400 mt-0.5" />
             <span>{successMsg}</span>
           </div>
         )}
 
         {/* Email & Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3.5 relative z-10">
           {tab === "register" && (
             <div>
               <label className="block text-xs font-semibold text-neutral-300 mb-1">
@@ -255,7 +262,7 @@ export function AuthModal() {
                   placeholder="z.B. AshKetchum"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px]"
+                  className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
                 />
               </div>
             </div>
@@ -275,7 +282,7 @@ export function AuthModal() {
                 placeholder="trainer@beispiel.de"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px]"
+                className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
               />
             </div>
           </div>
@@ -289,7 +296,7 @@ export function AuthModal() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium transition-colors cursor-pointer"
+                  className="text-[11px] text-orange-400 hover:text-orange-300 font-medium transition-colors cursor-pointer"
                 >
                   Passwort vergessen?
                 </button>
@@ -305,7 +312,7 @@ export function AuthModal() {
                 placeholder={tab === "register" ? "Mindestens 6 Zeichen" : "••••••••"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px]"
+                className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
               />
             </div>
           </div>
@@ -313,7 +320,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] cursor-pointer min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all active:scale-[0.98] cursor-pointer min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -332,7 +339,7 @@ export function AuthModal() {
         </form>
 
         {/* Footer switch prompt */}
-        <div className="mt-5 text-center text-xs text-neutral-400">
+        <div className="mt-5 text-center text-xs text-neutral-400 relative z-10">
           {tab === "register" ? (
             <p>
               Bereits registriert?{" "}
@@ -342,7 +349,7 @@ export function AuthModal() {
                   setTab("login");
                   setErrorMsg(null);
                 }}
-                className="text-indigo-400 hover:text-indigo-300 font-bold underline transition-colors cursor-pointer"
+                className="text-orange-400 hover:text-orange-300 font-bold underline transition-colors cursor-pointer"
               >
                 Hier anmelden
               </button>
@@ -356,7 +363,7 @@ export function AuthModal() {
                   setTab("register");
                   setErrorMsg(null);
                 }}
-                className="text-indigo-400 hover:text-indigo-300 font-bold underline transition-colors cursor-pointer"
+                className="text-orange-400 hover:text-orange-300 font-bold underline transition-colors cursor-pointer"
               >
                 Jetzt registrieren
               </button>

@@ -6,7 +6,7 @@ import { CardListing } from "@/types";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
-import { CreateListingModal } from "@/components/forms/create-listing-modal";
+import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Target,
@@ -20,7 +20,7 @@ import {
 
 export default function LookingForPage() {
   const { listings, currentUser, openAuthModal } = useStore();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "deck">("grid");
 
   // Filters
@@ -90,7 +90,12 @@ export default function LookingForPage() {
       openAuthModal("register");
       return;
     }
-    setCreateModalOpen(true);
+    setStudioOpen((prev) => !prev);
+    if (!studioOpen) {
+      setTimeout(() => {
+        document.getElementById("bounty-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
   };
 
   return (
@@ -135,6 +140,18 @@ export default function LookingForPage() {
         onViewModeChange={setViewMode}
         onResetFilters={resetFilters}
       />
+
+      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {studioOpen && (
+        <div id="bounty-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardForgeStudio
+            initialType="looking_for"
+            mode="inline"
+            onSuccess={() => setStudioOpen(false)}
+            onCancel={() => setStudioOpen(false)}
+          />
+        </div>
+      )}
 
       {/* Content */}
       {filteredListings.length === 0 ? (
@@ -188,13 +205,6 @@ export default function LookingForPage() {
           <Plus className="w-7 h-7" />
         </button>
       </div>
-
-      {/* Create Listing Modal */}
-      <CreateListingModal
-        initialType="looking_for"
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-      />
     </div>
   );
 }

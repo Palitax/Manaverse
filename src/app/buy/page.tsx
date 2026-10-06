@@ -5,14 +5,14 @@ import { useStore } from "@/lib/store";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
-import { CreateListingModal } from "@/components/forms/create-listing-modal";
+import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { Tag, Sparkles, Plus, ArrowRight, ShieldCheck, Crown } from "lucide-react";
 import Link from "next/link";
 
 export default function BuyPage() {
   const { listings, currentUser, openAuthModal } = useStore();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "deck">("grid");
 
   // Filters
@@ -79,7 +79,12 @@ export default function BuyPage() {
       openAuthModal("register");
       return;
     }
-    setCreateModalOpen(true);
+    setStudioOpen((prev) => !prev);
+    if (!studioOpen) {
+      setTimeout(() => {
+        document.getElementById("buy-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
   };
 
   return (
@@ -127,6 +132,18 @@ export default function BuyPage() {
         onResetFilters={resetFilters}
       />
 
+      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {studioOpen && (
+        <div id="buy-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardForgeStudio
+            initialType="sell"
+            mode="inline"
+            onSuccess={() => setStudioOpen(false)}
+            onCancel={() => setStudioOpen(false)}
+          />
+        </div>
+      )}
+
       {/* Content */}
       {filteredListings.length === 0 ? (
         <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
@@ -168,13 +185,6 @@ export default function BuyPage() {
           )}
         </>
       )}
-
-      {/* Create Listing Modal */}
-      <CreateListingModal
-        initialType="sell"
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-      />
     </div>
   );
 }
