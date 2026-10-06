@@ -50,7 +50,53 @@ export default function AdminPage() {
 
   const handleTestChannel = async (channel: "sell" | "trade" | "looking_for" | "bulk") => {
     setTestingChannel(channel);
-    setTestStatus(`Sende Test-Signal an Kanal '${channel}'...`);
+    setTestStatus(`Sende Test-Signal für '${channel}' an Discord...`);
+
+    const sampleEmbeds: Record<string, { title: string; description: string; fields: Array<{ name: string; value: string; inline?: boolean }> }> = {
+      sell: {
+        title: "Glurak VMAX (Secret Rare #074/073) – Flammende Finsternis",
+        description: "Makellose deutsche Karte, direkt aus dem Booster gesleevt und im Toploader gelagert.",
+        fields: [
+          { name: "Zustand", value: "Near Mint (NM)", inline: true },
+          { name: "Sprache", value: "Deutsch (DE)", inline: true },
+          { name: "Festpreis", value: "115,00 €", inline: true },
+          { name: "Set / Kartennr.", value: "Flammende Finsternis #074/073", inline: true },
+          { name: "Anbieter", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+        ],
+      },
+      trade: {
+        title: "Nachtara VMAX (#215/203) – Drachenwandel (Moonbreon)",
+        description: "Suche gleichwertigen Tausch gegen Glurak Gold Star oder Rayquaza VMAX Alt Art.",
+        fields: [
+          { name: "Zustand", value: "Mint (M)", inline: true },
+          { name: "Sprache", value: "Englisch (EN)", inline: true },
+          { name: "Estimated Trade Value (ETV)", value: "850,00 €", inline: true },
+          { name: "Gesuchte Tauschkarten (Wants)", value: "Rayquaza VMAX Alt Art oder Gengar VMAX Alt Art", inline: false },
+          { name: "Tauschpartner", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+        ],
+      },
+      looking_for: {
+        title: "Suche: Pikachu mit Grauem Filzhut (Van Gogh Promo)",
+        description: "Suche original versiegelt (Sealed) oder im perfekten Zustand für meine persönliche Sammlung.",
+        fields: [
+          { name: "Gesuchter Zustand", value: "Sealed / Gem Mint", inline: true },
+          { name: "Sprache", value: "Englisch (EN)", inline: true },
+          { name: "Maximales Budget", value: "Bis zu 130,00 €", inline: true },
+          { name: "Gesucht von", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+        ],
+      },
+      bulk: {
+        title: "Sammlungs-Ankauf: 14 Holo & Secret Rare Karten eingereicht",
+        description: "Sammlung zur Überprüfung und für ein Ankaufsangebot an Manacards eingereicht.",
+        fields: [
+          { name: "Kartenanzahl", value: "14 Karten", inline: true },
+          { name: "Wunschpreis", value: "320,00 € (VB)", inline: true },
+          { name: "Eingereicht von", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+        ],
+      },
+    };
+
+    const chosenSample = sampleEmbeds[channel];
 
     try {
       const res = await fetch("/api/discord", {
@@ -59,20 +105,16 @@ export default function AdminPage() {
         body: JSON.stringify({
           channel,
           embed: {
-            title: `🧪 Test-Nachricht: Kanal '${channel}' erfolgreich verbunden!`,
-            description: "Die Manaverse Plattform hat dieses Signal sicher über den Server gesendet.",
-            color: 0x6366f1,
-            fields: [
-              { name: "Sender", value: `Admin @${currentUser.username}`, inline: true },
-              { name: "Sicherheit", value: "Server-Side Token (Kein Client-Leak)", inline: true },
-            ],
+            title: chosenSample.title,
+            description: chosenSample.description,
+            fields: chosenSample.fields,
           },
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        setTestStatus(`✓ Kanal '${channel}' hat die Testnachricht erfolgreich empfangen!`);
+        setTestStatus(`✓ Erfolgreich gesendet: '${channel}' wurde in Discord veröffentlicht!`);
       } else {
         setTestStatus(`Hinweis: ${data.error}`);
       }
@@ -229,30 +271,64 @@ export default function AdminPage() {
           </div>
 
           <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 text-xs">
-            <h3 className="font-bold text-white text-sm">Kanal-Status & Verbindungstests</h3>
+            <div>
+              <h3 className="font-bold text-white text-sm">Discord Kanal-Status & Verbindungstests</h3>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                Konfiguriert über <code className="text-indigo-300">DISCORD_WEBHOOK_URL</code> in <code className="text-neutral-300">.env.local</code>. Alle Post-Typen erscheinen in deinem Kanal mit jeweils eigenem Bot-Namen, Pokéball-Avatar und Akzentfarbe!
+              </p>
+            </div>
 
             <div className="space-y-3">
               {[
-                { id: "sell", name: "1. Sell-Kanal (#karten-verkauf)", env: "DISCORD_WEBHOOK_SELL" },
-                { id: "trade", name: "2. Trade-Kanal (#karten-tausch)", env: "DISCORD_WEBHOOK_TRADE" },
-                { id: "looking_for", name: "3. Gesuche-Kanal (#gesuche)", env: "DISCORD_WEBHOOK_LOOKING_FOR" },
-                { id: "bulk", name: "4. Ankauf-Kanal (#ankauf-postfach)", env: "DISCORD_WEBHOOK_MANACARDS_BULK" },
+                {
+                  id: "sell",
+                  name: "Verkauf (Sofortkauf)",
+                  badge: "🟢 Pokéball • Grün",
+                  desc: "Bot: Manaforge • VERKAUF 🟢",
+                  color: "border-emerald-500/30 bg-emerald-500/5",
+                },
+                {
+                  id: "trade",
+                  name: "1:1 Karten-Tausch",
+                  badge: "🟣 Meisterball • Violett",
+                  desc: "Bot: Manaforge • TAUSCH 🟣",
+                  color: "border-purple-500/30 bg-purple-500/5",
+                },
+                {
+                  id: "looking_for",
+                  name: "Suchanfrage (Gesuch)",
+                  badge: "🔵 Superball • Cyan",
+                  desc: "Bot: Manaforge • GESUCH 🔵",
+                  color: "border-cyan-500/30 bg-cyan-500/5",
+                },
+                {
+                  id: "bulk",
+                  name: "Sammlungs-Ankauf",
+                  badge: "🟠 Hyperball • Bernstein",
+                  desc: "Bot: Manaforge • ANKAUF 📦",
+                  color: "border-amber-500/30 bg-amber-500/5",
+                },
               ].map((channelItem) => (
                 <div
                   key={channelItem.id}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between"
+                  className={`p-3.5 rounded-2xl border ${channelItem.color} flex flex-col sm:flex-row sm:items-center justify-between gap-3`}
                 >
                   <div>
-                    <p className="font-semibold text-white">{channelItem.name}</p>
-                    <p className="text-[10px] text-neutral-500 font-mono">{channelItem.env}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-white text-xs">{channelItem.name}</p>
+                      <span className="text-[10px] font-semibold text-neutral-300 px-2 py-0.5 rounded-full bg-white/10">
+                        {channelItem.badge}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-neutral-400 font-mono mt-0.5">{channelItem.desc}</p>
                   </div>
                   <button
                     type="button"
                     disabled={testingChannel !== null}
                     onClick={() => handleTestChannel(channelItem.id as any)}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] flex items-center gap-1 transition-all disabled:opacity-50"
+                    className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 min-h-[38px]"
                   >
-                    <Send className="w-3 h-3" /> Test senden
+                    <Send className="w-3 h-3" /> Test posten
                   </button>
                 </div>
               ))}

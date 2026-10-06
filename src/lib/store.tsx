@@ -174,8 +174,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Dispatch through secure server proxy - client NEVER sees raw webhook URLs
   const dispatchDiscordWebhook = async (listing: CardListing) => {
     let channel: "sell" | "trade" | "looking_for" = "sell";
-    let embedColor = 0x6366f1;
-    let typeLabel = "ANGEBOT";
+    let embedColor = 0x10b981;
+    let typeLabel = "VERKAUF";
 
     if (listing.type === "sell") {
       channel = "sell";
@@ -183,13 +183,45 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       typeLabel = "VERKAUF";
     } else if (listing.type === "trade") {
       channel = "trade";
-      embedColor = 0x8b5cf6; // Purple
+      embedColor = 0xa855f7; // Royal Purple
       typeLabel = "TAUSCH";
     } else if (listing.type === "looking_for") {
       channel = "looking_for";
       embedColor = 0x06b6d4; // Cyan
       typeLabel = "GESUCH";
     }
+
+    const fields: Array<{ name: string; value: string; inline?: boolean }> = [
+      { name: "Zustand", value: listing.condition, inline: true },
+      { name: "Sprache", value: listing.language, inline: true },
+      {
+        name: listing.type === "sell" ? "Festpreis" : listing.type === "trade" ? "Estimated Trade Value (ETV)" : "Budget",
+        value: listing.price ? `${listing.price} €` : listing.estimatedTradeValue ? `${listing.estimatedTradeValue} €` : listing.priceRange || "VB",
+        inline: true,
+      },
+    ];
+
+    if (listing.set || listing.cardNumber) {
+      fields.push({
+        name: "Set / Kartennr.",
+        value: `${listing.set || "–"}${listing.cardNumber ? ` #${listing.cardNumber}` : ""}`,
+        inline: true,
+      });
+    }
+
+    if (listing.type === "trade" && listing.lookingForWants) {
+      fields.push({
+        name: "Gesuchte Tauschkarten (Wants)",
+        value: listing.lookingForWants,
+        inline: false,
+      });
+    }
+
+    fields.push({
+      name: listing.type === "looking_for" ? "Gesucht von" : "Anbieter",
+      value: `${listing.user.username} (Discord: ${listing.user.discordUsername ? `@${listing.user.discordUsername}` : "Nicht hinterlegt"})`,
+      inline: false,
+    });
 
     try {
       await fetch("/api/discord", {
@@ -199,18 +231,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           channel,
           embed: {
             title: `[${typeLabel}] ${listing.name}`,
-            description: listing.description || "Neues Angebot auf Manaforge!",
+            description: listing.description || "Neues Angebot auf Manaforge eingestellt.",
             color: embedColor,
-            fields: [
-              { name: "Zustand", value: listing.condition, inline: true },
-              { name: "Sprache", value: listing.language, inline: true },
-              {
-                name: listing.type === "sell" ? "Preis" : listing.type === "trade" ? "Estimated Trade Value" : "Budget",
-                value: listing.price ? `${listing.price} €` : listing.estimatedTradeValue ? `${listing.estimatedTradeValue} €` : listing.priceRange || "VB",
-                inline: true,
-              },
-              { name: "Verkäufer", value: `${listing.user.username} (Discord: ${listing.user.discordUsername || "N/A"})`, inline: false },
-            ],
+            fields,
             image: listing.photos[0] ? { url: listing.photos[0] } : undefined,
           },
         }),
