@@ -14,6 +14,7 @@ import {
   INITIAL_DEALS,
   INITIAL_BULK_SUBMISSIONS,
 } from "./mock-data";
+import { supabase, isSupabaseConfigured } from "./supabase/client";
 import confetti from "canvas-confetti";
 
 interface StoreContextType {
@@ -35,40 +36,110 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
+function mapDBListingToCardListing(item: any): CardListing {
+  const u = item.user || {};
+  return {
+    id: item.id,
+    userId: item.user_id,
+    type: item.type,
+    name: item.name,
+    set: item.set_name || undefined,
+    cardNumber: item.card_number || undefined,
+    language: item.language,
+    condition: item.condition,
+    photos: Array.isArray(item.photos) ? item.photos : [],
+    videoUrl: item.video_url || undefined,
+    description: item.description || "",
+    price: item.price !== null && item.price !== undefined ? Number(item.price) : undefined,
+    priceRange: item.price_range || undefined,
+    estimatedTradeValue: item.estimated_trade_value !== null && item.estimated_trade_value !== undefined ? Number(item.estimated_trade_value) : undefined,
+    lookingForWants: item.looking_for_wants || undefined,
+    allowOffers: item.allow_offers ?? true,
+    postToDiscord: item.post_to_discord ?? true,
+    status: item.status || "active",
+    createdAt: item.created_at,
+    user: {
+      id: u.id || item.user_id,
+      username: u.username || "Sammler",
+      avatarUrl: u.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
+      role: u.role || "member",
+      verified: Boolean(u.verified),
+      dealsCount: u.deals_count || 0,
+      whatnotUsername: u.whatnot_username || undefined,
+      discordUsername: u.discord_username || undefined,
+      bio: u.bio || undefined,
+      createdAt: u.created_at || item.created_at,
+    },
+  };
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
-  const [currentUserId, setCurrentUserId] = useState<string>("user-1"); // Levin_Mana default
+  const [currentUserId, setCurrentUserId] = useState<string>("a0000000-0000-0000-0000-000000000001"); // Levin_Mana
   const [listings, setListings] = useState<CardListing[]>(INITIAL_LISTINGS);
   const [deals, setDeals] = useState<DealConfirmation[]>(INITIAL_DEALS);
   const [bulkSubmissions, setBulkSubmissions] = useState<BulkSubmission[]>(INITIAL_BULK_SUBMISSIONS);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
 
-  // Load saved state from localStorage safely (only public listings)
+  // Load from Supabase on mount (with localStorage fallback)
   useEffect(() => {
-    try {
-      // Clear legacy key
-      localStorage.removeItem("manaverse_listings");
+    async function loadData() {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          // 1. Load profiles
+          const { data: profilesData } = await supabase.from("profiles").select("*");
+          if (profilesData && profilesData.length > 0) {
+            setUsers(
+              profilesData.map((p: any) => ({
+                id: p.id,
+                username: p.username,
+                avatarUrl: p.avatar_url,
+                role: p.role,
+                verified: p.verified,
+                dealsCount: p.deals_count,
+                whatnotUsername: p.whatnot_username,
+                discordUsername: p.discord_username,
+                bio: p.bio,
+                createdAt: p.created_at,
+              }))
+            );
+          }
 
-      const savedListings = localStorage.getItem("manaforge_listings");
-      if (savedListings) {
-        const parsed = JSON.parse(savedListings);
-        if (Array.isArray(parsed)) {
-          // Purge any legacy mock listing items
-          const nonMockListings = parsed.filter(
-            (l: CardListing) =>
-              l &&
-              l.id &&
-              !["list-1", "list-2", "list-3", "list-4", "list-5", "list-6"].includes(l.id)
-          );
-          setListings(nonMockListings);
-          localStorage.setItem("manaforge_listings", JSON.stringify(nonMockListings));
-          return;
+          // 2. Load listings with joined profile
+          const { data: listingsData, error: listingsError } = await supabase
+            .from("listings")
+            .select("*, user:profiles(*)")
+            .order("created_at", { ascending: false });
+
+          if (!listingsError && listingsData) {
+            const mapped = listingsData.map(mapDBListingToCardListing);
+            setListings(mapped);
+            return;
+          }
+        } catch (e) {
+          console.error("Supabase fetch failed, falling back to local storage:", e);
         }
       }
+
+      // LocalStorage fallback
+      try {
+        localStorage.removeItem("manaverse_listings");
+        const savedListings = localStorage.getItem("manaforge_listings");
+        if (savedListings) {
+          const parsed = JSON.parse(savedListings);
+          if (Array.isArray(parsed)) {
+            const clean = parsed.filter((l: CardListing) => l && l.id && !l.id.startsWith("list-mock"));
+            setListings(clean);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("LocalStorage fallback error:", e);
+      }
       setListings([]);
-    } catch (e) {
-      console.error("Failed to load local storage state:", e);
     }
+
+    loadData();
   }, []);
 
   const currentUser = users.find((u) => u.id === currentUserId) || users[0];
@@ -77,13 +148,30 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setCurrentUserId(userId);
   };
 
-  const updateProfile = (data: Partial<UserProfile>) => {
+  const updateProfile = async (data: Partial<UserProfile>) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === currentUser.id ? { ...u, ...data } : u))
     );
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            username: data.username,
+            avatar_url: data.avatarUrl,
+            bio: data.bio,
+            whatnot_username: data.whatnotUsername,
+            discord_username: data.discordUsername,
+          })
+          .eq("id", currentUser.id);
+      } catch (err) {
+        console.error("Supabase updateProfile error:", err);
+      }
+    }
   };
 
-  // Dispatch through secure server proxy - client NEVER sees the raw webhook URLs
+  // Dispatch through secure server proxy - client NEVER sees raw webhook URLs
   const dispatchDiscordWebhook = async (listing: CardListing) => {
     let channel: "sell" | "trade" | "looking_for" = "sell";
     let embedColor = 0x6366f1;
@@ -135,28 +223,68 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addListing = async (
     listingData: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">
   ): Promise<CardListing> => {
-    // Sanitize user profile for listing - ensure no private fields leak
-    const sanitizedUser = {
-      id: currentUser.id,
-      username: currentUser.username,
-      avatarUrl: currentUser.avatarUrl,
-      role: currentUser.role,
-      verified: currentUser.verified,
-      dealsCount: currentUser.dealsCount,
-      whatnotUsername: currentUser.whatnotUsername,
-      discordUsername: currentUser.discordUsername,
-      bio: currentUser.bio,
-      createdAt: currentUser.createdAt,
-    };
+    let newListing: CardListing;
 
-    const newListing: CardListing = {
-      ...listingData,
-      id: `list-${Date.now()}`,
-      userId: currentUser.id,
-      user: sanitizedUser,
-      status: "active",
-      createdAt: new Date().toISOString(),
-    };
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .insert({
+            user_id: currentUser.id,
+            type: listingData.type,
+            name: listingData.name,
+            set_name: listingData.set || null,
+            card_number: listingData.cardNumber || null,
+            language: listingData.language,
+            condition: listingData.condition,
+            photos: listingData.photos || [],
+            video_url: listingData.videoUrl || null,
+            description: listingData.description || "",
+            price: listingData.price || null,
+            price_range: listingData.priceRange || null,
+            estimated_trade_value: listingData.estimatedTradeValue || null,
+            looking_for_wants: listingData.lookingForWants || null,
+            allow_offers: listingData.allowOffers ?? true,
+            post_to_discord: listingData.postToDiscord ?? true,
+            status: "active",
+          })
+          .select("*, user:profiles(*)")
+          .single();
+
+        if (!error && data) {
+          newListing = mapDBListingToCardListing(data);
+        } else {
+          console.error("Supabase addListing error, fallback local:", error);
+          newListing = {
+            ...listingData,
+            id: `list-${Date.now()}`,
+            userId: currentUser.id,
+            user: currentUser,
+            status: "active",
+            createdAt: new Date().toISOString(),
+          };
+        }
+      } catch (err) {
+        console.error("Supabase addListing failed:", err);
+        newListing = {
+          ...listingData,
+          id: `list-${Date.now()}`,
+          userId: currentUser.id,
+          user: currentUser,
+          status: "active",
+          createdAt: new Date().toISOString(),
+        };
+      }
+    } else {
+      newListing = {
+        ...listingData,
+        id: `list-${Date.now()}`,
+        userId: currentUser.id,
+        user: currentUser,
+        status: "active",
+        createdAt: new Date().toISOString(),
+      };
+    }
 
     setListings((prev) => {
       const updated = [newListing, ...prev];
@@ -175,7 +303,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return newListing;
   };
 
-  const deleteListing = (listingId: string) => {
+  const deleteListing = async (listingId: string) => {
     setListings((prev) => {
       const updated = prev.filter((l) => l.id !== listingId);
       try {
@@ -185,9 +313,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
       return updated;
     });
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from("listings").delete().eq("id", listingId);
+      } catch (err) {
+        console.error("Supabase deleteListing error:", err);
+      }
+    }
   };
 
-  const addTradeOffer = (
+  const addTradeOffer = async (
     listingId: string,
     offerData: {
       offeredCardsDescription: string;
@@ -199,8 +335,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const listing = listings.find((l) => l.id === listingId);
     if (!listing) return;
 
+    let offerId = `offer-${Date.now()}`;
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("trade_offers")
+          .insert({
+            listing_id: listingId,
+            from_user_id: currentUser.id,
+            offered_cards_description: offerData.offeredCardsDescription,
+            offered_images: offerData.offeredImages,
+            estimated_value: offerData.estimatedValue,
+            message: offerData.message || null,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (!error && data) {
+          offerId = data.id;
+        }
+      } catch (err) {
+        console.error("Supabase addTradeOffer error:", err);
+      }
+    }
+
     const newOffer: TradeOffer = {
-      id: `offer-${Date.now()}`,
+      id: offerId,
       listingId,
       listing,
       fromUserId: currentUser.id,
@@ -218,8 +380,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     askingPrice?: number;
     notes?: string;
   }) => {
+    let submissionId = `bulk-${Date.now()}`;
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("bulk_submissions")
+          .insert({
+            user_id: currentUser.id,
+            total_cards: submissionData.cards.length,
+            cards: submissionData.cards,
+            asking_price: submissionData.askingPrice || null,
+            notes: submissionData.notes || null,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (!error && data) {
+          submissionId = data.id;
+        }
+      } catch (err) {
+        console.error("Supabase addBulkSubmission error:", err);
+      }
+    }
+
     const newSubmission: BulkSubmission = {
-      id: `bulk-${Date.now()}`,
+      id: submissionId,
       userId: currentUser.id,
       user: currentUser,
       totalCards: submissionData.cards.length,
@@ -257,9 +444,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createDeal = (listing: CardListing, buyer: UserProfile) => {
+  const createDeal = async (listing: CardListing, buyer: UserProfile) => {
+    let dealId = `deal-${Date.now()}`;
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("deals")
+          .insert({
+            listing_id: listing.id,
+            listing_title: listing.name,
+            listing_type: listing.type,
+            price_or_value: listing.price || listing.estimatedTradeValue || null,
+            seller_id: listing.userId,
+            buyer_id: buyer.id,
+            seller_confirmed: false,
+            buyer_confirmed: false,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (!error && data) {
+          dealId = data.id;
+        }
+      } catch (err) {
+        console.error("Supabase createDeal error:", err);
+      }
+    }
+
     const newDeal: DealConfirmation = {
-      id: `deal-${Date.now()}`,
+      id: dealId,
       listingId: listing.id,
       listingTitle: listing.name,
       listingType: listing.type,
@@ -277,7 +492,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setDeals((prev) => [newDeal, ...prev]);
   };
 
-  const confirmDeal = (dealId: string, asRole: "seller" | "buyer") => {
+  const confirmDeal = async (dealId: string, asRole: "seller" | "buyer") => {
     setDeals((prev) =>
       prev.map((deal) => {
         if (deal.id !== dealId) return deal;
@@ -324,6 +539,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return updated;
       })
     );
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const updatePayload: any = {};
+        if (asRole === "seller") updatePayload.seller_confirmed = true;
+        if (asRole === "buyer") updatePayload.buyer_confirmed = true;
+        await supabase.from("deals").update(updatePayload).eq("id", dealId);
+      } catch (err) {
+        console.error("Supabase confirmDeal error:", err);
+      }
+    }
   };
 
   return (

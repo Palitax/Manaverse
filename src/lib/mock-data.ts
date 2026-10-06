@@ -3,7 +3,7 @@ import { CardListing, UserProfile, DealConfirmation, BulkSubmission } from "@/ty
 // Public profiles: strictly no emails or private credentials
 export const MOCK_USERS: UserProfile[] = [
   {
-    id: "user-1",
+    id: "a0000000-0000-0000-0000-000000000001",
     username: "Levin_Mana",
     avatarUrl: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
     role: "founder",

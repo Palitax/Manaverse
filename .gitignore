@@ -25,6 +25,7 @@
 *.pem
 /Dragon_BG.mp4
 /neat.firecms.co.webm
+supabase/.db_credentials.json
 
 # debug
 npm-debug.log*

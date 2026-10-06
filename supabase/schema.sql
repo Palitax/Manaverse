@@ -39,7 +39,7 @@ begin
     'member',
     false,
     0,
-    new.raw_user_meta_data->>'custom_claims'->>'discord_tag'
+    (new.raw_user_meta_data->'custom_claims')->>'discord_tag'
   );
   return new;
 end;
@@ -163,3 +163,23 @@ create policy "Participants can update deal confirmations"
   on public.deals for update using (
     auth.uid() = seller_id or auth.uid() = buyer_id
   );
+
+-- ==============================================================================
+-- 6. STORAGE BUCKET FOR CARD PHOTOS
+-- ==============================================================================
+insert into storage.buckets (id, name, public)
+values ('card-photos', 'card-photos', true)
+on conflict (id) do nothing;
+
+create policy "Card photos are publicly accessible"
+  on storage.objects for select
+  using (bucket_id = 'card-photos');
+
+create policy "Authenticated users can upload card photos"
+  on storage.objects for insert
+  with check (bucket_id = 'card-photos' and auth.role() = 'authenticated');
+
+create policy "Users can update or delete their own card photos"
+  on storage.objects for delete
+  using (bucket_id = 'card-photos' and auth.uid() = owner);
+
