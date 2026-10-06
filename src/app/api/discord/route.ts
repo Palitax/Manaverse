@@ -3,6 +3,54 @@ import { NextResponse } from "next/server";
 // Valid channel targets
 type AllowedChannel = "sell" | "trade" | "looking_for" | "bulk" | "test";
 
+// Channel-specific styling for instant visual distinction in a single channel
+const channelConfig: Record<
+  AllowedChannel,
+  {
+    botName: string;
+    avatarUrl: string;
+    color: number;
+    badge: string;
+    tagEmoji: string;
+  }
+> = {
+  sell: {
+    botName: "Manaforge • VERKAUF 🟢",
+    avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png",
+    color: 0x10b981, // Emerald Green
+    badge: "VERKAUF (SOFORTKAUF)",
+    tagEmoji: "🟢",
+  },
+  trade: {
+    botName: "Manaforge • TAUSCH 🟣",
+    avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png",
+    color: 0xa855f7, // Royal Purple / Violet
+    badge: "1:1 KARTEN-TAUSCH",
+    tagEmoji: "🟣",
+  },
+  looking_for: {
+    botName: "Manaforge • GESUCH 🔵",
+    avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png",
+    color: 0x06b6d4, // Cyan / Sky Blue
+    badge: "SUCHANFRAGE (WANT)",
+    tagEmoji: "🔵",
+  },
+  bulk: {
+    botName: "Manaforge • ANKAUF 📦",
+    avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
+    color: 0xf59e0b, // Amber / Lava Orange
+    badge: "SAMMLUNG-ANKAUF",
+    tagEmoji: "🟠",
+  },
+  test: {
+    botName: "Manaforge • TEST-SIGNAL 🧪",
+    avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/safari-ball.png",
+    color: 0x6366f1, // Indigo
+    badge: "TEST-SIGNAL",
+    tagEmoji: "⚪",
+  },
+};
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -17,7 +65,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Resolve webhook URL strictly from server environment variables - NEVER from client input!
+    // Resolve webhook URL strictly from server environment variables:
+    // Allows 1 master webhook (DISCORD_WEBHOOK_URL) or specific channel overrides
     let targetWebhookUrl: string | undefined;
 
     switch (channel) {
@@ -39,18 +88,17 @@ export async function POST(request: Request) {
     }
 
     if (!targetWebhookUrl) {
-      // Return safe message without leaking internal paths or configurations
       return NextResponse.json(
         {
           success: false,
-          error: "Für diesen Kanal ist auf dem Server keine Webhook-URL konfiguriert.",
+          error: "Auf dem Server ist weder DISCORD_WEBHOOK_URL noch eine spezifische Webhook-URL konfiguriert.",
           configured: false,
         },
         { status: 404 }
       );
     }
 
-    // Ensure the target URL is strictly a discord.com domain
+    // Ensure target URL is strictly a discord.com domain
     try {
       const parsedUrl = new URL(targetWebhookUrl);
       if (
@@ -70,28 +118,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Sanitize embed data
+    const cfg = channelConfig[channel as AllowedChannel];
+
+    // Sanitize and style embed data with distinctive branding
     const sanitizedEmbed = embed
       ? {
+          author: {
+            name: `${cfg.tagEmoji} ${cfg.badge} • MANAFORGE MARKTPLATZ`,
+            icon_url: cfg.avatarUrl,
+          },
           title: String(embed.title || "").slice(0, 256),
           description: String(embed.description || "").slice(0, 2048),
-          color: typeof embed.color === "number" ? embed.color : 0x6366f1,
+          color: typeof embed.color === "number" ? embed.color : cfg.color,
           fields: Array.isArray(embed.fields)
-            ? embed.fields.slice(0, 10).map((f: { name?: string; value?: string; inline?: boolean }) => ({
+            ? embed.fields.slice(0, 12).map((f: { name?: string; value?: string; inline?: boolean }) => ({
                 name: String(f.name || "").slice(0, 256),
                 value: String(f.value || "").slice(0, 1024),
                 inline: Boolean(f.inline),
               }))
             : [],
           image: embed.image?.url ? { url: String(embed.image.url) } : undefined,
-          footer: { text: "Manaforge Community • Discord Sync" },
+          footer: { text: "Manaforge Community • Pokémon TCG Hub" },
           timestamp: new Date().toISOString(),
         }
       : undefined;
 
     const payload = {
-      username: "Manaforge Bot",
-      avatar_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
+      username: cfg.botName,
+      avatar_url: cfg.avatarUrl,
       content: content ? String(content).slice(0, 2000) : undefined,
       embeds: sanitizedEmbed ? [sanitizedEmbed] : undefined,
     };
@@ -109,9 +163,11 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, message: "Erfolgreich an Discord übermittelt." });
+    return NextResponse.json({
+      success: true,
+      message: `Erfolgreich als '${cfg.badge}' an Discord übermittelt.`,
+    });
   } catch (error) {
-    // Never expose stack traces or raw error messages to the client
     console.error("Secure Discord dispatcher error:", error);
     return NextResponse.json(
       { success: false, error: "Interner Verarbeitungsfehler." },
