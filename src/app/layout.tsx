@@ -5,6 +5,7 @@ import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
 import { NeatVideoBackground } from "@/components/background/neat-video-background";
 import { AuthModal } from "@/components/forms/auth-modal";
+import { DiscordWelcomeModal } from "@/components/forms/discord-welcome-modal";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
           <AuthModal />
+          <DiscordWelcomeModal />
         </StoreProvider>
       </body>
     </html>

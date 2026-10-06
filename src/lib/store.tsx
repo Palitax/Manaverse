@@ -117,6 +117,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { error: err };
     }
 
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("manaforge_discord_welcome", "true");
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {

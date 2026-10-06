@@ -25,19 +25,28 @@ export default function AuthCallbackPage() {
         }
 
         if (data?.session) {
-          router.replace("/");
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("manaforge_discord_welcome", "true");
+          }
+          router.replace("/?discord_welcome=1");
         } else {
           // If no session found yet, wait for onAuthStateChange
           const { data: authListener } = client.auth.onAuthStateChange((event, session) => {
             if (session) {
               authListener.subscription.unsubscribe();
-              router.replace("/");
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("manaforge_discord_welcome", "true");
+              }
+              router.replace("/?discord_welcome=1");
             }
           });
 
           // Timeout fallback
           setTimeout(() => {
-            router.replace("/");
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("manaforge_discord_welcome", "true");
+            }
+            router.replace("/?discord_welcome=1");
           }, 2500);
         }
       } catch (e) {
@@ -51,7 +60,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
-      <div className="glass-panel p-8 rounded-3xl border border-white/10 text-center space-y-4 max-w-sm w-full">
+      <div className="glass-panel p-8 rounded-3xl border border-orange-500/20 bg-[#121316]/90 backdrop-blur-xl text-center space-y-4 max-w-sm w-full shadow-2xl">
         {errorMsg ? (
           <>
             <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto text-xl font-bold">
@@ -68,7 +77,7 @@ export default function AuthCallbackPage() {
           </>
         ) : (
           <>
-            <div className="w-12 h-12 border-3 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
             <h2 className="text-lg font-black text-white">Discord-Anmeldung läuft...</h2>
             <p className="text-xs text-neutral-400">
               Dein Profil wird mit Manaforge synchronisiert. Du wirst gleich weitergeleitet.
