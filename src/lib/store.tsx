@@ -19,6 +19,8 @@ import confetti from "canvas-confetti";
 
 interface StoreContextType {
   currentUser: UserProfile;
+  sessionUser: UserProfile | null;
+  isAuthenticated: boolean;
   users: UserProfile[];
   listings: CardListing[];
   deals: DealConfirmation[];
@@ -26,6 +28,8 @@ interface StoreContextType {
   tradeOffers: TradeOffer[];
   switchUser: (userId: string) => void;
   updateProfile: (data: Partial<UserProfile>) => void;
+  loginWithDiscord: () => Promise<void>;
+  logout: () => Promise<void>;
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">) => Promise<CardListing>;
   addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => void;
   addBulkSubmission: (submission: { cards: BulkSubmission["cards"]; askingPrice?: number; notes?: string }) => Promise<void>;
@@ -75,11 +79,99 @@ function mapDBListingToCardListing(item: any): CardListing {
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
+  const [sessionUser, setSessionUser] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("a0000000-0000-0000-0000-000000000001"); // Levin_Mana
   const [listings, setListings] = useState<CardListing[]>(INITIAL_LISTINGS);
   const [deals, setDeals] = useState<DealConfirmation[]>(INITIAL_DEALS);
   const [bulkSubmissions, setBulkSubmissions] = useState<BulkSubmission[]>(INITIAL_BULK_SUBMISSIONS);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
+
+  const loginWithDiscord = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      alert("Supabase ist nicht konfiguriert.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: "identify email",
+      },
+    });
+
+    if (error) {
+      console.error("Discord login error:", error);
+      alert("Fehler bei der Discord-Anmeldung: " + error.message);
+    }
+  };
+
+  const logout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
+    setSessionUser(null);
+    setCurrentUserId("a0000000-0000-0000-0000-000000000001");
+  };
+
+  // Synchronisiere Discord-Login-Session mit dem Benutzerprofil
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const syncSessionUser = async (user: any) => {
+      try {
+        const { data: profile } = await supabase!
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profile) {
+          const authUser: UserProfile = {
+            id: profile.id,
+            username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || "Trainer",
+            avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
+            role: profile.role || "member",
+            verified: Boolean(profile.verified),
+            dealsCount: profile.deals_count || 0,
+            whatnotUsername: profile.whatnot_username,
+            discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name,
+            bio: profile.bio,
+            createdAt: profile.created_at || new Date().toISOString(),
+            email: user.email,
+          };
+
+          setSessionUser(authUser);
+          setUsers((prev) => {
+            const exists = prev.some((u) => u.id === authUser.id);
+            if (exists) return prev.map((u) => (u.id === authUser.id ? authUser : u));
+            return [authUser, ...prev];
+          });
+          setCurrentUserId(authUser.id);
+        }
+      } catch (err) {
+        console.error("Fehler beim Synchronisieren des Discord-Profils:", err);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        syncSessionUser(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        syncSessionUser(session.user);
+      } else {
+        setSessionUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Load from Supabase on mount (with localStorage fallback)
   useEffect(() => {
@@ -579,6 +671,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     <StoreContext.Provider
       value={{
         currentUser,
+        sessionUser,
+        isAuthenticated: Boolean(sessionUser),
         users,
         listings,
         deals,
@@ -586,6 +680,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         tradeOffers,
         switchUser,
         updateProfile,
+        loginWithDiscord,
+        logout,
         addListing,
         deleteListing,
         addTradeOffer,
