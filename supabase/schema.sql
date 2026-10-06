@@ -27,20 +27,61 @@ create policy "Public profiles are viewable by everyone"
 create policy "Users can update own profile" 
   on public.profiles for update using (auth.uid() = id);
 
--- Trigger to auto-create public profile upon auth signup (NO email stored in public table)
+-- Trigger to auto-create public profile upon auth signup (NO sensitive email stored in public table)
 create or replace function public.handle_new_user() 
 returns trigger as $$
+declare
+  candidate_name text;
+  final_name text;
+  avatar text;
+  disc text;
+  user_role text;
 begin
-  insert into public.profiles (id, username, avatar_url, role, verified, deals_count, discord_username)
+  candidate_name := coalesce(
+    new.raw_user_meta_data->>'username',
+    new.raw_user_meta_data->>'user_name',
+    new.raw_user_meta_data->>'full_name',
+    split_part(new.email, '@', 1),
+    'Trainer'
+  );
+
+  final_name := candidate_name;
+  if exists (select 1 from public.profiles where username = final_name and id <> new.id) then
+    final_name := candidate_name || '_' || substr(new.id::text, 1, 4);
+  end if;
+
+  avatar := coalesce(
+    new.raw_user_meta_data->>'avatar_url',
+    'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80'
+  );
+
+  disc := coalesce(
+    (new.raw_user_meta_data->'custom_claims')->>'discord_tag',
+    new.raw_user_meta_data->>'discord_username',
+    case when new.raw_app_meta_data->>'provider' = 'discord' then candidate_name else null end
+  );
+
+  user_role := case
+    when new.email = 'levin@rohde-media.de' or final_name = 'Levin_Mana' then 'founder'
+    else 'member'
+  end;
+
+  insert into public.profiles (
+    id, username, avatar_url, role, verified, deals_count, discord_username
+  )
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'user_name', split_part(new.email, '@', 1)),
-    new.raw_user_meta_data->>'avatar_url',
-    'member',
-    false,
+    final_name,
+    avatar,
+    user_role,
+    case when user_role = 'founder' then true else false end,
     0,
-    (new.raw_user_meta_data->'custom_claims')->>'discord_tag'
-  );
+    disc
+  )
+  on conflict (id) do update set
+    avatar_url = coalesce(excluded.avatar_url, profiles.avatar_url),
+    discord_username = coalesce(excluded.discord_username, profiles.discord_username);
+
   return new;
 end;
 $$ language plpgsql security definer;

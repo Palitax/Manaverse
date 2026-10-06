@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -28,15 +28,75 @@ function DiscordIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 export default function ProfilePage() {
-  const { currentUser, updateProfile, deals, confirmDeal, loginWithDiscord, logout, isAuthenticated } = useStore();
+  const {
+    currentUser,
+    updateProfile,
+    deals,
+    confirmDeal,
+    loginWithDiscord,
+    logout,
+    isAuthenticated,
+    openAuthModal,
+  } = useStore();
 
-  const [username, setUsername] = useState(currentUser.username);
-  const [whatnotUsername, setWhatnotUsername] = useState(currentUser.whatnotUsername || "");
-  const [discordUsername, setDiscordUsername] = useState(currentUser.discordUsername || "");
-  const [bio, setBio] = useState(currentUser.bio || "");
-  const [avatarUrl, setAvatarUrl] = useState(currentUser.avatarUrl);
-  const [selectedRole, setSelectedRole] = useState<UserRole>(currentUser.role);
+  const [username, setUsername] = useState(currentUser?.username || "");
+  const [whatnotUsername, setWhatnotUsername] = useState(currentUser?.whatnotUsername || "");
+  const [discordUsername, setDiscordUsername] = useState(currentUser?.discordUsername || "");
+  const [bio, setBio] = useState(currentUser?.bio || "");
+  const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
+  const [selectedRole, setSelectedRole] = useState<UserRole>(currentUser?.role || "member");
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      setUsername(currentUser.username);
+      setWhatnotUsername(currentUser.whatnotUsername || "");
+      setDiscordUsername(currentUser.discordUsername || "");
+      setBio(currentUser.bio || "");
+      setAvatarUrl(currentUser.avatarUrl);
+      setSelectedRole(currentUser.role);
+    }
+  }, [currentUser]);
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-6 relative overflow-hidden shadow-2xl">
+          <BorderBeam size={220} duration={10} colorFrom="#6366f1" colorTo="#06b6d4" />
+
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
+            <Sparkles className="w-8 h-8 text-amber-200" />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-white">Dein Trainer-Profil</h1>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm mx-auto">
+              Melde dich an oder erstelle ein kostenloses Konto, um deine Deals einzusehen, dein öffentliches Profil zu bearbeiten und Discord zu verknüpfen.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <button
+              type="button"
+              onClick={() => loginWithDiscord()}
+              className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs sm:text-sm shadow-lg shadow-[#5865F2]/25 transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
+            >
+              <DiscordIcon className="w-5 h-5 flex-shrink-0" />
+              <span>Mit Discord anmelden</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuthModal("register")}
+              className="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm border border-white/10 transition-all cursor-pointer min-h-[44px]"
+            >
+              Mit E-Mail registrieren oder anmelden
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Deals involving the current user
   const myDeals = deals.filter(

@@ -6,6 +6,8 @@ export type CardLanguage = 'DE' | 'EN' | 'JP' | 'OTHER' | 'Egal';
 
 export type ListingType = 'sell' | 'trade' | 'looking_for';
 
+export type AuthModalMode = 'login' | 'register';
+
 // Publicly visible profile - NO sensitive data (no email, no address, no tokens)
 export interface PublicUserProfile {
   id: string;

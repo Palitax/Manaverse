@@ -4,6 +4,7 @@ import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
 import { NeatVideoBackground } from "@/components/background/neat-video-background";
+import { AuthModal } from "@/components/forms/auth-modal";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
         <StoreProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
+          <AuthModal />
         </StoreProvider>
       </body>
     </html>

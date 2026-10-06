@@ -28,7 +28,7 @@ interface CardItemViewProps {
 export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const { currentUser, createDeal } = useStore();
+  const { currentUser, createDeal, openAuthModal } = useStore();
 
   const conditionColors: Record<CardCondition, string> = {
     NM: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -51,6 +51,10 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
   };
 
   const handleStartDeal = () => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
     if (card.userId === currentUser.id) {
       alert("Das ist dein eigenes Listing!");
       return;

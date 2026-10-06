@@ -21,7 +21,7 @@ import Link from "next/link";
 import confetti from "canvas-confetti";
 
 export default function BulkSellPage() {
-  const { addBulkSubmission, currentUser } = useStore();
+  const { addBulkSubmission, currentUser, openAuthModal } = useStore();
 
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
@@ -72,6 +72,11 @@ export default function BulkSellPage() {
   };
 
   const handleSubmitToManacards = async () => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+
     await addBulkSubmission({
       cards: cardsData,
       askingPrice: askingPrice ? Number(askingPrice) : undefined,
@@ -132,7 +137,7 @@ export default function BulkSellPage() {
             Sammlung erfolgreich an Manacards übermittelt!
           </h2>
           <p className="text-sm text-neutral-300 max-w-lg mx-auto">
-            Deine {cardsData.length} Karten wurden an unser Postfach und den Ankauf-Kanal übermittelt. Wir prüfen die Karten und melden uns per Discord (@{currentUser.discordUsername || currentUser.username}) mit einem Angebot bei dir!
+            Deine {cardsData.length} Karten wurden an unser Postfach und den Ankauf-Kanal übermittelt. Wir prüfen die Karten und melden uns per Discord (@{currentUser?.discordUsername || currentUser?.username || "Trainer"}) mit einem Angebot bei dir!
           </p>
           <div className="pt-4 flex justify-center gap-4">
             <Link

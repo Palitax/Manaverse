@@ -28,7 +28,15 @@ function DiscordIcon({ className = "w-4 h-4" }: { className?: string }) {
 
 export function Navbar() {
   const pathname = usePathname();
-  const { currentUser, users, switchUser, isAuthenticated, loginWithDiscord, logout } = useStore();
+  const {
+    currentUser,
+    users,
+    switchUser,
+    isAuthenticated,
+    loginWithDiscord,
+    logout,
+    openAuthModal,
+  } = useStore();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isHome = pathname === "/";
@@ -93,151 +101,105 @@ export function Navbar() {
 
         {/* Right side: Profile & Discord Auth */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {!isAuthenticated ? (
-            <button
-              type="button"
-              onClick={() => loginWithDiscord()}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(88,101,242,0.35)] hover:shadow-[0_0_20px_rgba(88,101,242,0.55)] active:scale-95 cursor-pointer min-h-[36px]"
-              title="Registriere dich oder logge dich direkt mit deinem Discord-Account ein"
-            >
-              <DiscordIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Mit Discord anmelden</span>
-              <span className="sm:hidden">Login</span>
-            </button>
-          ) : (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Discord verbunden</span>
-            </div>
-          )}
-
-          {/* User selector dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
-            >
-              <HoloAvatarFrame
-                avatarUrl={currentUser.avatarUrl}
-                username={currentUser.username}
-                role={currentUser.role}
-                verified={currentUser.verified}
-                size="sm"
-              />
-              <span className="hidden sm:inline-block text-sm font-semibold text-white">
-                {currentUser.username}
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
-            </button>
-
-            {userDropdownOpen && (
-              <div
-                className="absolute right-0 mt-2 w-64 rounded-2xl glass-panel p-2 shadow-2xl z-50 border border-white/10"
-                onClick={() => setUserDropdownOpen(false)}
+          {!currentUser ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => loginWithDiscord()}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(88,101,242,0.35)] hover:shadow-[0_0_20px_rgba(88,101,242,0.55)] active:scale-95 cursor-pointer min-h-[36px]"
+                title="Schnell per Discord anmelden"
               >
-                {!isAuthenticated && (
-                  <div className="p-1 mb-2 border-b border-white/10">
-                    <button
-                      type="button"
-                      onClick={() => loginWithDiscord()}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs shadow-md shadow-[#5865F2]/20 transition-all active:scale-95"
-                    >
-                      <DiscordIcon className="w-4 h-4" />
-                      Mit Discord registrieren
-                    </button>
-                  </div>
-                )}
+                <DiscordIcon className="w-4 h-4" />
+                <span>Discord</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("register")}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.35)] hover:shadow-[0_0_20px_rgba(99,102,241,0.55)] active:scale-95 cursor-pointer min-h-[36px]"
+              >
+                <span>Anmelden / Registrieren</span>
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] cursor-pointer"
+              >
+                <HoloAvatarFrame
+                  avatarUrl={currentUser.avatarUrl}
+                  username={currentUser.username}
+                  role={currentUser.role}
+                  verified={currentUser.verified}
+                  size="sm"
+                />
+                <span className="hidden sm:inline-block text-sm font-semibold text-white">
+                  {currentUser.username}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
+              </button>
 
-                <div className="px-3 py-2 border-b border-white/10 mb-1">
-                  <p className="text-xs text-neutral-400">
-                    {isAuthenticated ? "Via Discord angemeldet" : "Aktiver Account (Vorschau)"}
-                  </p>
-                  <p className="text-sm font-bold text-white flex items-center gap-2">
-                    {currentUser.username}
-                    <span
-                      className={cn(
-                        "text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded",
-                        currentUser.role === "founder" && "bg-amber-400/20 text-amber-300",
-                        currentUser.role === "beta" && "bg-cyan-400/20 text-cyan-300",
-                        currentUser.role === "member" && "bg-neutral-800 text-neutral-300"
-                      )}
-                    >
-                      {currentUser.role}
-                    </span>
-                  </p>
-                  {currentUser.discordUsername && (
-                    <p className="text-[10px] text-indigo-300 mt-0.5">
-                      Discord: @{currentUser.discordUsername}
+              {userDropdownOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0c111d]/98 backdrop-blur-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 border border-white/15 animate-in fade-in duration-150"
+                  onClick={() => setUserDropdownOpen(false)}
+                >
+                  <div className="px-3 py-2 border-b border-white/10 mb-1">
+                    <p className="text-xs text-neutral-400">
+                      {currentUser.discordUsername ? "Via Discord angemeldet" : "Angemeldet"}
                     </p>
+                    <p className="text-sm font-bold text-white flex items-center gap-2">
+                      {currentUser.username}
+                      <span
+                        className={cn(
+                          "text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded",
+                          currentUser.role === "founder" && "bg-amber-400/20 text-amber-300",
+                          currentUser.role === "beta" && "bg-cyan-400/20 text-cyan-300",
+                          currentUser.role === "member" && "bg-neutral-800 text-neutral-300"
+                        )}
+                      >
+                        {currentUser.role}
+                      </span>
+                    </p>
+                    {currentUser.discordUsername && (
+                      <p className="text-[10px] text-indigo-300 mt-0.5">
+                        Discord: @{currentUser.discordUsername}
+                      </p>
+                    )}
+                  </div>
+
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-blue-400" />
+                    Mein Profil & Deals ({currentUser.dealsCount})
+                  </Link>
+
+                  {(currentUser.role === "founder" || currentUser.role === "admin") && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-amber-400" />
+                      Manacards Postfach & Discord
+                    </Link>
                   )}
-                </div>
 
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <ShieldCheck className="w-4 h-4 text-blue-400" />
-                  Mein Profil & Deals ({currentUser.dealsCount})
-                </Link>
-
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <Settings className="w-4 h-4 text-amber-400" />
-                  Manacards Postfach & Discord
-                </Link>
-
-                {isAuthenticated ? (
                   <div className="border-t border-white/10 my-1 pt-1">
                     <button
                       type="button"
                       onClick={() => logout()}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors font-semibold"
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors font-semibold cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
                       Abmelden
                     </button>
                   </div>
-                ) : (
-                  users.length > 1 && (
-                    <div className="border-t border-white/10 my-1 pt-1">
-                      <p className="px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
-                        Account wechseln (Demo)
-                      </p>
-                      {users.map((u) => (
-                        <button
-                          key={u.id}
-                          onClick={() => switchUser(u.id)}
-                          className={cn(
-                            "w-full text-left flex items-center justify-between px-3 py-1.5 text-xs rounded-lg transition-colors",
-                            u.id === currentUser.id
-                              ? "bg-indigo-600/30 text-white font-semibold"
-                              : "text-neutral-400 hover:bg-white/5 hover:text-neutral-200"
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <HoloAvatarFrame
-                              avatarUrl={u.avatarUrl}
-                              username={u.username}
-                              role={u.role}
-                              verified={u.verified}
-                              size="sm"
-                              showBadges={false}
-                            />
-                            <span>{u.username}</span>
-                          </div>
-                          <span className="text-[10px] capitalize opacity-70">
-                            {u.role} • {u.dealsCount}d
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

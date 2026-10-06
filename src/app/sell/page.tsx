@@ -18,13 +18,21 @@ import {
 import Link from "next/link";
 
 export default function SellPage() {
-  const { currentUser, listings } = useStore();
+  const { currentUser, listings, openAuthModal } = useStore();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // User's own active sell listings
-  const mySellListings = listings.filter(
-    (l) => l.userId === currentUser.id && l.type === "sell"
-  );
+  const mySellListings = currentUser
+    ? listings.filter((l) => l.userId === currentUser.id && l.type === "sell")
+    : [];
+
+  const handleOpenCreate = () => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+    setCreateModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative pb-24">
@@ -62,7 +70,7 @@ export default function SellPage() {
           <BorderBeam size={220} duration={10} colorFrom="#10b981" colorTo="#6366f1" />
 
           <div
-            onClick={() => setCreateModalOpen(true)}
+            onClick={handleOpenCreate}
             className="w-20 h-20 rounded-3xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto cursor-pointer transition-all hover:scale-110 shadow-lg shadow-emerald-500/20 group"
           >
             <Plus className="w-10 h-10 group-hover:rotate-90 transition-transform duration-300" />
@@ -79,7 +87,7 @@ export default function SellPage() {
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
-              onClick={() => setCreateModalOpen(true)}
+              onClick={handleOpenCreate}
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-600/30"
             >
               + Einzelkarte einstellen
@@ -101,7 +109,7 @@ export default function SellPage() {
               {mySellListings.length === 1 ? "Karte" : "Karten"} online
             </span>
             <button
-              onClick={() => setCreateModalOpen(true)}
+              onClick={handleOpenCreate}
               className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
             >
               <Plus className="w-4 h-4" /> Weitere Karte hinzufügen
@@ -119,7 +127,7 @@ export default function SellPage() {
       {/* Floating Action Button (FAB) at bottom right */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
-          onClick={() => setCreateModalOpen(true)}
+          onClick={handleOpenCreate}
           title="Neue Karte einstellen"
           className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all border border-emerald-400/40 cursor-pointer"
         >

@@ -22,7 +22,7 @@ export default function AdminPage() {
   const [testingChannel, setTestingChannel] = useState<string | null>(null);
 
   // STRICT ACCESS CONTROL: Only Founder & Admin can view this page
-  const hasAdminAccess = currentUser.role === "founder" || currentUser.role === "admin";
+  const hasAdminAccess = currentUser?.role === "founder" || currentUser?.role === "admin";
 
   if (!hasAdminAccess) {
     return (
@@ -52,6 +52,9 @@ export default function AdminPage() {
     setTestingChannel(channel);
     setTestStatus(`Sende Test-Signal für '${channel}' an Discord...`);
 
+    const currentName = currentUser?.username || "Admin";
+    const currentDiscord = currentUser?.discordUsername || "Levin";
+
     const sampleEmbeds: Record<string, { title: string; description: string; fields: Array<{ name: string; value: string; inline?: boolean }> }> = {
       sell: {
         title: "Glurak VMAX (Secret Rare #074/073) – Flammende Finsternis",
@@ -61,7 +64,7 @@ export default function AdminPage() {
           { name: "Sprache", value: "Deutsch (DE)", inline: true },
           { name: "Festpreis", value: "115,00 €", inline: true },
           { name: "Set / Kartennr.", value: "Flammende Finsternis #074/073", inline: true },
-          { name: "Anbieter", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+          { name: "Anbieter", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
       },
       trade: {
@@ -72,7 +75,7 @@ export default function AdminPage() {
           { name: "Sprache", value: "Englisch (EN)", inline: true },
           { name: "Estimated Trade Value (ETV)", value: "850,00 €", inline: true },
           { name: "Gesuchte Tauschkarten (Wants)", value: "Rayquaza VMAX Alt Art oder Gengar VMAX Alt Art", inline: false },
-          { name: "Tauschpartner", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+          { name: "Tauschpartner", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
       },
       looking_for: {
@@ -82,7 +85,7 @@ export default function AdminPage() {
           { name: "Gesuchter Zustand", value: "Sealed / Gem Mint", inline: true },
           { name: "Sprache", value: "Englisch (EN)", inline: true },
           { name: "Maximales Budget", value: "Bis zu 130,00 €", inline: true },
-          { name: "Gesucht von", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+          { name: "Gesucht von", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
       },
       bulk: {
@@ -91,7 +94,7 @@ export default function AdminPage() {
         fields: [
           { name: "Kartenanzahl", value: "14 Karten", inline: true },
           { name: "Wunschpreis", value: "320,00 € (VB)", inline: true },
-          { name: "Eingereicht von", value: `${currentUser.username} (@${currentUser.discordUsername || "Levin"})`, inline: false },
+          { name: "Eingereicht von", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
       },
     };

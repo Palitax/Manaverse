@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function TradePage() {
-  const { listings, tradeOffers, currentUser } = useStore();
+  const { listings, tradeOffers, currentUser, openAuthModal } = useStore();
   const [activeTab, setActiveTab] = useState<"browse" | "offers">("browse");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedTradeCard, setSelectedTradeCard] = useState<CardListing | null>(null);
@@ -30,9 +30,25 @@ export default function TradePage() {
   );
 
   // Offers targeting the current user's listings
-  const myReceivedOffers = tradeOffers.filter(
-    (o) => o.listing.userId === currentUser.id
-  );
+  const myReceivedOffers = currentUser
+    ? tradeOffers.filter((o) => o.listing.userId === currentUser.id)
+    : [];
+
+  const handleOpenCreate = () => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+    setCreateModalOpen(true);
+  };
+
+  const handleTradeClick = (c: CardListing) => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+    setSelectedTradeCard(c);
+  };
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-24">
@@ -52,8 +68,8 @@ export default function TradePage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setCreateModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105"
+            onClick={handleOpenCreate}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Tauschkarte einstellen
           </button>
@@ -100,8 +116,8 @@ export default function TradePage() {
                 Sei der Erste und stelle eine Karte ein, die du tauschen möchtest!
               </p>
               <button
-                onClick={() => setCreateModalOpen(true)}
-                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all"
+                onClick={handleOpenCreate}
+                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 + Erste Tauschkarte einstellen
               </button>
@@ -112,7 +128,7 @@ export default function TradePage() {
                 <CardItemView
                   key={card.id}
                   card={card}
-                  onTradeClick={(c) => setSelectedTradeCard(c)}
+                  onTradeClick={handleTradeClick}
                 />
               ))}
             </div>

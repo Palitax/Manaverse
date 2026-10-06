@@ -7,6 +7,7 @@ import {
   TradeOffer,
   BulkSubmission,
   DealConfirmation,
+  AuthModalMode,
 } from "@/types";
 import {
   MOCK_USERS,
@@ -18,17 +19,25 @@ import { supabase, isSupabaseConfigured } from "./supabase/client";
 import confetti from "canvas-confetti";
 
 interface StoreContextType {
-  currentUser: UserProfile;
+  currentUser: UserProfile | null;
   sessionUser: UserProfile | null;
   isAuthenticated: boolean;
+  isLoadingAuth: boolean;
+  authModalOpen: boolean;
+  authModalMode: AuthModalMode;
+  openAuthModal: (mode?: AuthModalMode) => void;
+  closeAuthModal: () => void;
   users: UserProfile[];
   listings: CardListing[];
   deals: DealConfirmation[];
   bulkSubmissions: BulkSubmission[];
   tradeOffers: TradeOffer[];
   switchUser: (userId: string) => void;
-  updateProfile: (data: Partial<UserProfile>) => void;
-  loginWithDiscord: () => Promise<void>;
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  loginWithDiscord: () => Promise<{ error?: string }>;
+  loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  registerWithEmail: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">) => Promise<CardListing>;
   addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => void;
@@ -78,18 +87,32 @@ function mapDBListingToCardListing(item: any): CardListing {
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [sessionUser, setSessionUser] = useState<UserProfile | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string>("a0000000-0000-0000-0000-000000000001"); // Levin_Mana
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("register");
+
   const [listings, setListings] = useState<CardListing[]>(INITIAL_LISTINGS);
   const [deals, setDeals] = useState<DealConfirmation[]>(INITIAL_DEALS);
   const [bulkSubmissions, setBulkSubmissions] = useState<BulkSubmission[]>(INITIAL_BULK_SUBMISSIONS);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
 
-  const loginWithDiscord = async () => {
+  const openAuthModal = (mode: AuthModalMode = "register") => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setAuthModalOpen(false);
+  };
+
+  const loginWithDiscord = async (): Promise<{ error?: string }> => {
     if (!isSupabaseConfigured || !supabase) {
-      alert("Supabase ist nicht konfiguriert.");
-      return;
+      const err = "Supabase ist nicht konfiguriert.";
+      alert(err);
+      return { error: err };
     }
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -103,7 +126,105 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       console.error("Discord login error:", error);
       alert("Fehler bei der Discord-Anmeldung: " + error.message);
+      return { error: error.message };
     }
+    return {};
+  };
+
+  const loginWithEmail = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { success: false, error: "Supabase ist nicht konfiguriert." };
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) {
+      let deError = error.message;
+      if (error.message.includes("Invalid login credentials")) {
+        deError = "Ungültige E-Mail-Adresse oder falsches Passwort.";
+      } else if (error.message.includes("Email not confirmed")) {
+        deError = "Bitte bestätige zuerst deine E-Mail-Adresse.";
+      }
+      return { success: false, error: deError };
+    }
+    if (data?.user) {
+      await syncSessionUser(data.user);
+    }
+    closeAuthModal();
+    return { success: true };
+  };
+
+  const registerWithEmail = async (
+    email: string,
+    password: string,
+    username: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { success: false, error: "Supabase ist nicht konfiguriert." };
+    }
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+      return { success: false, error: "Bitte gib einen gewünschten Benutzernamen ein." };
+    }
+    if (password.length < 6) {
+      return { success: false, error: "Das Passwort muss mindestens 6 Zeichen lang sein." };
+    }
+
+    // Vorab-Prüfung auf bereits vergebenen Benutzernamen
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("username", cleanUsername)
+      .maybeSingle();
+
+    if (existingUser) {
+      return { success: false, error: "Dieser Benutzername ist leider bereits vergeben." };
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          username: cleanUsername,
+          full_name: cleanUsername,
+          user_name: cleanUsername,
+        },
+      },
+    });
+
+    if (error) {
+      let deError = error.message;
+      if (error.message.includes("User already registered")) {
+        deError = "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.";
+      } else if (error.message.includes("Password should be at least")) {
+        deError = "Das Passwort muss mindestens 6 Zeichen lang sein.";
+      }
+      return { success: false, error: deError };
+    }
+
+    if (data?.user) {
+      await syncSessionUser(data.user);
+    }
+    closeAuthModal();
+    return { success: true };
+  };
+
+  const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { success: false, error: "Supabase ist nicht konfiguriert." };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback?type=recovery`,
+    });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
   };
 
   const logout = async () => {
@@ -111,52 +232,104 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut();
     }
     setSessionUser(null);
-    setCurrentUserId("a0000000-0000-0000-0000-000000000001");
+    setCurrentUserId(null);
   };
 
-  // Synchronisiere Discord-Login-Session mit dem Benutzerprofil
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
+  // Synchronisiere Session mit dem Benutzerprofil
+  const syncSessionUser = async (user: any) => {
+    if (!isSupabaseConfigured || !supabase) {
+      setIsLoadingAuth(false);
+      return;
+    }
+    try {
+      let { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    const syncSessionUser = async (user: any) => {
-      try {
-        const { data: profile } = await supabase!
+      if (!profile) {
+        const rawMeta = user.user_metadata || {};
+        const candidateName =
+          rawMeta.username ||
+          rawMeta.user_name ||
+          rawMeta.full_name ||
+          (user.email ? user.email.split("@")[0] : "Trainer");
+
+        const avatar =
+          rawMeta.avatar_url ||
+          "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80";
+
+        const disc =
+          rawMeta.custom_claims?.discord_tag ||
+          rawMeta.discord_username ||
+          (user.app_metadata?.provider === "discord" ? candidateName : null);
+
+        const assignedRole =
+          user.email === "levin@rohde-media.de" || candidateName === "Levin_Mana"
+            ? "founder"
+            : "member";
+
+        const { data: newProfile } = await supabase
           .from("profiles")
-          .select("*")
-          .eq("id", user.id)
+          .upsert({
+            id: user.id,
+            username: candidateName,
+            avatar_url: avatar,
+            role: assignedRole,
+            verified: assignedRole === "founder",
+            deals_count: 0,
+            discord_username: disc,
+          })
+          .select()
           .maybeSingle();
 
-        if (profile) {
-          const authUser: UserProfile = {
-            id: profile.id,
-            username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || "Trainer",
-            avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
-            role: profile.role || "member",
-            verified: Boolean(profile.verified),
-            dealsCount: profile.deals_count || 0,
-            whatnotUsername: profile.whatnot_username,
-            discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name,
-            bio: profile.bio,
-            createdAt: profile.created_at || new Date().toISOString(),
-            email: user.email,
-          };
-
-          setSessionUser(authUser);
-          setUsers((prev) => {
-            const exists = prev.some((u) => u.id === authUser.id);
-            if (exists) return prev.map((u) => (u.id === authUser.id ? authUser : u));
-            return [authUser, ...prev];
-          });
-          setCurrentUserId(authUser.id);
+        if (newProfile) {
+          profile = newProfile;
         }
-      } catch (err) {
-        console.error("Fehler beim Synchronisieren des Discord-Profils:", err);
       }
-    };
+
+      if (profile) {
+        const authUser: UserProfile = {
+          id: profile.id,
+          username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || "Trainer",
+          avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
+          role: profile.role || "member",
+          verified: Boolean(profile.verified),
+          dealsCount: profile.deals_count || 0,
+          whatnotUsername: profile.whatnot_username,
+          discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name,
+          bio: profile.bio,
+          createdAt: profile.created_at || new Date().toISOString(),
+          email: user.email,
+        };
+
+        setSessionUser(authUser);
+        setUsers((prev) => {
+          const exists = prev.some((u) => u.id === authUser.id);
+          if (exists) return prev.map((u) => (u.id === authUser.id ? authUser : u));
+          return [authUser, ...prev];
+        });
+        setCurrentUserId(authUser.id);
+      }
+    } catch (err) {
+      console.error("Fehler beim Synchronisieren des Benutzerprofils:", err);
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setIsLoadingAuth(false);
+      return;
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         syncSessionUser(session.user);
+      } else {
+        setIsLoadingAuth(false);
       }
     });
 
@@ -165,6 +338,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         syncSessionUser(session.user);
       } else {
         setSessionUser(null);
+        setCurrentUserId(null);
+        setIsLoadingAuth(false);
       }
     });
 
@@ -234,16 +409,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     loadData();
   }, []);
 
-  const currentUser = users.find((u) => u.id === currentUserId) || users[0];
+  const currentUser: UserProfile | null =
+    sessionUser || (currentUserId ? users.find((u) => u.id === currentUserId) || null : null);
+
+  const isAuthenticated = Boolean(currentUser);
 
   const switchUser = (userId: string) => {
     setCurrentUserId(userId);
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
+    if (!currentUser) return;
+
     setUsers((prev) =>
       prev.map((u) => (u.id === currentUser.id ? { ...u, ...data } : u))
     );
+    if (sessionUser && sessionUser.id === currentUser.id) {
+      setSessionUser((prev) => (prev ? { ...prev, ...data } : null));
+    }
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -338,6 +521,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addListing = async (
     listingData: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">
   ): Promise<CardListing> => {
+    if (!currentUser) {
+      openAuthModal("register");
+      throw new Error("Bitte melde dich an, um eine Karte anzubieten.");
+    }
+
     let newListing: CardListing;
 
     if (isSupabaseConfigured && supabase) {
@@ -447,6 +635,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       message?: string;
     }
   ) => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+
     const listing = listings.find((l) => l.id === listingId);
     if (!listing) return;
 
@@ -495,6 +688,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     askingPrice?: number;
     notes?: string;
   }) => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+
     let submissionId = `bulk-${Date.now()}`;
 
     if (isSupabaseConfigured && supabase) {
@@ -560,6 +758,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const createDeal = async (listing: CardListing, buyer: UserProfile) => {
+    if (!currentUser) {
+      openAuthModal("register");
+      return;
+    }
+
     let dealId = `deal-${Date.now()}`;
 
     if (isSupabaseConfigured && supabase) {
@@ -672,7 +875,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       value={{
         currentUser,
         sessionUser,
-        isAuthenticated: Boolean(sessionUser),
+        isAuthenticated,
+        isLoadingAuth,
+        authModalOpen,
+        authModalMode,
+        openAuthModal,
+        closeAuthModal,
         users,
         listings,
         deals,
@@ -681,6 +889,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         switchUser,
         updateProfile,
         loginWithDiscord,
+        loginWithEmail,
+        registerWithEmail,
+        resetPassword,
         logout,
         addListing,
         deleteListing,
