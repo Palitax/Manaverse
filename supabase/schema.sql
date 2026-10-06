@@ -63,6 +63,7 @@ begin
 
   user_role := case
     when new.email = 'levin@rohde-media.de' or final_name = 'Levin_Mana' then 'founder'
+    when disc ilike '%freakyfamous%' or final_name ilike '%all_out_luffy%' or (new.raw_user_meta_data->>'whatnot_username') ilike '%all_out_luffy%' then 'admin'
     else 'member'
   end;
 
@@ -74,7 +75,7 @@ begin
     final_name,
     avatar,
     user_role,
-    case when user_role = 'founder' then true else false end,
+    case when user_role in ('founder', 'admin') then true else false end,
     0,
     disc
   )

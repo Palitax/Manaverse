@@ -77,7 +77,7 @@ function mapDBListingToCardListing(item: any): CardListing {
       id: u.id || item.user_id,
       username: u.username || "Sammler",
       avatarUrl: u.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
-      role: u.role || "member",
+      role: (u.discord_username?.toLowerCase().includes("freakyfamous") || u.username?.toLowerCase() === "all_out_luffy" || u.whatnot_username?.toLowerCase() === "all_out_luffy") && u.role !== "founder" ? "admin" : (u.role || "member"),
       verified: Boolean(u.verified),
       dealsCount: u.deals_count || 0,
       whatnotUsername: u.whatnot_username || undefined,
@@ -267,9 +267,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           rawMeta.discord_username ||
           (user.app_metadata?.provider === "discord" ? candidateName : null);
 
-        const assignedRole =
+        const isLuffyAdmin =
+          disc?.toLowerCase().includes("freakyfamous") ||
+          candidateName?.toLowerCase().includes("freakyfamous") ||
+          candidateName?.toLowerCase() === "all_out_luffy" ||
+          rawMeta.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+          rawMeta.full_name?.toLowerCase().includes("freakyfamous") ||
+          rawMeta.user_name?.toLowerCase().includes("freakyfamous");
+
+        const assignedRole: UserRole =
           user.email === "levin@rohde-media.de" || candidateName === "Levin_Mana"
             ? "founder"
+            : isLuffyAdmin
+            ? "admin"
             : "member";
 
         const { data: newProfile } = await supabase
@@ -279,7 +289,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             username: candidateName,
             avatar_url: avatar,
             role: assignedRole,
-            verified: assignedRole === "founder",
+            verified: assignedRole === "founder" || assignedRole === "admin",
             deals_count: 0,
             discord_username: disc,
           })
@@ -292,16 +302,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (profile) {
+        const isLuffyAdmin =
+          profile.discord_username?.toLowerCase().includes("freakyfamous") ||
+          profile.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+          profile.username?.toLowerCase() === "all_out_luffy" ||
+          user.user_metadata?.custom_claims?.discord_tag?.toLowerCase().includes("freakyfamous") ||
+          user.user_metadata?.user_name?.toLowerCase().includes("freakyfamous");
+
+        const effectiveRole: UserRole =
+          profile.role === "founder"
+            ? "founder"
+            : isLuffyAdmin
+            ? "admin"
+            : profile.role || "member";
+
+        if (isLuffyAdmin && profile.role !== "admin" && profile.role !== "founder" && isSupabaseConfigured && supabase) {
+          supabase.from("profiles").update({ role: "admin" }).eq("id", profile.id).then();
+        }
+
         const authUser: UserProfile = {
           id: profile.id,
-          username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || "Trainer",
-          avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
-          role: profile.role || "member",
-          verified: Boolean(profile.verified),
-          dealsCount: profile.deals_count || 0,
-          whatnotUsername: profile.whatnot_username,
-          discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name,
-          bio: profile.bio,
+          username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || (isLuffyAdmin ? "all_out_luffy" : "Trainer"),
+          avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || (isLuffyAdmin ? "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80"),
+          role: effectiveRole,
+          verified: isLuffyAdmin ? true : Boolean(profile.verified),
+          dealsCount: profile.deals_count || (isLuffyAdmin ? 18 : 0),
+          whatnotUsername: profile.whatnot_username || (isLuffyAdmin ? "all_out_luffy" : undefined),
+          discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name || (isLuffyAdmin ? "freakyfamous#0" : undefined),
+          bio: profile.bio || (isLuffyAdmin ? "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
           createdAt: profile.created_at || new Date().toISOString(),
           email: user.email,
         };
@@ -358,20 +386,44 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           // 1. Load profiles
           const { data: profilesData } = await supabase.from("profiles").select("*");
           if (profilesData && profilesData.length > 0) {
-            setUsers(
-              profilesData.map((p: any) => ({
+            const mappedProfiles: UserProfile[] = profilesData.map((p: any) => {
+              const isLuffy =
+                p.discord_username?.toLowerCase().includes("freakyfamous") ||
+                p.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+                p.username?.toLowerCase() === "all_out_luffy";
+              const role: UserRole = isLuffy && p.role !== "founder" ? "admin" : (p.role || "member");
+
+              if (isLuffy && p.role !== "admin" && p.role !== "founder" && isSupabaseConfigured && supabase) {
+                supabase.from("profiles").update({ role: "admin" }).eq("id", p.id).then();
+              }
+
+              return {
                 id: p.id,
                 username: p.username,
-                avatarUrl: p.avatar_url,
-                role: p.role,
-                verified: p.verified,
-                dealsCount: p.deals_count,
-                whatnotUsername: p.whatnot_username,
-                discordUsername: p.discord_username,
-                bio: p.bio,
+                avatarUrl: p.avatar_url || (isLuffy ? "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80"),
+                role: role,
+                verified: isLuffy ? true : Boolean(p.verified),
+                dealsCount: p.deals_count || (isLuffy ? 18 : 0),
+                whatnotUsername: p.whatnot_username || (isLuffy ? "all_out_luffy" : undefined),
+                discordUsername: p.discord_username || (isLuffy ? "freakyfamous#0" : undefined),
+                bio: p.bio || (isLuffy ? "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
                 createdAt: p.created_at,
-              }))
+              };
+            });
+
+            // Ensure predefined seed users from MOCK_USERS (like all_out_luffy) are present
+            const missingSeeds = MOCK_USERS.filter(
+              (m) =>
+                !mappedProfiles.some(
+                  (f) =>
+                    f.username.toLowerCase() === m.username.toLowerCase() ||
+                    (f.discordUsername && m.discordUsername && f.discordUsername.toLowerCase() === m.discordUsername.toLowerCase())
+                )
             );
+
+            setUsers([...mappedProfiles, ...missingSeeds]);
+          } else {
+            setUsers(MOCK_USERS);
           }
 
           // 2. Load listings with joined profile

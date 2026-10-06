@@ -15,6 +15,18 @@ export const MOCK_USERS: UserProfile[] = [
     createdAt: "2024-01-10T12:00:00Z",
   },
   {
+    id: "a0000000-0000-0000-0000-000000000004",
+    username: "all_out_luffy",
+    avatarUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80",
+    role: "admin",
+    verified: true,
+    dealsCount: 18,
+    whatnotUsername: "all_out_luffy",
+    discordUsername: "freakyfamous#0",
+    bio: "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0",
+    createdAt: "2024-01-20T10:00:00Z",
+  },
+  {
     id: "a0000000-0000-0000-0000-000000000002",
     username: "KantoChampion_Tim",
     avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
