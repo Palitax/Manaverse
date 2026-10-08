@@ -112,6 +112,8 @@ export default function HomePage() {
       align: "left",
       categoryName: "ANKAUF",
       pokemonImg: "/pokemon/rayquaza.jpg",
+      objectPosition: "50% 16%",
+      flip: false,
       title: "Einzelkarten & Sammlungen direkt verkaufen",
       description: (
         <>
@@ -126,6 +128,8 @@ export default function HomePage() {
       align: "right",
       categoryName: "MARKTPLATZ",
       pokemonImg: "/pokemon/pikachu.jpg",
+      objectPosition: "50% 24%",
+      flip: true,
       title: "Geprüfter Community-Marktplatz",
       description: (
         <>
@@ -140,6 +144,8 @@ export default function HomePage() {
       align: "left",
       categoryName: "1:1 TAUSCH",
       pokemonImg: "/pokemon/mewtwo.jpg",
+      objectPosition: "50% 16%",
+      flip: false,
       title: "Fairer 1:1 Kartentausch mit ETV-Wertausgleich",
       description: (
         <>
@@ -154,6 +160,8 @@ export default function HomePage() {
       align: "right",
       categoryName: "GESUCHE",
       pokemonImg: "/pokemon/charizard.jpg",
+      objectPosition: "50% 16%",
+      flip: true,
       title: "Wunschkarten mit Live-Bounties ausschreiben",
       description: (
         <>
@@ -349,35 +357,29 @@ export default function HomePage() {
                 {/* Full-Height Stretched Pokemon Artwork as seamless background (Left-aligned for 01 & 03, Right-aligned for 02 & 04) */}
                 <div
                   className={`absolute top-0 bottom-0 ${
-                    isLeft ? "left-0" : "right-0"
-                  } w-full md:w-[56%] lg:w-[52%] h-full pointer-events-none overflow-hidden select-none z-0`}
-                  style={{
-                    WebkitMaskImage: isLeft
-                      ? "linear-gradient(to right, black 0%, black 35%, transparent 96%)"
-                      : "linear-gradient(to left, black 0%, black 35%, transparent 96%)",
-                    maskImage: isLeft
-                      ? "linear-gradient(to right, black 0%, black 35%, transparent 96%)"
-                      : "linear-gradient(to left, black 0%, black 35%, transparent 96%)",
-                  }}
+                    isLeft ? "left-0 bento-mask-left" : "right-0 bento-mask-right"
+                  } w-full md:w-[60%] lg:w-[56%] h-full pointer-events-none overflow-hidden select-none z-0`}
                 >
                   <img
                     src={bento.pokemonImg}
                     alt={bento.title}
-                    className="w-full h-full object-cover object-top translate-y-3 sm:translate-y-5 md:translate-y-6 group-hover:scale-105 transition-transform duration-700 ease-out opacity-80 md:opacity-90"
+                    style={{ objectPosition: bento.objectPosition }}
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-85 md:opacity-95 ${
+                      bento.flip ? "scale-x-[-1]" : ""
+                    }`}
                   />
-                  {/* Horizontal fade into the dark section background */}
+                  {/* Horizontal fade into the dark section background on desktop */}
                   <div
                     className={`absolute inset-0 hidden md:block ${
                       isLeft
-                        ? "bg-gradient-to-r from-transparent via-black/40 via-35% via-black/85 via-70% to-black"
-                        : "bg-gradient-to-l from-transparent via-black/40 via-35% via-black/85 via-70% to-black"
+                        ? "bg-gradient-to-r from-transparent via-black/30 via-35% via-black/80 via-75% to-black"
+                        : "bg-gradient-to-l from-transparent via-black/30 via-35% via-black/80 via-75% to-black"
                     }`}
                   />
                   {/* Mobile dark overlay to maintain complete text legibility while revealing Pokemon */}
-                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-black/50 via-black/80 to-black" />
-                  {/* Subtle top/bottom edge vignetting so head never cuts harshly */}
-                  <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black to-transparent" />
+                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-black/40 via-black/80 via-60% to-black" />
+                  {/* Subtle bottom edge vignetting so bottom never cuts harshly */}
+                  <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black to-transparent pointer-events-none" />
                 </div>
 
                 {/* Ambient Halftone Grid Noise */}
