@@ -200,8 +200,8 @@ export default function HomePage() {
         {/* Main 4 Cards: 2x2 Grid on Mobile (Zero horizontal scrolling), 4-in-a-row on Desktop */}
         <main className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 overflow-visible flex items-center justify-center my-auto">
           <div className="relative w-full max-w-[390px] min-[410px]:max-w-[420px] sm:max-w-none flex items-center justify-center">
-            {/* Sanfter Kontrast-Schatten direkt hinter den 4 Hauptkarten, damit Hintergrundkarten dezent zurückweichen */}
-            <div className="absolute -inset-3 sm:-inset-6 md:-inset-10 bg-black/75 rounded-[32px] sm:rounded-[48px] blur-2xl sm:blur-3xl pointer-events-none -z-10" />
+            {/* Sanfter Kontrast-Schatten direkt hinter den 4 Hauptkarten (um 30% aufgehellt) */}
+            <div className="absolute -inset-3 sm:-inset-6 md:-inset-10 bg-black/50 rounded-[32px] sm:rounded-[48px] blur-2xl sm:blur-3xl pointer-events-none -z-10" />
 
             <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3 min-[390px]:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 2xl:gap-8 pt-3 sm:pt-6 pb-3 sm:pb-5 px-1 w-full">
               {heroCards.map((card, index) => (

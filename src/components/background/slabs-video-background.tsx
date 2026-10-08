@@ -122,6 +122,25 @@ export function SlabsVideoBackground() {
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem("manaforge_bg_focus");
+      if (saved === "ambient" || saved === "bright") {
+        setFocusMode(saved);
+      }
+    } catch {}
+  }, []);
+
+  const toggleFocusMode = () => {
+    setFocusMode((prev) => {
+      const next = prev === "ambient" ? "bright" : "ambient";
+      try {
+        localStorage.setItem("manaforge_bg_focus", next);
+      } catch {}
+      return next;
+    });
+  };
+
+  useEffect(() => {
     // Barrierefreiheit: Reduzierte Bewegung bei Änderung umschalten
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handleMotionChange = (e: MediaQueryListEvent) => {
@@ -156,17 +175,19 @@ export function SlabsVideoBackground() {
       >
         {/* ==================================================================== */}
         {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
-        {/* Auf der Startseite dezent gedimmt mit weicher Tiefenschärfe,         */}
-        {/* auf Unterseiten extrem stark abgedunkelt (opacity-15)               */}
+        {/* Auf der Startseite lebendig & elegant, auf Unterseiten dezent        */}
+        {/* und klar sichtbar statt abgedunkelt                                  */}
         {/* ==================================================================== */}
         <div
           className={cn(
             "absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
-            isHome
-              ? focusMode === "ambient"
-                ? "opacity-35 brightness-[0.55] contrast-[0.9] blur-[0.8px]"
-                : "opacity-60 brightness-[0.75] contrast-[0.95]"
-              : "opacity-15 brightness-[0.35] contrast-[0.8] blur-[2px]"
+            focusMode === "ambient"
+              ? isHome
+                ? "opacity-55 brightness-[0.75] contrast-[0.95] blur-[0.4px]"
+                : "opacity-45 brightness-[0.70] contrast-[0.92] blur-[0.6px]"
+              : isHome
+                ? "opacity-80 brightness-[0.92] contrast-[1]"
+                : "opacity-70 brightness-[0.88] contrast-[0.98]"
           )}
         >
           {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
@@ -201,20 +222,25 @@ export function SlabsVideoBackground() {
         </div>
 
         {/* Weiche Verläufe oben und unten für sauberes Ausblenden unter Navigation */}
-        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none z-10" />
 
-        {/* UNTERSEITEN-OVERLAY: Stark abgedunkelt, damit Formulare, Tabellen & UI-Karten klar hervorstechen */}
+        {/* UNTERSEITEN-OVERLAY: Sanfter Kontrastfilter, damit Formulare, Tabellen & UI-Karten klar hervorstechen, das Video aber lebendig sichtbar bleibt */}
         {!isHome && (
-          <div className="absolute inset-0 bg-black/85 backdrop-blur-[1px] pointer-events-none z-10 transition-opacity duration-500" />
+          <div
+            className={cn(
+              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-10",
+              focusMode === "ambient" ? "bg-black/35 backdrop-blur-[0.5px]" : "bg-black/15"
+            )}
+          />
         )}
 
-        {/* STARTSEITEN-SCRIM: Feiner Kontrastfilter für optimalen Fokus auf die 4 interaktiven Hauptkarten */}
+        {/* STARTSEITEN-SCRIM: Reduzierter Kontrastfilter (um 30% aufgehellt) für brillante Kartensichtbarkeit */}
         {isHome && (
           <div
             className={cn(
               "absolute inset-0 transition-opacity duration-700 pointer-events-none z-10",
-              focusMode === "ambient" ? "bg-black/35" : "bg-black/10"
+              focusMode === "ambient" ? "bg-black/25" : "bg-black/[0.07]"
             )}
           />
         )}
@@ -229,9 +255,7 @@ export function SlabsVideoBackground() {
           <div className="fixed bottom-4 right-4 z-50 pointer-events-auto hidden md:block">
             <button
               type="button"
-              onClick={() =>
-                setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
-              }
+              onClick={toggleFocusMode}
               className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-black/80 hover:bg-black text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 backdrop-blur-md text-xs font-semibold transition-all shadow-xl cursor-pointer"
               title="Hintergrund-Fokus umschalten (Dezent / Scharf)"
               aria-label="Hintergrund-Fokus umschalten"
@@ -252,9 +276,7 @@ export function SlabsVideoBackground() {
           >
             <button
               type="button"
-              onClick={() =>
-                setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
-              }
+              onClick={toggleFocusMode}
               className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-black/90 text-amber-400 border border-white/25 backdrop-blur-md flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.85)] active:scale-90 transition-all cursor-pointer"
               title="Hintergrund-Fokus umschalten"
               aria-label={
