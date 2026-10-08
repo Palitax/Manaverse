@@ -3,7 +3,7 @@ import { Orbitron } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
-import { NeatVideoBackground } from "@/components/background/neat-video-background";
+import { SlabsVideoBackground } from "@/components/background/slabs-video-background";
 import { AuthModal } from "@/components/forms/auth-modal";
 import { DiscordWelcomeModal } from "@/components/forms/discord-welcome-modal";
 
@@ -31,8 +31,8 @@ export default function RootLayout({
   return (
     <html lang="de" className={`dark h-full antialiased ${orbitron.variable}`}>
       <body className="min-h-full flex flex-col text-[#f3f4f6] relative">
-        {/* Animated Neat.firecms Video Background */}
-        <NeatVideoBackground />
+        {/* Luxury 3D Graded Slabs Video Background */}
+        <SlabsVideoBackground />
         <StoreProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>

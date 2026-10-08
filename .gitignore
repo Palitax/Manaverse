@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+*.mov
 /Dragon_BG.mp4
 /neat.firecms.co.webm
 supabase/.db_credentials.json
