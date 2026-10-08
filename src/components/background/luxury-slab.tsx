@@ -37,14 +37,14 @@ export function LuxurySlab({
       <div
         className={cn(
           "w-full h-full rounded-2xl sm:rounded-3xl p-2 sm:p-2.5 flex flex-col justify-between relative overflow-hidden",
-          "bg-gradient-to-br from-white/[0.14] via-black/40 to-white/[0.08]",
-          "border border-white/30 backdrop-blur-md",
-          "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.9),_inset_0_1px_3px_rgba(255,255,255,0.45),_inset_0_-1px_3px_rgba(0,0,0,0.8)]"
+          "bg-gradient-to-br from-white/[0.16] via-[#090d18]/85 to-white/[0.06]",
+          "border border-white/30",
+          "shadow-[0_20px_45px_-10px_rgba(0,0,0,0.85),_inset_0_1px_3px_rgba(255,255,255,0.45),_inset_0_-1px_3px_rgba(0,0,0,0.8)]"
         )}
       >
         {/* Dynamic Specular Acrylic Light Sheen */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl z-30">
-          <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-white/[0.18] to-transparent -rotate-45 translate-x-[-100%] animate-slab-glint" />
+          <div className="w-[200%] h-full bg-gradient-to-r from-transparent via-white/[0.18] to-transparent animate-slab-glint" />
         </div>
 
         {/* Acrylic Top Edge Tabs (PSA style teeth) */}
@@ -247,7 +247,11 @@ export function LuxurySlab({
               <img
                 src={slab.image}
                 alt={slab.cardName}
-                loading="eager"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.style.opacity = "0";
+                }}
                 className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)]"
               />
             )}
@@ -273,7 +277,7 @@ export function LuxurySlab({
         <div className="flex items-center justify-between text-[7px] sm:text-[8px] font-mono text-neutral-400 px-1 relative z-20">
           <span className="tracking-widest uppercase opacity-75">MANAFORGE</span>
           <span className="font-bold text-amber-400/90 tracking-tighter">
-            {slab.grade === "10" ? "★ PERFECT 10 ★" : "★ RAW MINT ★"}
+            {slab.grade === "10" ? "★ PERFEKTE 10 ★" : "★ TOP-ZUSTAND ★"}
           </span>
         </div>
       </div>

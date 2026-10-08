@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   BACKGROUND_SLABS_ROW_1,
   BACKGROUND_SLABS_ROW_2,
@@ -8,39 +8,134 @@ import {
   BACKGROUND_SLABS_ROW_4,
 } from "@/lib/slabs-data";
 import { LuxurySlab } from "./luxury-slab";
+import { BackgroundSlab } from "@/types/slabs";
 import { cn } from "@/lib/utils";
-import { Eye, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+
+const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
+  "tilt-a",
+  "tilt-b",
+  "tilt-c",
+  "tilt-d",
+];
+
+// Helper creating a mathematically seamless repetition block.
+// 24 items (4 sets of 6 cards) ensures LCM(6 cards, 4 tilts) = 12 divides evenly into 24,
+// guaranteeing 100% continuous, zero-jump loop resets and coverage beyond 5K screens.
+function createSeamlessTrack(cards: BackgroundSlab[]) {
+  const result: BackgroundSlab[] = [];
+  for (let i = 0; i < 4; i++) {
+    result.push(...cards);
+  }
+  return result;
+}
+
+interface MarqueeRowProps {
+  rowId: string;
+  cards: BackgroundSlab[];
+  direction: "left" | "right";
+  duration: string;
+  tiltOffset: number;
+  isPaused: boolean;
+  className?: string;
+}
+
+function MarqueeRow({
+  rowId,
+  cards,
+  direction,
+  duration,
+  tiltOffset,
+  isPaused,
+  className,
+}: MarqueeRowProps) {
+  const trackItems = useMemo(() => createSeamlessTrack(cards), [cards]);
+
+  const animationClass =
+    direction === "left"
+      ? "animate-marquee-track-left"
+      : "animate-marquee-track-right";
+
+  return (
+    <div
+      className={cn(
+        "relative w-full overflow-hidden flex items-center py-1 sm:py-2 select-none pointer-events-none",
+        className
+      )}
+    >
+      {/* Track 1 */}
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-4 sm:gap-8 pr-4 sm:pr-8",
+          animationClass
+        )}
+        style={{
+          animationDuration: duration,
+          animationPlayState: isPaused ? "paused" : "running",
+        }}
+      >
+        {trackItems.map((slab, idx) => (
+          <LuxurySlab
+            key={`t1-${rowId}-${slab.id}-${idx}`}
+            slab={slab}
+            tiltVariant={TILT_VARIANTS[(idx + tiltOffset) % 4]}
+          />
+        ))}
+      </div>
+
+      {/* Track 2 (Pixel-identical twin for mathematically seamless infinite loop) */}
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-4 sm:gap-8 pr-4 sm:pr-8",
+          animationClass
+        )}
+        style={{
+          animationDuration: duration,
+          animationPlayState: isPaused ? "paused" : "running",
+        }}
+        aria-hidden="true"
+      >
+        {trackItems.map((slab, idx) => (
+          <LuxurySlab
+            key={`t2-${rowId}-${slab.id}-${idx}`}
+            slab={slab}
+            tiltVariant={TILT_VARIANTS[(idx + tiltOffset) % 4]}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function SlabsVideoBackground() {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Triple array to ensure seamless infinite looping with zero seams
-  const row1Doubled = useMemo(
-    () => [...BACKGROUND_SLABS_ROW_1, ...BACKGROUND_SLABS_ROW_1, ...BACKGROUND_SLABS_ROW_1],
-    []
-  );
-  const row2Doubled = useMemo(
-    () => [...BACKGROUND_SLABS_ROW_2, ...BACKGROUND_SLABS_ROW_2, ...BACKGROUND_SLABS_ROW_2],
-    []
-  );
-  const row3Doubled = useMemo(
-    () => [...BACKGROUND_SLABS_ROW_3, ...BACKGROUND_SLABS_ROW_3, ...BACKGROUND_SLABS_ROW_3],
-    []
-  );
-  const row4Doubled = useMemo(
-    () => [...BACKGROUND_SLABS_ROW_4, ...BACKGROUND_SLABS_ROW_4, ...BACKGROUND_SLABS_ROW_4],
-    []
-  );
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    const video = videoRef.current;
+    if (video) {
+      video.defaultMuted = true;
+      video.muted = true;
+      video.playbackRate = 0.85;
+
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsVideoLoaded(true))
+          .catch(() => {
+            // Low-power fallback; poster image displays seamlessly
+            setIsVideoLoaded(false);
+          });
+      }
+    }
 
     // Respect reduced motion accessibility
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
       setIsPaused(true);
+      if (video) video.pause();
       return;
     }
 
@@ -48,8 +143,10 @@ export function SlabsVideoBackground() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setIsPaused(true);
+        if (video) video.pause();
       } else if (!prefersReducedMotion) {
         setIsPaused(false);
+        if (video) video.play().catch(() => {});
       }
     };
 
@@ -60,175 +157,152 @@ export function SlabsVideoBackground() {
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-[#07090e]"
-      style={{
-        // 3D perspective field for authentic angular depth
-        perspective: "1200px",
-      }}
-      aria-hidden="true"
-    >
+    <>
       {/* ==================================================================== */}
-      {/* 1. ATMOSPHERIC AMBIENT GLOW BACKDROP                                 */}
+      {/* 1. FIXED BACKGROUND SCENE (-Z-10)                                    */}
       {/* ==================================================================== */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#06080e] via-[#090d18] to-[#05070c]" />
+      <div
+        className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-[#07090e]"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#06080e] via-[#080d19] to-[#05070c]" />
 
-      {/* Subtle Lava / Holo Prismatic radial nebulas */}
-      <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-cyan-600/[0.08] blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 -right-32 w-[600px] h-[600px] rounded-full bg-purple-600/[0.09] blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] rounded-full bg-amber-600/[0.08] blur-[130px] pointer-events-none" />
+        {/* Ambient fluid video loop */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster="/gradient-poster.jpg"
+          onCanPlay={() => setIsVideoLoaded(true)}
+          className={cn(
+            "absolute inset-0 w-full h-full object-cover object-center pointer-events-none transition-opacity duration-1000",
+            isVideoLoaded ? "opacity-60" : "opacity-35"
+          )}
+        >
+          <source src="/slow_motion_gradient_bg.webm" type="video/webm" />
+          <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
+        </video>
 
-      {/* ==================================================================== */}
-      {/* 2. MULTI-ROW 3D SLAB MARQUEE BANDS (SLOW MOTION)                    */}
-      {/* ==================================================================== */}
-      <div className="absolute inset-x-0 -top-6 -bottom-6 flex flex-col justify-between overflow-hidden opacity-95">
-        {/* ROW 1: Direction Left -> Right (Slow Motion 85s) */}
-        <div className="relative w-full overflow-hidden flex items-center py-1 sm:py-2">
-          <div
-            className="flex gap-4 sm:gap-8 w-max animate-marquee-right"
-            style={{
-              animationDuration: "85s",
-              animationPlayState: isPaused ? "paused" : "running",
-            }}
-          >
-            {row1Doubled.map((slab, idx) => (
-              <LuxurySlab
-                key={`r1-${slab.id}-${idx}`}
-                slab={slab}
-                tiltVariant={
-                  idx % 4 === 0
-                    ? "tilt-a"
-                    : idx % 4 === 1
-                    ? "tilt-b"
-                    : idx % 4 === 2
-                    ? "tilt-c"
-                    : "tilt-d"
-                }
-              />
-            ))}
-          </div>
+        {/* Subtle radial ambient nebulas for rich depth */}
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-cyan-600/[0.07] blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 -right-32 w-[600px] h-[600px] rounded-full bg-purple-600/[0.08] blur-[140px] pointer-events-none" />
+        <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] rounded-full bg-amber-600/[0.07] blur-[130px] pointer-events-none" />
+
+        {/* Multi-Row 3D Slab Marquee Bands */}
+        <div className="absolute inset-x-0 -top-4 -bottom-4 flex flex-col justify-between overflow-hidden opacity-95">
+          {/* ROW 1: Direction Left -> Right (Slow Motion 90s) */}
+          <MarqueeRow
+            rowId="r1"
+            cards={BACKGROUND_SLABS_ROW_1}
+            direction="right"
+            duration="90s"
+            tiltOffset={0}
+            isPaused={isPaused}
+          />
+
+          {/* ROW 2: Direction Right -> Left (Slow Motion 110s) */}
+          <MarqueeRow
+            rowId="r2"
+            cards={BACKGROUND_SLABS_ROW_2}
+            direction="left"
+            duration="110s"
+            tiltOffset={1}
+            isPaused={isPaused}
+          />
+
+          {/* ROW 3: Direction Left -> Right (Slow Motion 80s) */}
+          <MarqueeRow
+            rowId="r3"
+            cards={BACKGROUND_SLABS_ROW_3}
+            direction="right"
+            duration="80s"
+            tiltOffset={2}
+            isPaused={isPaused}
+          />
+
+          {/* ROW 4: Direction Right -> Left (Slow Motion 100s - Desktop for spacious breathing room) */}
+          <MarqueeRow
+            rowId="r4"
+            cards={BACKGROUND_SLABS_ROW_4}
+            direction="left"
+            duration="100s"
+            tiltOffset={3}
+            isPaused={isPaused}
+            className="hidden sm:flex"
+          />
         </div>
 
-        {/* ROW 2: Direction Right -> Left (Slow Motion 100s) */}
-        <div className="relative w-full overflow-hidden flex items-center py-1 sm:py-2">
-          <div
-            className="flex gap-4 sm:gap-8 w-max animate-marquee-left"
-            style={{
-              animationDuration: "100s",
-              animationPlayState: isPaused ? "paused" : "running",
-            }}
-          >
-            {row2Doubled.map((slab, idx) => (
-              <LuxurySlab
-                key={`r2-${slab.id}-${idx}`}
-                slab={slab}
-                tiltVariant={
-                  idx % 4 === 0
-                    ? "tilt-b"
-                    : idx % 4 === 1
-                    ? "tilt-c"
-                    : idx % 4 === 2
-                    ? "tilt-d"
-                    : "tilt-a"
-                }
-              />
-            ))}
-          </div>
-        </div>
+        {/* Top and Bottom gradient shadows for smooth fading under header & footer */}
+        <div className="absolute inset-x-0 top-0 h-32 sm:h-44 bg-gradient-to-b from-[#07090e] via-[#07090e]/85 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-32 sm:h-44 bg-gradient-to-t from-[#07090e] via-[#07090e]/85 to-transparent pointer-events-none" />
 
-        {/* ROW 3: Direction Left -> Right (Slow Motion 75s) */}
-        <div className="relative w-full overflow-hidden flex items-center py-1 sm:py-2">
-          <div
-            className="flex gap-4 sm:gap-8 w-max animate-marquee-right"
-            style={{
-              animationDuration: "75s",
-              animationPlayState: isPaused ? "paused" : "running",
-            }}
-          >
-            {row3Doubled.map((slab, idx) => (
-              <LuxurySlab
-                key={`r3-${slab.id}-${idx}`}
-                slab={slab}
-                tiltVariant={
-                  idx % 4 === 0
-                    ? "tilt-c"
-                    : idx % 4 === 1
-                    ? "tilt-d"
-                    : idx % 4 === 2
-                    ? "tilt-a"
-                    : "tilt-b"
-                }
-              />
-            ))}
-          </div>
-        </div>
+        {/* Atmospheric center scrim overlay for perfect contrast with foreground typography */}
+        <div
+          className={cn(
+            "absolute inset-0 transition-opacity duration-700 pointer-events-none",
+            focusMode === "ambient"
+              ? "bg-[#07090e]/40"
+              : "bg-[#07090e]/15"
+          )}
+        />
 
-        {/* ROW 4: Direction Right -> Left (Slow Motion 95s - Desktop only for mobile breathing room) */}
-        <div className="relative w-full overflow-hidden hidden sm:flex items-center py-1 sm:py-2">
-          <div
-            className="flex gap-4 sm:gap-8 w-max animate-marquee-left"
-            style={{
-              animationDuration: "95s",
-              animationPlayState: isPaused ? "paused" : "running",
-            }}
-          >
-            {row4Doubled.map((slab, idx) => (
-              <LuxurySlab
-                key={`r4-${slab.id}-${idx}`}
-                slab={slab}
-                tiltVariant={
-                  idx % 4 === 0
-                    ? "tilt-d"
-                    : idx % 4 === 1
-                    ? "tilt-a"
-                    : idx % 4 === 2
-                    ? "tilt-b"
-                    : "tilt-c"
-                }
-              />
-            ))}
-          </div>
-        </div>
+        {/* Radial spotlight focusing onto center */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_35%,rgba(7,9,14,0.65)_95%)] pointer-events-none" />
       </div>
 
       {/* ==================================================================== */}
-      {/* 3. CINEMATIC SCRIM & CONTRAST VIGNETTE                               */}
+      {/* 2. DISKRETER AMBIENCE TOGGLE (DESKTOP + MOBILE EXTRALOCKE)           */}
+      {/* Placed outside -z-10 for unconstrained stacking context & tap events */}
       {/* ==================================================================== */}
-      {/* Top and Bottom gradient shadows for smooth fading under header & footer */}
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
-
-      {/* Atmospheric center scrim overlay for perfect contrast with typography */}
-      <div
-        className={cn(
-          "absolute inset-0 transition-opacity duration-700 pointer-events-none",
-          focusMode === "ambient"
-            ? "bg-[#07090e]/35 backdrop-blur-[1px]"
-            : "bg-[#07090e]/15 backdrop-blur-[0px]"
-        )}
-      />
-
-      {/* Radial spotlight focusing onto center */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_35%,rgba(7,9,14,0.6)_95%)] pointer-events-none" />
-
-      {/* ==================================================================== */}
-      {/* 4. DISCRETE AMBIENCE TOGGLE (EXTRALOCKE FÜR SAMMLER)                  */}
-      {/* ==================================================================== */}
-      <div className="fixed bottom-4 right-4 z-40 pointer-events-auto hidden md:block">
+      {/* Desktop Ambience Button */}
+      <div className="fixed bottom-4 right-4 z-50 pointer-events-auto hidden md:block">
         <button
           type="button"
           onClick={() =>
             setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
           }
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/90 text-neutral-400 hover:text-white border border-white/10 hover:border-white/25 backdrop-blur-md text-[11px] font-semibold transition-all shadow-lg cursor-pointer"
-          title="Hintergrund-Fokus umschalten"
+          className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-black/75 hover:bg-black/95 text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 backdrop-blur-md text-xs font-semibold transition-all shadow-xl cursor-pointer"
+          title="Hintergrund-Fokus umschalten (Dezent / Scharf)"
+          aria-label="Hintergrund-Fokus umschalten"
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <Sparkles className="w-4 h-4 text-amber-400" />
           <span>
             {focusMode === "ambient" ? "Hintergrund: Dezent" : "Hintergrund: Scharf"}
           </span>
         </button>
       </div>
-    </div>
+
+      {/* Mobile Ambience Button (Extralocke: mind. 44x44px Touch-Target, sicher über Mobile Island Bar) */}
+      <div
+        className="fixed right-3.5 z-50 pointer-events-auto md:hidden"
+        style={{
+          bottom: "calc(4.75rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() =>
+            setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
+          }
+          className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#0c111d]/90 text-amber-400 border border-white/25 backdrop-blur-md flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.85)] active:scale-90 transition-all cursor-pointer"
+          title="Hintergrund-Fokus umschalten"
+          aria-label={
+            focusMode === "ambient"
+              ? "Hintergrund auf Scharf stellen"
+              : "Hintergrund auf Dezent stellen"
+          }
+        >
+          <Sparkles
+            className={cn(
+              "w-5 h-5 transition-transform duration-300",
+              focusMode === "bright" && "rotate-45 text-yellow-300 scale-110"
+            )}
+          />
+        </button>
+      </div>
+    </>
   );
 }

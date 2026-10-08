@@ -31,14 +31,14 @@ export default function RootLayout({
   return (
     <html lang="de" className={`dark h-full antialiased ${orbitron.variable}`}>
       <body className="min-h-full flex flex-col text-[#f3f4f6] relative">
-        {/* Luxury 3D Graded Slabs Video Background */}
-        <SlabsVideoBackground />
         <StoreProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
           <AuthModal />
           <DiscordWelcomeModal />
         </StoreProvider>
+        {/* Luxury 3D Graded Slabs Video Background & Ambience Controls */}
+        <SlabsVideoBackground />
       </body>
     </html>
   );
