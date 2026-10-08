@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   BACKGROUND_SLABS_ROW_1,
   BACKGROUND_SLABS_ROW_2,
@@ -109,7 +109,6 @@ function MarqueeRow({
 }
 
 export function SlabsVideoBackground() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(() => {
     if (typeof window !== "undefined") {
       return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -117,38 +116,12 @@ export function SlabsVideoBackground() {
     return false;
   });
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   useEffect(() => {
-    const video = videoRef.current;
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (video) {
-      video.defaultMuted = true;
-      video.muted = true;
-      video.playbackRate = 0.7;
-
-      if (!prefersReducedMotion) {
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => setIsVideoLoaded(true))
-            .catch(() => {
-              setIsVideoLoaded(false);
-            });
-        }
-      }
-    }
-
     // Barrierefreiheit: Reduzierte Bewegung bei Änderung umschalten
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handleMotionChange = (e: MediaQueryListEvent) => {
       setIsPaused(e.matches);
-      if (e.matches && videoRef.current) {
-        videoRef.current.pause();
-      }
     };
     mediaQuery.addEventListener("change", handleMotionChange);
 
@@ -156,10 +129,8 @@ export function SlabsVideoBackground() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setIsPaused(true);
-        if (videoRef.current) videoRef.current.pause();
       } else if (!mediaQuery.matches) {
         setIsPaused(false);
-        if (videoRef.current) videoRef.current.play().catch(() => {});
       }
     };
 
@@ -173,38 +144,12 @@ export function SlabsVideoBackground() {
   return (
     <>
       {/* ==================================================================== */}
-      {/* 1. FIXIERTE HINTERGRUND-SZENE (-Z-10)                                */}
+      {/* 1. REIN SCHWARZER HINTERGRUND MIT SCHWEBENDEN KARTEN (-Z-10)          */}
       {/* ==================================================================== */}
       <div
-        className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-[#07090e]"
+        className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-black"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#06080e] via-[#080d19] to-[#05070c]" />
-
-        {/* Ambient Video-Loop im Hintergrund */}
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster="/gradient-poster.jpg"
-          onCanPlay={() => setIsVideoLoaded(true)}
-          className={cn(
-            "absolute inset-0 w-full h-full object-cover object-center pointer-events-none transition-opacity duration-1000",
-            isVideoLoaded ? "opacity-60" : "opacity-35"
-          )}
-        >
-          <source src="/slow_motion_gradient_bg.webm" type="video/webm" />
-          <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
-        </video>
-
-        {/* Hardware-optimierte Radiale Lichtfelder (ohne blur-Filter, 0% Composite-Overhead) */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_20%,rgba(6,182,212,0.08),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_45%,rgba(168,85,247,0.08),transparent_55%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_90%,rgba(245,158,11,0.07),transparent_50%)] pointer-events-none" />
-
         {/* ==================================================================== */}
         {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
         {/* ==================================================================== */}
@@ -241,19 +186,16 @@ export function SlabsVideoBackground() {
         </div>
 
         {/* Weiche Verläufe oben und unten für sauberes Ausblenden unter Navigation */}
-        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-10" />
 
-        {/* Atmosphärischer Kontrastfilter für optimale Lesbarkeit */}
+        {/* Atmosphärischer Kontrastfilter für dezenten oder scharfen Karten-Fokus */}
         <div
           className={cn(
             "absolute inset-0 transition-opacity duration-700 pointer-events-none",
-            focusMode === "ambient" ? "bg-[#07090e]/40" : "bg-[#07090e]/15"
+            focusMode === "ambient" ? "bg-black/30" : "bg-black/0"
           )}
         />
-
-        {/* Radialer Scheinwerfer zur Betonung des Zentrum-Contents */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(7,9,14,0.6)_95%)] pointer-events-none" />
       </div>
 
       {/* ==================================================================== */}

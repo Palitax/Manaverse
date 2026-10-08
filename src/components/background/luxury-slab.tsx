@@ -33,15 +33,15 @@ export function LuxurySlab({
     >
       {/* 
         Reine TCG-Sammelkarte:
-        - Authentische abgerundete Kartenecken (wie echte Pokémon-/One Piece-/Riftbound-Karten)
+        - Authentische abgerundete Kartenecken (wie originale Pokémon- / One Piece-Karten mit ca. 2.5mm bis 3.0mm Radius)
         - Subtiler weißer Kartenrand-Glanz (ring-1 ring-white/12)
-        - Weicher, fließender 3D-Schlagschatten, der sich natürlich im Hintergrund auflöst ohne Schnittkanten
+        - Weicher, fließender 3D-Schlagschatten, der sich natürlich im schwarzen Hintergrund auflöst
       */}
       <div
         className={cn(
-          "relative w-full h-full rounded-[11px] sm:rounded-[13px] md:rounded-[15px] overflow-hidden",
-          "bg-[#0a0d16] ring-1 ring-white/12",
-          "shadow-[0_4px_12px_rgba(0,0,0,0.6),_0_10px_28px_rgba(0,0,0,0.65),_0_0_20px_rgba(0,0,0,0.4)]"
+          "relative w-full h-full rounded-[4.5px] sm:rounded-[5.5px] md:rounded-[6px] lg:rounded-[7px] xl:rounded-[7.5px] overflow-hidden",
+          "bg-black ring-1 ring-white/12",
+          "shadow-[0_4px_14px_rgba(0,0,0,0.8),_0_12px_30px_rgba(0,0,0,0.9),_0_0_20px_rgba(0,0,0,0.5)]"
         )}
       >
         <Image
@@ -50,11 +50,11 @@ export function LuxurySlab({
           fill
           sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, (max-width: 1024px) 170px, 200px"
           loading="lazy"
-          className="object-cover object-center select-none pointer-events-none rounded-[11px] sm:rounded-[13px] md:rounded-[15px]"
+          className="object-cover object-center select-none pointer-events-none rounded-[4.5px] sm:rounded-[5.5px] md:rounded-[6px] lg:rounded-[7px] xl:rounded-[7.5px]"
         />
 
         {/* Subtiler, feiner Oberflächenglanz für lebendige Haptik */}
-        <div className="absolute inset-0 pointer-events-none rounded-[11px] sm:rounded-[13px] md:rounded-[15px] bg-gradient-to-tr from-white/[0.04] via-transparent to-white/[0.08]" />
+        <div className="absolute inset-0 pointer-events-none rounded-[4.5px] sm:rounded-[5.5px] md:rounded-[6px] lg:rounded-[7px] xl:rounded-[7.5px] bg-gradient-to-tr from-white/[0.04] via-transparent to-white/[0.08]" />
       </div>
     </div>
   );
