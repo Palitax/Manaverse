@@ -19,7 +19,7 @@ const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
 ];
 
 // Erzeugt einen nahtlosen Repetition-Block (3 Wiederholungen der 5 Karten = 15 Karten)
-// 15 Karten decken mit den großzügigen Abständen auch 5K-Displays mühelos ab,
+// 15 Karten decken mit den großzügigen Abständen auch 5K- und 6K-Displays mühelos ab,
 // während die mathematische Dual-Track-Struktur 100% sprungfreie Endlos-Schleifen garantiert.
 function createSeamlessTrack(cards: BackgroundSlab[]) {
   const result: BackgroundSlab[] = [];
@@ -58,14 +58,14 @@ function MarqueeRow({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden flex items-center py-2 sm:py-4 select-none pointer-events-none",
+        "relative w-full overflow-hidden flex items-center py-1 sm:py-3 select-none pointer-events-none",
         className
       )}
     >
-      {/* Track 1 - Großzügiger Abstand zwischen den Slabs für pure Eleganz */}
+      {/* Track 1 - Maximal großzügiger Abstand zwischen den Slabs für pure Galerie-Eleganz */}
       <div
         className={cn(
-          "flex shrink-0 items-center gap-12 sm:gap-20 md:gap-28 pr-12 sm:pr-20 md:pr-28",
+          "flex shrink-0 items-center gap-20 sm:gap-32 md:gap-44 lg:gap-52 pr-20 sm:pr-32 md:pr-44 lg:pr-52",
           animationClass
         )}
         style={{
@@ -86,7 +86,7 @@ function MarqueeRow({
       {/* Track 2 (Pixel-identischer Zwilling für nahtlose 60fps Endlosschleife) */}
       <div
         className={cn(
-          "flex shrink-0 items-center gap-12 sm:gap-20 md:gap-28 pr-12 sm:pr-20 md:pr-28",
+          "flex shrink-0 items-center gap-20 sm:gap-32 md:gap-44 lg:gap-52 pr-20 sm:pr-32 md:pr-44 lg:pr-52",
           animationClass
         )}
         style={{
@@ -128,7 +128,7 @@ export function SlabsVideoBackground() {
     if (video) {
       video.defaultMuted = true;
       video.muted = true;
-      video.playbackRate = 0.75;
+      video.playbackRate = 0.7;
 
       if (!prefersReducedMotion) {
         const playPromise = video.play();
@@ -200,41 +200,41 @@ export function SlabsVideoBackground() {
           <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
         </video>
 
-        {/* Subtile leuchtende Farbfelder für visuelle Tiefe */}
-        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-cyan-600/[0.07] blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/2 -right-32 w-[600px] h-[600px] rounded-full bg-purple-600/[0.08] blur-[140px] pointer-events-none" />
-        <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] rounded-full bg-amber-600/[0.07] blur-[130px] pointer-events-none" />
+        {/* Hardware-optimierte Radiale Lichtfelder (ohne blur-Filter, 0% Composite-Overhead) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_20%,rgba(6,182,212,0.08),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_45%,rgba(168,85,247,0.08),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_90%,rgba(245,158,11,0.07),transparent_50%)] pointer-events-none" />
 
         {/* ==================================================================== */}
         {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
         {/* ==================================================================== */}
-        <div className="absolute inset-0 flex flex-col justify-around py-4 sm:py-8 overflow-hidden opacity-95">
-          {/* REIHE 1: Links -> Rechts (Sehr langsame 150s) */}
+        <div className="absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 h-[100dvh] overflow-hidden opacity-95">
+          {/* REIHE 1: Links -> Rechts (Majestätische 200s Slow Motion) */}
           <MarqueeRow
             rowId="r1"
             cards={BACKGROUND_SLABS_ROW_1}
             direction="right"
-            duration="150s"
+            duration="200s"
             tiltOffset={0}
             isPaused={isPaused}
           />
 
-          {/* REIHE 2: Rechts -> Links (Sehr langsame 180s) */}
+          {/* REIHE 2: Rechts -> Links (Majestätische 240s Slow Motion) */}
           <MarqueeRow
             rowId="r2"
             cards={BACKGROUND_SLABS_ROW_2}
             direction="left"
-            duration="180s"
+            duration="240s"
             tiltOffset={1}
             isPaused={isPaused}
           />
 
-          {/* REIHE 3: Links -> Rechts (Sehr langsame 165s) */}
+          {/* REIHE 3: Links -> Rechts (Majestätische 220s Slow Motion) */}
           <MarqueeRow
             rowId="r3"
             cards={BACKGROUND_SLABS_ROW_3}
             direction="right"
-            duration="165s"
+            duration="220s"
             tiltOffset={2}
             isPaused={isPaused}
           />

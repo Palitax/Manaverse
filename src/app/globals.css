@@ -145,75 +145,60 @@ body {
   animation: marquee-track-right linear infinite;
 }
 
-@keyframes slab-tilt-a {
+@keyframes slab-float-a {
   0%, 100% {
-    transform: perspective(1000px) rotateY(-3.5deg) rotateX(1.5deg) rotateZ(-0.5deg) translateY(0);
+    transform: translateY(0px) rotate(-1deg);
   }
   50% {
-    transform: perspective(1000px) rotateY(3.5deg) rotateX(-1.5deg) rotateZ(0.5deg) translateY(-4px);
+    transform: translateY(-5px) rotate(1deg);
   }
 }
 
-@keyframes slab-tilt-b {
+@keyframes slab-float-b {
   0%, 100% {
-    transform: perspective(1000px) rotateY(3deg) rotateX(-1deg) rotateZ(0.5deg) translateY(-3px);
+    transform: translateY(-4px) rotate(0.8deg);
   }
   50% {
-    transform: perspective(1000px) rotateY(-3deg) rotateX(1deg) rotateZ(-0.5deg) translateY(3px);
+    transform: translateY(4px) rotate(-0.8deg);
   }
 }
 
-@keyframes slab-tilt-c {
+@keyframes slab-float-c {
   0%, 100% {
-    transform: perspective(1000px) rotateY(-2.5deg) rotateX(-1.5deg) rotateZ(-0.5deg) translateY(3px);
+    transform: translateY(3px) rotate(-0.6deg);
   }
   50% {
-    transform: perspective(1000px) rotateY(3.5deg) rotateX(1deg) rotateZ(0.5deg) translateY(-3px);
+    transform: translateY(-4px) rotate(1deg);
   }
 }
 
-@keyframes slab-tilt-d {
+@keyframes slab-float-d {
   0%, 100% {
-    transform: perspective(1000px) rotateY(3deg) rotateX(1deg) rotateZ(-0.5deg) translateY(2px);
+    transform: translateY(-3px) rotate(1deg);
   }
   50% {
-    transform: perspective(1000px) rotateY(-2.5deg) rotateX(-1deg) rotateZ(0.5deg) translateY(-3px);
-  }
-}
-
-@keyframes slab-glint {
-  0%, 100% {
-    transform: translateX(-120%) rotate(-45deg);
-    opacity: 0.04;
-  }
-  50% {
-    transform: translateX(200%) rotate(-45deg);
-    opacity: 0.35;
+    transform: translateY(3px) rotate(-0.8deg);
   }
 }
 
 .animate-slab-tilt-a {
-  animation: slab-tilt-a 14s ease-in-out infinite;
+  animation: slab-float-a 14s ease-in-out infinite;
   will-change: transform;
 }
 
 .animate-slab-tilt-b {
-  animation: slab-tilt-b 16.5s ease-in-out infinite;
+  animation: slab-float-b 16.5s ease-in-out infinite;
   will-change: transform;
 }
 
 .animate-slab-tilt-c {
-  animation: slab-tilt-c 13.5s ease-in-out infinite;
+  animation: slab-float-c 13.5s ease-in-out infinite;
   will-change: transform;
 }
 
 .animate-slab-tilt-d {
-  animation: slab-tilt-d 17.5s ease-in-out infinite;
+  animation: slab-float-d 17.5s ease-in-out infinite;
   will-change: transform;
-}
-
-.animate-slab-glint {
-  animation: slab-glint 10s ease-in-out infinite;
 }
 
 /* Glassmorphism Classes */
