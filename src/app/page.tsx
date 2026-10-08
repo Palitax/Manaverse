@@ -258,16 +258,15 @@ export default function HomePage() {
                 <div
                   className={`relative w-full h-full rounded-xl sm:rounded-2xl border ${card.borderColor} bg-black/75 backdrop-blur-md ${card.glowColor} overflow-hidden shadow-2xl flex flex-row justify-between transition-all duration-300`}
                 >
-                  {/* Pokemon Artwork Background with smooth hover zoom and darker tones */}
+                  {/* Pokemon Artwork Background with smooth hover zoom and high clarity */}
                   <img
                     src={card.bgImage}
                     alt={card.title}
-                    className="absolute inset-0 w-full h-full object-cover object-top sm:object-center transform group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none select-none z-0 brightness-[0.68] contrast-[1.08]"
+                    className="absolute inset-0 w-full h-full object-cover object-top sm:object-center transform group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none select-none z-0 brightness-[0.95] contrast-[1.04]"
                   />
 
-                  {/* Progressive Bottom-Up Black Fadeout Gradient for High Contrast & Character Fadeout */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 via-50% to-black/15 pointer-events-none z-10" />
-                  <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none z-10" />
+                  {/* Reduzierter Bottom-Up Gradient (50% weichere Ausblendung für brillante Pokemon-Sichtbarkeit) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 via-45% to-transparent pointer-events-none z-10" />
 
                   {/* Top Glass Sheen */}
                   <div className="absolute inset-x-0 top-0 h-10 sm:h-14 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
@@ -393,18 +392,18 @@ export default function HomePage() {
                   <img
                     src={bento.pokemonImg}
                     alt={bento.pokemonName}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out opacity-75 md:opacity-85"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out opacity-85 md:opacity-95"
                   />
                   {/* Horizontal fade into the dark section background */}
                   <div
                     className={`absolute inset-0 hidden md:block ${
                       isLeft
-                        ? "bg-gradient-to-r from-transparent via-[#080b11]/60 to-[#080b11]"
-                        : "bg-gradient-to-l from-transparent via-[#080b11]/60 to-[#080b11]"
+                        ? "bg-gradient-to-r from-transparent via-[#080b11]/50 to-[#080b11]"
+                        : "bg-gradient-to-l from-transparent via-[#080b11]/50 to-[#080b11]"
                     }`}
                   />
-                  {/* Mobile dark overlay to maintain complete text legibility */}
-                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-[#080b11]/75 via-[#080b11]/85 to-[#080b11]" />
+                  {/* Mobile dark overlay to maintain complete text legibility while revealing Pokemon */}
+                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-[#080b11]/50 via-[#080b11]/70 to-[#080b11]" />
                   {/* Subtle top/bottom edge vignetting */}
                   <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-[#080b11] to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#080b11] to-transparent" />
