@@ -12,7 +12,6 @@ import {
   Sparkles,
   RefreshCw,
   Search,
-  CheckCircle2,
   TrendingUp,
   Layers,
   ArrowUpRight,
@@ -110,123 +109,59 @@ export default function HomePage() {
   const bentoDetails = [
     {
       id: "bento-sell",
-      align: "left", // Card 1: Left Aligned
-      categoryNum: "01",
-      categoryName: "ANKAUF & VERKAUF",
-      pokemonName: "Rayquaza",
+      align: "left",
+      categoryName: "ANKAUF",
       pokemonImg: "/pokemon/rayquaza.jpg",
-      title: "Einzelkarten & Sammlungen",
-      subtitle: "Maximaler Erlös & Schnelle Auszahlung",
-      description:
-        "Reiche einzelne Holos, Graded Slabs (PSA, BGS, CGC) oder ganze Sammlungen direkt bei Manaforge ein. Wir berechnen faire Ankaufspreise auf Basis aktueller Cardmarket-Durchschnittswerte und zahlen nach kurzer Prüfung zuverlässig aus.",
-      bullets: [
-        "Faire ETV- & Cardmarket-Marktpreise",
-        "24h Express-Auszahlung via PayPal oder IBAN",
-        "Graded Slabs & Raw-Bulk Sammlungen willkommen",
-      ],
-      tag: "RAYQUAZA // 01",
-      cta: "Jetzt verkaufen",
+      title: "Einzelkarten & Sammlungen direkt verkaufen",
+      description: (
+        <>
+          Reiche einzelne Holos, Graded Slabs (PSA, BGS, CGC) oder ganze Sammlungen unkompliziert bei uns ein. Wir ermitteln faire Ankaufspreise auf Basis aktueller <strong className="text-white font-semibold">Cardmarket-Marktwerte</strong> und zahlen dein Guthaben innerhalb von <strong className="text-white font-semibold">24 Stunden per PayPal oder IBAN</strong> aus.
+        </>
+      ),
+      cta: "Jetzt Karten einreichen",
       href: "/sell",
-      theme: {
-        glow: "from-emerald-500/15 via-teal-500/5 to-transparent",
-        orbGlow: "bg-emerald-500/20",
-        border: "border-emerald-500/30 hover:border-emerald-400/70",
-        badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-        btn: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/30",
-        accent: "text-emerald-400",
-        bulletIcon: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-        cardGlow: "group-hover:shadow-[0_0_40px_rgba(16,185,129,0.3)]",
-      },
     },
     {
       id: "bento-buy",
-      align: "right", // Card 2: Right Aligned
-      categoryNum: "02",
-      categoryName: "MARKTPLATZ & COMMUNITY",
-      pokemonName: "Pikachu",
+      align: "right",
+      categoryName: "MARKTPLATZ",
       pokemonImg: "/pokemon/pikachu.jpg",
-      title: "Verifizierter Marktplatz",
-      subtitle: "Geprüfte Karten & Exklusive Drops",
-      description:
-        "Entdecke seltene Einzelkarten und Angebote direkt aus der verifizierten Community. Jedes Inserat enthält lückenlose Front- & Back-Scans sowie eine transparente Zustandsprüfung, damit du sicher und transparent einkaufst.",
-      bullets: [
-        "Echte Hochglanz-Scans jeder Einzelkarte",
-        "0% versteckte Gebühren für Käufer",
-        "Direkte Kontaktaufnahme via verifiziertem Discord",
-      ],
-      tag: "PIKACHU // 02",
-      cta: "Marktplatz öffnen",
+      title: "Geprüfter Community-Marktplatz",
+      description: (
+        <>
+          Entdecke seltene Einzelkarten und Sammlerstücke direkt von verifizierten Community-Mitgliedern. Jedes Inserat bietet <strong className="text-white font-semibold">lückenlose Front- & Back-Scans</strong> sowie eine transparente Zustandsprüfung – garantiert <strong className="text-white font-semibold">ohne versteckte Käufergebühren</strong>.
+        </>
+      ),
+      cta: "Marktplatz durchstöbern",
       href: "/buy",
-      theme: {
-        glow: "from-cyan-500/15 via-sky-500/5 to-transparent",
-        orbGlow: "bg-cyan-500/20",
-        border: "border-cyan-400/30 hover:border-cyan-300/70",
-        badge: "bg-cyan-500/10 text-cyan-400 border-cyan-400/30",
-        btn: "bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 shadow-cyan-600/30",
-        accent: "text-cyan-400",
-        bulletIcon: "text-cyan-400 bg-cyan-500/10 border-cyan-400/30",
-        cardGlow: "group-hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]",
-      },
     },
     {
       id: "bento-trade",
-      align: "left", // Card 3: Left Aligned
-      categoryNum: "03",
-      categoryName: "1:1 FAIR-TRADE",
-      pokemonName: "Mewtu",
+      align: "left",
+      categoryName: "1:1 TAUSCH",
       pokemonImg: "/pokemon/mewtwo.jpg",
-      title: "1:1 Tausch & ETV-Ausgleich",
-      subtitle: "Faire Deals auf Augenhöhe",
-      description:
-        "Tausche Karten ohne Risiko. Unser integrierter Estimated Trade Value (ETV) Algorithmus ermittelt sekundengenau den fairen Differenzbetrag in Euro, sodass beide Tauschpartner einen absolut gleichwertigen Deal abschließen.",
-      bullets: [
-        "Automatischer Live-ETV-Wertausgleich",
-        "1-Klick Tauschvorschläge an Kartenbesitzer",
-        "Treuhand-Sicherheit & Reputationssystem",
-      ],
-      tag: "MEWTU // 03",
+      title: "Fairer 1:1 Kartentausch mit ETV-Wertausgleich",
+      description: (
+        <>
+          Tausche Karten ohne finanzielles Risiko auf Augenhöhe. Unser integrierter <strong className="text-white font-semibold">Estimated Trade Value (ETV)</strong> Algorithmus berechnet sekundengenau den fairen Differenzbetrag in Euro, sodass beide Seiten einen absolut <strong className="text-white font-semibold">gleichwertigen Deal</strong> abschließen.
+        </>
+      ),
       cta: "Tauschbörse ansehen",
       href: "/trade",
-      theme: {
-        glow: "from-purple-500/15 via-fuchsia-500/5 to-transparent",
-        orbGlow: "bg-purple-500/20",
-        border: "border-purple-400/30 hover:border-fuchsia-300/70",
-        badge: "bg-purple-500/10 text-purple-400 border-purple-400/30",
-        btn: "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 shadow-purple-600/30",
-        accent: "text-purple-400",
-        bulletIcon: "text-purple-400 bg-purple-500/10 border-purple-400/30",
-        cardGlow: "group-hover:shadow-[0_0_40px_rgba(217,70,239,0.3)]",
-      },
     },
     {
       id: "bento-seek",
-      align: "right", // Card 4: Right Aligned
-      categoryNum: "04",
-      categoryName: "LIVE BOUNTIES & SUCHE",
-      pokemonName: "Glurak",
+      align: "right",
+      categoryName: "GESUCHE",
       pokemonImg: "/pokemon/charizard.jpg",
-      title: "Want-Lists & Bounties",
-      subtitle: "Finde deine Holy Grails gezielt",
-      description:
-        "Fehlt dir eine begehrte Karte für dein Master-Set? Schreibe ein Live-Gesuch mit individuellem Wunschpreis oder Gegenangebot aus. Unsere Discord-Bots synchronisieren dein Gesuch sofort im #gesucht-Kanal für hunderte Sammler.",
-      bullets: [
-        "Live Push-Alerts an Sammler im Discord",
-        "Wunschpreis & Zustand flexibel festlegen",
-        "Schnelleres Finden von Vintage & Secret Rares",
-      ],
-      tag: "GLURAK // 04",
+      title: "Wunschkarten mit Live-Bounties ausschreiben",
+      description: (
+        <>
+          Fehlt dir eine bestimmte Karte für dein Set? Schreibe ein Gesuch mit deinem <strong className="text-white font-semibold">individuellen Wunschpreis</strong> aus. Dein Inserat wird automatisch in Echtzeit mit unserem <strong className="text-white font-semibold">Discord synchronisiert (#gesucht)</strong>, damit interessierte Sammler dich direkt kontaktieren können.
+        </>
+      ),
       cta: "Wunschkarte posten",
       href: "/looking-for",
-      theme: {
-        glow: "from-amber-500/15 via-orange-500/5 to-transparent",
-        orbGlow: "bg-amber-500/20",
-        border: "border-orange-400/30 hover:border-amber-300/70",
-        badge: "bg-amber-500/10 text-amber-400 border-orange-400/30",
-        btn: "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-orange-600/30",
-        accent: "text-amber-400",
-        bulletIcon: "text-amber-400 bg-amber-500/10 border-orange-400/30",
-        cardGlow: "group-hover:shadow-[0_0_40px_rgba(249,115,22,0.3)]",
-      },
     },
   ];
 
@@ -402,114 +337,85 @@ export default function HomePage() {
         </motion.div>
 
         {/* Unified 4-Tier Horizontal Bento Grid (Seamless, Connected Single Grid with Smooth Gradient Fades) */}
-        <div className="w-full rounded-3xl border border-white/10 bg-[#080b11]/90 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/5">
+        <div className="w-full rounded-3xl border border-white/10 bg-black/95 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/5">
           {bentoDetails.map((bento) => {
             const isLeft = bento.align === "left";
 
             return (
               <div
                 key={bento.id}
-                className="group relative flex flex-col md:flex-row items-center justify-between overflow-hidden transition-colors duration-300 hover:bg-white/[0.02] p-5 sm:p-7 md:p-8 min-h-[250px] sm:min-h-[270px]"
+                className="group relative flex flex-col md:flex-row items-center justify-between overflow-hidden transition-colors duration-300 hover:bg-white/[0.02] p-6 sm:p-8 md:p-10 min-h-[260px] sm:min-h-[280px]"
               >
                 {/* Full-Height Stretched Pokemon Artwork as seamless background (Left-aligned for 01 & 03, Right-aligned for 02 & 04) */}
                 <div
                   className={`absolute top-0 bottom-0 ${
                     isLeft ? "left-0" : "right-0"
-                  } w-full md:w-[48%] lg:w-[45%] h-full pointer-events-none overflow-hidden select-none z-0`}
+                  } w-full md:w-[56%] lg:w-[52%] h-full pointer-events-none overflow-hidden select-none z-0`}
+                  style={{
+                    WebkitMaskImage: isLeft
+                      ? "linear-gradient(to right, black 0%, black 35%, transparent 96%)"
+                      : "linear-gradient(to left, black 0%, black 35%, transparent 96%)",
+                    maskImage: isLeft
+                      ? "linear-gradient(to right, black 0%, black 35%, transparent 96%)"
+                      : "linear-gradient(to left, black 0%, black 35%, transparent 96%)",
+                  }}
                 >
                   <img
                     src={bento.pokemonImg}
-                    alt={bento.pokemonName}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out opacity-85 md:opacity-95"
+                    alt={bento.title}
+                    className="w-full h-full object-cover object-top translate-y-3 sm:translate-y-5 md:translate-y-6 group-hover:scale-105 transition-transform duration-700 ease-out opacity-80 md:opacity-90"
                   />
                   {/* Horizontal fade into the dark section background */}
                   <div
                     className={`absolute inset-0 hidden md:block ${
                       isLeft
-                        ? "bg-gradient-to-r from-transparent via-[#080b11]/50 to-[#080b11]"
-                        : "bg-gradient-to-l from-transparent via-[#080b11]/50 to-[#080b11]"
+                        ? "bg-gradient-to-r from-transparent via-black/40 via-35% via-black/85 via-70% to-black"
+                        : "bg-gradient-to-l from-transparent via-black/40 via-35% via-black/85 via-70% to-black"
                     }`}
                   />
                   {/* Mobile dark overlay to maintain complete text legibility while revealing Pokemon */}
-                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-[#080b11]/50 via-[#080b11]/70 to-[#080b11]" />
-                  {/* Subtle top/bottom edge vignetting */}
-                  <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-[#080b11] to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#080b11] to-transparent" />
+                  <div className="absolute inset-0 md:hidden bg-gradient-to-b from-black/50 via-black/80 to-black" />
+                  {/* Subtle top/bottom edge vignetting so head never cuts harshly */}
+                  <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black to-transparent" />
                 </div>
-
-                {/* Soft Themed Ambient Aura Glow */}
-                <div
-                  className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-500 opacity-40 group-hover:opacity-80 ${
-                    isLeft ? `bg-gradient-to-r ${bento.theme.glow}` : `bg-gradient-to-l ${bento.theme.glow}`
-                  }`}
-                />
 
                 {/* Ambient Halftone Grid Noise */}
                 <div className="absolute inset-0 halftone-pattern opacity-5 pointer-events-none z-0" />
 
                 {/* ================= CONTENT & FEATURES SECTION ================= */}
                 <div
-                  className={`relative z-10 w-full md:w-[58%] lg:w-[56%] flex flex-col justify-between py-1 ${
-                    isLeft ? "md:ml-auto md:pl-6 text-left" : "md:mr-auto md:pr-6 text-left"
+                  className={`relative z-10 w-full md:w-[56%] lg:w-[52%] flex flex-col justify-center py-2 ${
+                    isLeft ? "md:ml-auto md:pl-8 text-left" : "md:mr-auto md:pr-8 text-left"
                   }`}
                 >
-                  {/* Category Pill Tag & Index */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase border backdrop-blur-md ${bento.theme.badge}`}
-                    >
+                  {/* Category Pill Tag */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className="px-3 py-1 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase border bg-orange-500/10 text-orange-400 border-orange-500/30 backdrop-blur-md shadow-sm">
                       {bento.categoryName}
                     </span>
-                    <span className="text-[11px] font-mono font-bold text-neutral-400">
-                      // {bento.categoryNum}
-                    </span>
-                    <span className="text-[10px] font-mono font-medium text-neutral-400 hidden sm:inline">
-                      • {bento.pokemonName}
-                    </span>
                   </div>
 
-                  {/* Title & Subtitle */}
+                  {/* Title */}
                   <div className="w-full text-left">
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
                       {bento.title}
                     </h3>
-                    <p className={`text-[11px] sm:text-xs font-bold ${bento.theme.accent} mt-0.5`}>
-                      {bento.subtitle}
-                    </p>
                   </div>
 
-                  {/* Detailed Description */}
-                  <p className="text-[11px] sm:text-xs text-neutral-300/90 leading-relaxed my-2.5 max-w-2xl text-left">
+                  {/* Highlighted Focused Description */}
+                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed my-3 max-w-xl text-left">
                     {bento.description}
                   </p>
 
-                  {/* Compact 3 Highlights Pills */}
-                  <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2 my-2">
-                    {bento.bullets.map((bullet, bIndex) => (
-                      <div
-                        key={bIndex}
-                        className="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/5 flex items-center gap-2 transition-colors group-hover:border-white/10 text-left justify-start"
-                      >
-                        <div
-                          className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${bento.theme.bulletIcon}`}
-                        >
-                          <CheckCircle2 className="w-2.5 h-2.5" />
-                        </div>
-                        <span className="text-[10.5px] sm:text-[11px] font-medium text-neutral-200 leading-tight">
-                          {bullet}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Action CTA Button */}
+                  {/* Unified Action CTA Button */}
                   <div className="w-full pt-2 flex justify-start">
                     <button
                       onClick={() => router.push(bento.href)}
-                      className={`h-9 sm:h-10 min-h-[38px] sm:min-h-[44px] px-5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer text-white ${bento.theme.btn}`}
+                      className="h-10 sm:h-11 min-h-[44px] px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/25 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                     >
                       <span>{bento.cta}</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 </div>

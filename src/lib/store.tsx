@@ -9,6 +9,7 @@ import {
   BulkSubmission,
   DealConfirmation,
   AuthModalMode,
+  BoosterReward,
 } from "@/types";
 import {
   MOCK_USERS,
@@ -18,6 +19,57 @@ import {
 } from "./mock-data";
 import { supabase, isSupabaseConfigured } from "./supabase/client";
 import confetti from "canvas-confetti";
+import {
+  rollBoosterReward,
+  isDailyBoosterClaimable,
+  formatDailyBoosterCountdown,
+} from "./booster-rewards";
+
+interface LocalBoosterStats {
+  manaPoints: number;
+  boosterPacks: number;
+  lastDailyBoosterClaimedAt: string | null;
+  hasReceivedDiscordWelcomePack: boolean;
+  openedBoostersCount: number;
+}
+
+function getLocalBoosterStats(userId: string): LocalBoosterStats {
+  if (typeof window === "undefined") {
+    return {
+      manaPoints: 0,
+      boosterPacks: 0,
+      lastDailyBoosterClaimedAt: null,
+      hasReceivedDiscordWelcomePack: false,
+      openedBoostersCount: 0,
+    };
+  }
+  try {
+    const raw = localStorage.getItem(`manaforge_booster_${userId}`);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error("Fehler beim Lesen der lokalen Booster-Daten:", e);
+  }
+  return {
+    manaPoints: 0,
+    boosterPacks: 0,
+    lastDailyBoosterClaimedAt: null,
+    hasReceivedDiscordWelcomePack: false,
+    openedBoostersCount: 0,
+  };
+}
+
+function setLocalBoosterStats(userId: string, stats: Partial<LocalBoosterStats>) {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getLocalBoosterStats(userId);
+    const updated = { ...current, ...stats };
+    localStorage.setItem(`manaforge_booster_${userId}`, JSON.stringify(updated));
+  } catch (e) {
+    console.error("Fehler beim Speichern der lokalen Booster-Daten:", e);
+  }
+}
 
 interface StoreContextType {
   currentUser: UserProfile | null;
@@ -47,6 +99,17 @@ interface StoreContextType {
   confirmDeal: (dealId: string, asRole: "seller" | "buyer") => void;
   createDeal: (listing: CardListing, buyer: UserProfile) => void;
   deleteListing: (listingId: string) => void;
+  // Booster Arena & Mana System
+  manaPoints: number;
+  availableBoosters: number;
+  openedBoostersCount: number;
+  canClaimDailyBooster: boolean;
+  dailyBoosterCountdown: string;
+  isBoosterModalOpen: boolean;
+  openBoosterModal: () => void;
+  closeBoosterModal: () => void;
+  claimDailyBooster: () => Promise<boolean>;
+  ripBoosterPack: () => Promise<BoosterReward>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -324,6 +387,39 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           supabase.from("profiles").update({ role: "admin" }).eq("id", profile.id).then();
         }
 
+        const localStats = getLocalBoosterStats(profile.id);
+        const manaPoints = profile.mana_points ?? localStats.manaPoints ?? 0;
+        let boosterPacks = profile.booster_packs ?? localStats.boosterPacks ?? 0;
+        const lastDailyBoosterClaimedAt = profile.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null;
+        let hasReceivedDiscordWelcomePack = Boolean(profile.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack);
+        const openedBoostersCount = profile.opened_boosters_count ?? localStats.openedBoostersCount ?? 0;
+
+        const isDiscordUser = Boolean(
+          user.app_metadata?.provider === "discord" ||
+          profile.discord_username ||
+          (typeof window !== "undefined" && sessionStorage.getItem("manaforge_discord_welcome") === "true")
+        );
+
+        // Discord Willkommens-Booster vergeben, falls noch nicht erhalten
+        if (isDiscordUser && !hasReceivedDiscordWelcomePack) {
+          boosterPacks += 1;
+          hasReceivedDiscordWelcomePack = true;
+          setLocalBoosterStats(profile.id, {
+            boosterPacks,
+            hasReceivedDiscordWelcomePack: true,
+          });
+          if (isSupabaseConfigured && supabase) {
+            supabase
+              .from("profiles")
+              .update({
+                booster_packs: boosterPacks,
+                has_received_discord_welcome_pack: true,
+              })
+              .eq("id", profile.id)
+              .then();
+          }
+        }
+
         const authUser: UserProfile = {
           id: profile.id,
           username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || (isLuffyAdmin ? "all_out_luffy" : "Trainer"),
@@ -336,6 +432,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           bio: profile.bio || (isLuffyAdmin ? "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
           createdAt: profile.created_at || new Date().toISOString(),
           email: user.email,
+          manaPoints,
+          boosterPacks,
+          lastDailyBoosterClaimedAt,
+          hasReceivedDiscordWelcomePack,
+          openedBoostersCount,
         };
 
         setSessionUser(authUser);
@@ -401,6 +502,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 supabase.from("profiles").update({ role: "admin" }).eq("id", p.id).then();
               }
 
+              const localStats = getLocalBoosterStats(p.id);
               return {
                 id: p.id,
                 username: p.username,
@@ -412,6 +514,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 discordUsername: p.discord_username || (isLuffy ? "freakyfamous#0" : undefined),
                 bio: p.bio || (isLuffy ? "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
                 createdAt: p.created_at,
+                manaPoints: p.mana_points ?? localStats.manaPoints ?? 0,
+                boosterPacks: p.booster_packs ?? localStats.boosterPacks ?? 0,
+                lastDailyBoosterClaimedAt: p.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null,
+                hasReceivedDiscordWelcomePack: Boolean(p.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack),
+                openedBoostersCount: p.opened_boosters_count ?? localStats.openedBoostersCount ?? 0,
               };
             });
 
@@ -423,11 +530,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                     f.username.toLowerCase() === m.username.toLowerCase() ||
                     (f.discordUsername && m.discordUsername && f.discordUsername.toLowerCase() === m.discordUsername.toLowerCase())
                 )
-            );
+            ).map((m) => {
+              const localStats = getLocalBoosterStats(m.id);
+              return {
+                ...m,
+                manaPoints: localStats.manaPoints || m.manaPoints || 0,
+                boosterPacks: localStats.boosterPacks ?? (m.boosterPacks !== undefined ? m.boosterPacks : 0),
+                lastDailyBoosterClaimedAt: localStats.lastDailyBoosterClaimedAt || m.lastDailyBoosterClaimedAt || null,
+                hasReceivedDiscordWelcomePack: localStats.hasReceivedDiscordWelcomePack || Boolean(m.hasReceivedDiscordWelcomePack),
+                openedBoostersCount: localStats.openedBoostersCount || m.openedBoostersCount || 0,
+              };
+            });
 
             setUsers([...mappedProfiles, ...missingSeeds]);
           } else {
-            setUsers(MOCK_USERS);
+            const mappedMocks = MOCK_USERS.map((m) => {
+              const localStats = getLocalBoosterStats(m.id);
+              return {
+                ...m,
+                manaPoints: localStats.manaPoints || m.manaPoints || 0,
+                boosterPacks: localStats.boosterPacks ?? (m.boosterPacks !== undefined ? m.boosterPacks : 0),
+                lastDailyBoosterClaimedAt: localStats.lastDailyBoosterClaimedAt || m.lastDailyBoosterClaimedAt || null,
+                hasReceivedDiscordWelcomePack: localStats.hasReceivedDiscordWelcomePack || Boolean(m.hasReceivedDiscordWelcomePack),
+                openedBoostersCount: localStats.openedBoostersCount || m.openedBoostersCount || 0,
+              };
+            });
+            setUsers(mappedMocks);
           }
 
           // 2. Load listings with joined profile
@@ -474,6 +602,120 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const switchUser = (userId: string) => {
     setCurrentUserId(userId);
+  };
+
+  const [isBoosterModalOpen, setIsBoosterModalOpen] = useState(false);
+  const [dailyBoosterCountdown, setDailyBoosterCountdown] = useState<string>("Bereit!");
+  const [canClaimDailyBooster, setCanClaimDailyBooster] = useState<boolean>(true);
+
+  // Live timer for 24h daily booster countdown
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!currentUser) {
+        setCanClaimDailyBooster(true);
+        setDailyBoosterCountdown("Bereit!");
+        return;
+      }
+      const info = formatDailyBoosterCountdown(currentUser.lastDailyBoosterClaimedAt);
+      setCanClaimDailyBooster(info.isReady);
+      setDailyBoosterCountdown(info.formatted);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  const openBoosterModal = () => setIsBoosterModalOpen(true);
+  const closeBoosterModal = () => setIsBoosterModalOpen(false);
+
+  const updateUserBoosterData = async (
+    userId: string,
+    updates: {
+      manaPoints?: number;
+      boosterPacks?: number;
+      lastDailyBoosterClaimedAt?: string | null;
+      hasReceivedDiscordWelcomePack?: boolean;
+      openedBoostersCount?: number;
+    }
+  ) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, ...updates } : u))
+    );
+    if (sessionUser && sessionUser.id === userId) {
+      setSessionUser((prev) => (prev ? { ...prev, ...updates } : null));
+    }
+    setLocalBoosterStats(userId, updates);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const payload: Record<string, unknown> = {};
+        if (updates.manaPoints !== undefined) payload.mana_points = updates.manaPoints;
+        if (updates.boosterPacks !== undefined) payload.booster_packs = updates.boosterPacks;
+        if (updates.lastDailyBoosterClaimedAt !== undefined) payload.last_daily_booster_at = updates.lastDailyBoosterClaimedAt;
+        if (updates.hasReceivedDiscordWelcomePack !== undefined) payload.has_received_discord_welcome_pack = updates.hasReceivedDiscordWelcomePack;
+        if (updates.openedBoostersCount !== undefined) payload.opened_boosters_count = updates.openedBoostersCount;
+
+        await supabase.from("profiles").update(payload).eq("id", userId);
+      } catch (err) {
+        console.warn("Supabase Booster-Aktualisierung übersprungen (Lokaler Speicher aktiv):", err);
+      }
+    }
+  };
+
+  const claimDailyBooster = async (): Promise<boolean> => {
+    if (!currentUser) {
+      openAuthModal("login");
+      return false;
+    }
+    const claimable = isDailyBoosterClaimable(currentUser.lastDailyBoosterClaimedAt);
+    if (!claimable) {
+      return false;
+    }
+
+    const nowIso = new Date().toISOString();
+    const newPacks = (currentUser.boosterPacks ?? 0) + 1;
+
+    await updateUserBoosterData(currentUser.id, {
+      boosterPacks: newPacks,
+      lastDailyBoosterClaimedAt: nowIso,
+    });
+
+    try {
+      confetti({
+        particleCount: 90,
+        spread: 75,
+        origin: { y: 0.6 },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    return true;
+  };
+
+  const ripBoosterPack = async (): Promise<BoosterReward> => {
+    if (!currentUser) {
+      openAuthModal("login");
+      throw new Error("Bitte melde dich an, um einen Booster zu öffnen.");
+    }
+    const currentPacks = currentUser.boosterPacks ?? 0;
+    if (currentPacks <= 0) {
+      throw new Error("Keine Booster Packs mehr verfügbar.");
+    }
+
+    const reward = rollBoosterReward();
+    const newPacks = Math.max(0, currentPacks - 1);
+    const newMana = (currentUser.manaPoints ?? 0) + reward.manaPoints;
+    const newOpenedCount = (currentUser.openedBoostersCount ?? 0) + 1;
+
+    await updateUserBoosterData(currentUser.id, {
+      boosterPacks: newPacks,
+      manaPoints: newMana,
+      openedBoostersCount: newOpenedCount,
+    });
+
+    return reward;
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
@@ -1007,6 +1249,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addBulkSubmission,
         confirmDeal,
         createDeal,
+        manaPoints: currentUser?.manaPoints ?? 0,
+        availableBoosters: currentUser?.boosterPacks ?? 0,
+        openedBoostersCount: currentUser?.openedBoostersCount ?? 0,
+        canClaimDailyBooster,
+        dailyBoosterCountdown: dailyBoosterCountdown,
+        isBoosterModalOpen,
+        openBoosterModal,
+        closeBoosterModal,
+        claimDailyBooster,
+        ripBoosterPack,
       }}
     >
       {children}

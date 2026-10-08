@@ -13,6 +13,11 @@ create table if not exists public.profiles (
   whatnot_username text,
   discord_username text,
   bio text,
+  mana_points integer default 0,
+  booster_packs integer default 0,
+  last_daily_booster_at timestamp with time zone,
+  has_received_discord_welcome_pack boolean default false,
+  opened_boosters_count integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -68,7 +73,8 @@ begin
   end;
 
   insert into public.profiles (
-    id, username, avatar_url, role, verified, deals_count, discord_username
+    id, username, avatar_url, role, verified, deals_count, discord_username,
+    mana_points, booster_packs, has_received_discord_welcome_pack, opened_boosters_count
   )
   values (
     new.id,
@@ -77,7 +83,11 @@ begin
     user_role,
     case when user_role in ('founder', 'admin') then true else false end,
     0,
-    disc
+    disc,
+    0,
+    case when disc is not null or new.raw_app_meta_data->>'provider' = 'discord' then 1 else 0 end,
+    case when disc is not null or new.raw_app_meta_data->>'provider' = 'discord' then true else false end,
+    0
   )
   on conflict (id) do update set
     avatar_url = coalesce(excluded.avatar_url, profiles.avatar_url),

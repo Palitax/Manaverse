@@ -13,6 +13,10 @@ export const MOCK_USERS: UserProfile[] = [
     discordUsername: "Levin#0001",
     bio: "Inhaber Manacards & Streamer auf Whatnot. Vintage & High-End Modern.",
     createdAt: "2024-01-10T12:00:00Z",
+    manaPoints: 750,
+    boosterPacks: 2,
+    hasReceivedDiscordWelcomePack: true,
+    openedBoostersCount: 5,
   },
   {
     id: "a0000000-0000-0000-0000-000000000004",
@@ -25,6 +29,10 @@ export const MOCK_USERS: UserProfile[] = [
     discordUsername: "freakyfamous#0",
     bio: "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0",
     createdAt: "2024-01-20T10:00:00Z",
+    manaPoints: 1200,
+    boosterPacks: 1,
+    hasReceivedDiscordWelcomePack: true,
+    openedBoostersCount: 8,
   },
   {
     id: "a0000000-0000-0000-0000-000000000002",
@@ -37,6 +45,10 @@ export const MOCK_USERS: UserProfile[] = [
     discordUsername: "Tim_Poke#1337",
     bio: "Leidenschaftlicher Sammler von Vintage WOTC & Glurak Karten.",
     createdAt: "2024-02-15T10:30:00Z",
+    manaPoints: 300,
+    boosterPacks: 1,
+    hasReceivedDiscordWelcomePack: true,
+    openedBoostersCount: 2,
   },
   {
     id: "a0000000-0000-0000-0000-000000000003",
@@ -49,6 +61,10 @@ export const MOCK_USERS: UserProfile[] = [
     discordUsername: "Misty#2468",
     bio: "Wasser-Pokémon Enthusiastin & Beta-Testerin für Manaforge.",
     createdAt: "2024-03-01T14:20:00Z",
+    manaPoints: 150,
+    boosterPacks: 1,
+    hasReceivedDiscordWelcomePack: true,
+    openedBoostersCount: 1,
   },
 ];
 

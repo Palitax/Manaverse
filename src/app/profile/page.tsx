@@ -8,6 +8,7 @@ import { UserRole } from "@/types";
 import {
   ShieldCheck,
   CheckCircle,
+  CheckCircle2,
   Crown,
   Sparkles,
   ExternalLink,
@@ -17,9 +18,14 @@ import {
   Save,
   Zap,
   Lock,
+  Gift,
+  Flame,
+  Timer,
+  ChevronRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
+import { BoosterPackCard } from "@/components/booster/booster-pack-card";
 
 function DiscordIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -39,6 +45,13 @@ export default function ProfilePage() {
     logout,
     isAuthenticated,
     openAuthModal,
+    manaPoints,
+    availableBoosters,
+    openedBoostersCount,
+    canClaimDailyBooster,
+    dailyBoosterCountdown,
+    openBoosterModal,
+    claimDailyBooster,
   } = useStore();
 
   const [username, setUsername] = useState(currentUser?.username || "");
@@ -219,6 +232,260 @@ export default function ProfilePage() {
               )}
               style={{ width: `${Math.min(100, (currentUser.dealsCount / 3) * 100)}%` }}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* MANAFORGE BOOSTER ARENA & SCHATZKAMMER (HIGHLIGHT SECTION) */}
+      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-orange-500/30 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(249,115,22,0.15)] bg-gradient-to-b from-[#131622]/95 via-[#0c0f18]/95 to-[#080a10]/95">
+        <BorderBeam size={280} duration={8} colorFrom="#f59e0b" colorTo="#06b6d4" />
+
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-orange-500/15 via-amber-500/5 to-transparent pointer-events-none" />
+
+        {/* Header */}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-orange-500/40 text-[11px] font-black uppercase text-amber-300 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>Digital Booster Opening</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+              <span>Manaforge Booster Arena</span>
+              <Flame className="w-6 h-6 text-orange-500 fill-orange-500 animate-pulse" />
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-xl mt-1 leading-relaxed">
+              Rippe digitale Manaforge Booster mit interaktiver Foil-Animation, entdecke seltene Mana-Kristalle und sichere dir alle 24 Stunden deinen kostenlosen Daily Booster!
+            </p>
+          </div>
+
+          {/* Quick Counter Badges */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="px-4 py-2 rounded-2xl bg-black/50 border border-white/10 backdrop-blur-md">
+              <span className="text-[10px] text-neutral-400 block font-semibold">Booster verfügbar</span>
+              <span className="text-lg font-black text-white flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+                {availableBoosters} {availableBoosters === 1 ? "Pack" : "Packs"}
+              </span>
+            </div>
+
+            <div className="px-4 py-2 rounded-2xl bg-black/50 border border-orange-500/30 backdrop-blur-md">
+              <span className="text-[10px] text-neutral-400 block font-semibold">Mana-Guthaben</span>
+              <span className="text-lg font-black text-amber-400 flex items-center gap-1.5">
+                <Flame className="w-4 h-4 fill-amber-400" />
+                {manaPoints.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Body: Left 3D Booster Showcase / Right Rewards Dashboard */}
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8">
+          {/* Left Column: Interactive 3D Booster Showcase */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-4">
+            <div
+              onClick={() => {
+                openBoosterModal();
+              }}
+              className="relative cursor-pointer transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              title="Klicke hier, um den Booster zu öffnen!"
+            >
+              <BoosterPackCard
+                size="hero"
+                showRipGuide={true}
+                interactive={true}
+                className="mx-auto"
+              />
+
+              {/* Ready Indicator Floating Tag */}
+              {availableBoosters > 0 && (
+                <div className="absolute -top-3 inset-x-0 mx-auto w-fit px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 border border-white/40 text-black text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.8)] animate-bounce flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 fill-black" />
+                  <span>{availableBoosters}x Bereit zum Rippen!</span>
+                </div>
+              )}
+            </div>
+
+            {/* Primary Action Button directly under pack */}
+            <div className="w-full max-w-xs space-y-2">
+              {availableBoosters > 0 ? (
+                <button
+                  type="button"
+                  onClick={openBoosterModal}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-sm shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2 group"
+                >
+                  <Zap className="w-5 h-5 fill-white text-white group-hover:scale-110 transition-transform" />
+                  <span>Jetzt Booster rippen!</span>
+                  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </button>
+              ) : canClaimDailyBooster ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await claimDailyBooster();
+                    openBoosterModal();
+                  }}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
+                >
+                  <Gift className="w-5 h-5 text-white" />
+                  <span>Täglichen Booster abholen & öffnen</span>
+                </button>
+              ) : (
+                <div className="text-center p-3 rounded-2xl bg-black/40 border border-white/10">
+                  <p className="text-xs text-neutral-400 font-semibold flex items-center justify-center gap-1.5">
+                    <Timer className="w-4 h-4 text-amber-400" />
+                    <span>Nächster Gratis-Booster in:</span>
+                  </p>
+                  <p className="text-sm font-black text-amber-300 mt-0.5">
+                    {dailyBoosterCountdown}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-[11px] text-center text-neutral-400">
+                Mit der Maus oder per Wischgeste aufziehen & Karte aufdecken.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column: Rewards Dashboard & Daily Claim Cards */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Card 1: Daily 24h Booster Claim */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-orange-500/40 transition-colors">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+                    <Gift className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Täglicher Gratis-Booster</h3>
+                    <p className="text-[11px] text-neutral-400">Alle 24 Stunden 1x kostenlos abholbar</p>
+                  </div>
+                </div>
+
+                <div>
+                  {canClaimDailyBooster ? (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      Jetzt abholbereit
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
+                      <Timer className="w-3.5 h-3.5 text-amber-400" />
+                      In {dailyBoosterCountdown}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                <p className="text-xs text-neutral-300">
+                  {canClaimDailyBooster
+                    ? "Dein täglicher Bonus liegt bereit. Klicke auf Abholen, um deinen Booster direkt gutgeschrieben zu bekommen."
+                    : `Du hast deinen täglichen Booster bereits abgeholt. Schau in ${dailyBoosterCountdown} wieder vorbei.`}
+                </p>
+
+                {canClaimDailyBooster && (
+                  <button
+                    type="button"
+                    onClick={claimDailyBooster}
+                    className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all shadow-md shadow-emerald-600/30 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
+                  >
+                    <Gift className="w-4 h-4" />
+                    <span>Booster einsammeln</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Card 2: Discord Welcome Pack Status */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-indigo-500/40 transition-colors">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2]">
+                    <DiscordIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Discord-Registrierungs-Booster</h3>
+                    <p className="text-[11px] text-neutral-400">Einmaliger Willkommens-Bonus für Discord-User</p>
+                  </div>
+                </div>
+
+                <div>
+                  {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername ? (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-bold">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
+                      Freigeschaltet
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black animate-pulse">
+                      ⚡ 1x Gratis Booster Bonus
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                <p className="text-xs text-neutral-300">
+                  {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername
+                    ? "Dein Discord-Konto wurde verknüpft und dein Free Booster freigeschaltet."
+                    : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster Pack geschenkt!"}
+                </p>
+
+                {!(currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername) && (
+                  <button
+                    type="button"
+                    onClick={() => loginWithDiscord()}
+                    className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-black text-xs transition-all shadow-md shadow-[#5865F2]/30 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
+                  >
+                    <DiscordIcon className="w-4 h-4" />
+                    <span>Mit Discord verbinden</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: Loot Table & Drop Rarities */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Mögliche Funde & Seltenheitsgrade
+                </span>
+                <span className="text-neutral-400 text-[11px]">
+                  Bisher geöffnet: <b className="text-white font-bold">{openedBoostersCount}</b>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <span className="text-[10px] uppercase font-black text-emerald-400 block">Häufig (50%)</span>
+                  <span className="text-xs font-bold text-white mt-0.5 block">100 Mana</span>
+                  <span className="text-[9px] text-neutral-400">Mana-Splitter</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                  <span className="text-[10px] uppercase font-black text-cyan-400 block">Selten (30%)</span>
+                  <span className="text-xs font-bold text-white mt-0.5 block">250 Mana</span>
+                  <span className="text-[9px] text-neutral-400">Leuchtkristall</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30">
+                  <span className="text-[10px] uppercase font-black text-purple-400 block">Episch (15%)</span>
+                  <span className="text-xs font-bold text-white mt-0.5 block">500 Mana</span>
+                  <span className="text-[9px] text-neutral-400">Prisma-Kristall</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                  <span className="text-[10px] uppercase font-black text-amber-400 block flex items-center justify-center gap-1">
+                    <Crown className="w-3 h-3 fill-amber-400" />
+                    Mythisch (5%)
+                  </span>
+                  <span className="text-xs font-black text-amber-300 mt-0.5 block">1.000 Mana</span>
+                  <span className="text-[9px] text-neutral-300 font-semibold">Radiant Crystal</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

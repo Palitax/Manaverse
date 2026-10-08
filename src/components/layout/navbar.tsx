@@ -38,6 +38,9 @@ export function Navbar() {
     loginWithDiscord,
     logout,
     openAuthModal,
+    availableBoosters,
+    manaPoints,
+    openBoosterModal,
   } = useStore();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -124,23 +127,46 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="relative">
-              <button
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] cursor-pointer"
-              >
-                <HoloAvatarFrame
-                  avatarUrl={currentUser.avatarUrl}
-                  username={currentUser.username}
-                  role={currentUser.role}
-                  verified={currentUser.verified}
-                  size="sm"
-                />
-                <span className="hidden sm:inline-block text-sm font-semibold text-white">
-                  {currentUser.username}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
-              </button>
+            <div className="flex items-center gap-2">
+              {/* Mana Points Counter Pill */}
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 border border-orange-500/30 text-amber-300 text-xs font-bold backdrop-blur-md shadow-sm">
+                <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span>{manaPoints.toLocaleString()} Mana</span>
+              </div>
+
+              {/* Booster Ready Button */}
+              {availableBoosters > 0 && (
+                <button
+                  type="button"
+                  onClick={openBoosterModal}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-xs font-black shadow-[0_0_15px_rgba(249,115,22,0.45)] active:scale-95 transition-all cursor-pointer min-h-[36px] animate-pulse"
+                  title="Jetzt Booster digital rippen!"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-white text-white" />
+                  <span className="hidden sm:inline">Booster</span>
+                  <span className="bg-black/50 px-1.5 py-0.5 rounded-full text-[10px] font-black">
+                    {availableBoosters}
+                  </span>
+                </button>
+              )}
+
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] cursor-pointer"
+                >
+                  <HoloAvatarFrame
+                    avatarUrl={currentUser.avatarUrl}
+                    username={currentUser.username}
+                    role={currentUser.role}
+                    verified={currentUser.verified}
+                    size="sm"
+                  />
+                  <span className="hidden sm:inline-block text-sm font-semibold text-white">
+                    {currentUser.username}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
+                </button>
 
               {userDropdownOpen && (
                 <div
@@ -171,6 +197,23 @@ export function Navbar() {
                       </p>
                     )}
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      openBoosterModal();
+                    }}
+                    className="w-full text-left flex items-center justify-between px-3 py-2 text-sm text-amber-300 hover:text-white hover:bg-orange-500/15 rounded-lg transition-colors font-bold cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      Booster Arena
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 font-black">
+                      {availableBoosters} {availableBoosters === 1 ? "Pack" : "Packs"}
+                    </span>
+                  </button>
 
                   <Link
                     href="/profile"
@@ -203,9 +246,10 @@ export function Navbar() {
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+    </div>
 
       {/* Modern iOS 26 Floating Island Tab Bar */}
       <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-2.5 right-2.5 max-w-md mx-auto z-50 pointer-events-auto">

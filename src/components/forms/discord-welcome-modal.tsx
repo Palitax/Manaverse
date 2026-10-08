@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   Save,
   ArrowRight,
+  Zap,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -51,7 +52,7 @@ const AVATAR_PRESETS = [
 ];
 
 export function DiscordWelcomeModal() {
-  const { currentUser, updateProfile } = useStore();
+  const { currentUser, updateProfile, openBoosterModal } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [whatnotUsername, setWhatnotUsername] = useState("");
@@ -176,6 +177,42 @@ export function DiscordWelcomeModal() {
           <p className="text-xs text-neutral-300 max-w-sm mx-auto leading-relaxed">
             Dein Discord-Account wurde verknüpft. Hier kannst du deinen Trainer-Namen, deine Bio und dein Profilbild direkt anpassen.
           </p>
+        </div>
+
+        {/* Free Discord Welcome Booster Reward Card */}
+        <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-cyan-500/20 border border-orange-500/50 shadow-lg relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5 w-full sm:w-auto">
+            <div className="w-12 h-16 rounded-xl overflow-hidden border border-amber-400/50 shadow-md shrink-0 bg-neutral-900">
+              <img
+                src="/manaforge-booster.jpg"
+                alt="Manaforge Booster"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-amber-400">
+                <Sparkles className="w-3 h-3 text-amber-300" />
+                <span>Discord-Bonus erhalten!</span>
+              </div>
+              <h3 className="text-sm font-black text-white">
+                1x Gratis Manaforge Booster Pack
+              </h3>
+              <p className="text-[11px] text-neutral-300">
+                Öffne deinen Booster digital und sammle Mana-Punkte.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              openBoosterModal();
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs shadow-md shadow-orange-500/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px] whitespace-nowrap"
+          >
+            <Zap className="w-4 h-4 fill-white" />
+            <span>Jetzt Booster rippen</span>
+          </button>
         </div>
 
         {/* Form Body */}

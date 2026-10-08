@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { SlabsVideoBackground } from "@/components/background/slabs-video-background";
 import { AuthModal } from "@/components/forms/auth-modal";
 import { DiscordWelcomeModal } from "@/components/forms/discord-welcome-modal";
+import { BoosterRipModal } from "@/components/booster/booster-rip-modal";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
           <AuthModal />
           <DiscordWelcomeModal />
+          <BoosterRipModal />
         </StoreProvider>
         {/* Luxury 3D Graded Slabs Video Background & Ambience Controls */}
         <SlabsVideoBackground />

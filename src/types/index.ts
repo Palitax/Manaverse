@@ -20,11 +20,29 @@ export interface PublicUserProfile {
   discordUsername?: string;
   bio?: string;
   createdAt: string;
+  manaPoints?: number;
+  boosterPacks?: number;
+  lastDailyBoosterClaimedAt?: string | null;
+  hasReceivedDiscordWelcomePack?: boolean;
+  openedBoostersCount?: number;
 }
 
 // Authenticated user's own profile
 export interface UserProfile extends PublicUserProfile {
   email?: string;
+}
+
+export type BoosterRarity = 'common' | 'rare' | 'epic' | 'mythic';
+
+export interface BoosterReward {
+  id: string;
+  title: string;
+  subtitle: string;
+  rarity: BoosterRarity;
+  rarityLabel: string;
+  manaPoints: number;
+  cardImage: string;
+  flavorText: string;
 }
 
 export interface CardListing {
