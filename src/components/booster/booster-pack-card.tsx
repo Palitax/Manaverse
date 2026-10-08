@@ -135,22 +135,22 @@ export function BoosterPackCard({
           "bg-gradient-to-b from-[#181d2a] via-[#0d111a] to-[#07090e]"
         )}
       >
-        {/* ================= BACKGROUND CARDS PEEKING OUT WHEN TORN ================= */}
+        {/* ================= BACKGROUND CARDS PEEKING OUT WHEN TORN/RIPPED ================= */}
         {(isTearing || isRipped) && (
-          <div className="absolute inset-x-3.5 top-2.5 h-36 rounded-xl overflow-hidden shadow-2xl z-0 transition-opacity">
+          <div className="absolute inset-x-3.5 top-2.5 h-40 rounded-xl overflow-hidden shadow-2xl z-0 transition-opacity">
             <img
               src="/manaforge-card-back.jpg"
               alt="Karten im Booster"
               className="w-full h-full object-cover object-top"
             />
             {/* Mystical glow shining inside open pack mouth */}
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-400/30 via-transparent to-black/70 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/30 via-amber-400/20 to-black/80 pointer-events-none" />
           </div>
         )}
 
-        {/* ================= WHOLE PACK (WHEN NOT TORN) ================= */}
-        {!isTearing && !isRipped && (
-          <div className="relative w-full h-full">
+        {/* ================= FULL BASE IMAGE (UNTORN BASE) ================= */}
+        {!isRipped && (
+          <div className="absolute inset-0 z-[5] pointer-events-none">
             <img
               src="/manaforge-booster.png"
               alt="Manaforge Magier Booster Pack"
@@ -159,101 +159,90 @@ export function BoosterPackCard({
                 isHovered && "scale-[1.01]"
               )}
             />
-
-            {/* Dynamic Holographic Foil Glare Overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
-              style={{
-                opacity: isHovered ? 0.75 : 0.35,
-                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.9) 0%, rgba(34,211,238,0.45) 25%, rgba(249,115,22,0.3) 50%, transparent 75%)`,
-              }}
-            />
-
-            {/* Metallic Rainbow Reflection */}
-            <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-40"
-              style={{
-                background: `linear-gradient(${
-                  115 + rotateY * 3
-                }deg, transparent 20%, rgba(255, 0, 128, 0.35) 40%, rgba(0, 240, 255, 0.45) 50%, rgba(255, 215, 0, 0.35) 60%, transparent 80%)`,
-              }}
-            />
           </div>
         )}
 
-        {/* ================= SPLIT PACK (DURING TEAR & RIPPED) ================= */}
-        {(isTearing || isRipped) && (
-          <>
-            {/* 1. BOTTOM BODY (Below 10.5% tear line - keeps MANAFORGE logo & wizard intact) */}
+        {/* ================= BOTTOM PACK BODY (Below 10.5% tear line) ================= */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            clipPath: "polygon(0% 10.5%, 100% 10.5%, 100% 100%, 0% 100%)",
+          }}
+        >
+          <img
+            src="/manaforge-booster.png"
+            alt="Manaforge Booster Korpus"
+            className="w-full h-full object-cover object-center pointer-events-none"
+          />
+
+          {/* Dynamic Holographic Foil Glare Overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
+            style={{
+              opacity: isHovered ? 0.75 : 0.35,
+              background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.9) 0%, rgba(34,211,238,0.45) 25%, rgba(249,115,22,0.3) 50%, transparent 75%)`,
+            }}
+          />
+
+          {/* Metallic Rainbow Reflection */}
+          <div
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-40"
+            style={{
+              background: `linear-gradient(${
+                115 + rotateY * 3
+              }deg, transparent 20%, rgba(255, 0, 128, 0.35) 40%, rgba(0, 240, 255, 0.45) 50%, rgba(255, 215, 0, 0.35) 60%, transparent 80%)`,
+            }}
+          />
+        </div>
+
+        {/* ================= TOP CAP (Above 10.5% tear line - Peels and flies off!) ================= */}
+        <div
+          className={cn(
+            "absolute inset-x-0 top-0 z-20 pointer-events-none",
+            isRipped
+              ? "animate-cap-flyoff"
+              : isTearing
+              ? "duration-75 ease-out transition-transform"
+              : "duration-300 transition-transform"
+          )}
+          style={{
+            height: "10.5%",
+            transformOrigin: isRipped ? "center center" : "100% 100%",
+            transform: isRipped
+              ? undefined // animated via @keyframes booster-cap-flyoff
+              : isTearing
+              ? `rotate(-${Math.min(10, (tearProgress / 100) * 10)}deg) translateY(-${(tearProgress / 100) * 8}px)`
+              : "none",
+          }}
+        >
+          <div className="w-full h-full overflow-hidden relative">
+            <img
+              src="/manaforge-booster.png"
+              alt="Manaforge Booster Deckel"
+              className="absolute top-0 left-0 w-full object-cover object-top pointer-events-none"
+              style={{ height: "952.38%" }}
+            />
+            {/* Top Cap Holo Glare */}
             <div
-              className="absolute inset-0 z-10"
+              className="absolute inset-0 pointer-events-none mix-blend-color-dodge transition-opacity duration-300"
               style={{
-                clipPath: "polygon(0% 10.5%, 100% 10.5%, 100% 100%, 0% 100%)",
+                opacity: isHovered ? 0.75 : 0.4,
+                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y * 9.5}%, rgba(255,255,255,0.9) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
               }}
-            >
-              <img
-                src="/manaforge-booster.png"
-                alt="Manaforge Booster Korpus"
-                className="w-full h-full object-cover object-center pointer-events-none"
-              />
-              <div
-                className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-40"
-                style={{
-                  background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.8) 0%, rgba(34,211,238,0.4) 30%, transparent 70%)`,
-                }}
-              />
-            </div>
+            />
+          </div>
+        </div>
 
-            {/* 2. TOP CAP (Above 10.5% tear line - Peels and flies off Pokémon Pocket style!) */}
-            <div
-              className={cn(
-                "absolute inset-0 z-20 pointer-events-none origin-bottom-right transition-all",
-                isRipped
-                  ? "duration-700 ease-out"
-                  : "duration-75 ease-out"
-              )}
-              style={
-                isTearing
-                  ? {
-                      clipPath: "polygon(0% 0%, 100% 0%, 100% 10.5%, 0% 10.5%)",
-                      transform: `rotate(${tearAngle}deg) translate(${tearOffsetX}px, -${tearOffsetY}px)`,
-                      transformOrigin: "bottom right",
-                    }
-                  : isRipped
-                  ? {
-                      clipPath: "polygon(0% 0%, 100% 0%, 100% 10.5%, 0% 10.5%)",
-                      transform: "translate(75px, -280px) rotate(34deg) scale(1.15)",
-                      opacity: 0,
-                      transition: "transform 0.65s cubic-bezier(0.12, 0.8, 0.32, 1.2), opacity 0.5s ease-out",
-                    }
-                  : { clipPath: "polygon(0% 0%, 100% 0%, 100% 10.5%, 0% 10.5%)" }
-              }
-            >
-              <img
-                src="/manaforge-booster.png"
-                alt="Manaforge Booster Deckel"
-                className="w-full h-full object-cover object-center"
-              />
-              <div
-                className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-60"
-                style={{
-                  background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.9) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
-                }}
-              />
-            </div>
-
-            {/* 3. MOMENTARY LASER FLASH ON RIP */}
-            {isRipped && (
-              <div
-                className="absolute inset-x-0 z-30 pointer-events-none flex items-center justify-center -translate-y-1/2"
-                style={{ top: "10.5%" }}
-              >
-                <div className="w-[140%] h-4 bg-gradient-to-r from-transparent via-white to-transparent blur-[2px] animate-rip-flash" />
-                <div className="absolute w-full h-8 bg-gradient-to-r from-transparent via-cyan-400 to-transparent blur-md animate-rip-flash" />
-                <div className="absolute w-24 h-24 rounded-full bg-amber-400/80 blur-xl animate-ping" />
-              </div>
-            )}
-          </>
+        {/* ================= MOMENTARY LASER FLASH ON RIP ================= */}
+        {isRipped && (
+          <div
+            className="absolute inset-x-0 z-30 pointer-events-none flex items-center justify-center -translate-y-1/2"
+            style={{ top: "10.5%" }}
+          >
+            <div className="w-[140%] h-4 bg-gradient-to-r from-transparent via-white to-transparent blur-[2px] animate-rip-flash" />
+            <div className="absolute w-full h-8 bg-gradient-to-r from-transparent via-cyan-400 to-transparent blur-md animate-rip-flash" />
+            <div className="absolute w-24 h-24 rounded-full bg-amber-400/80 blur-xl animate-ping" />
+          </div>
         )}
 
         {/* ================= POKÉMON POCKET STYLE TEAR SEAM & SWIPE CUE ================= */}
@@ -263,10 +252,7 @@ export function BoosterPackCard({
             style={{ top: "10.5%" }}
           >
             {/* The Perforated Luminous Tear Seam */}
-            <div className="relative -translate-y-1/2 flex items-center px-1">
-              {/* Contrast Underlay Band */}
-              <div className="absolute inset-x-0 h-4 -top-2 bg-black/60 backdrop-blur-[2px]" />
-
+            <div className="relative -translate-y-1/2 flex items-center px-0.5">
               {/* Glowing Dashed Perforation Line */}
               <div
                 className={cn(
@@ -281,8 +267,8 @@ export function BoosterPackCard({
               <div className="absolute inset-x-0 h-1.5 -top-[3px] animate-seam-energy opacity-90 pointer-events-none z-10" />
 
               {/* Edge Tear Notches */}
-              <div className="absolute left-0 -top-1.5 w-3 h-3 bg-cyan-400 rotate-45 -translate-x-1.5 shadow-[0_0_8px_rgba(6,182,212,1)] z-10" />
-              <div className="absolute right-0 -top-1.5 w-3 h-3 bg-amber-400 rotate-45 translate-x-1.5 shadow-[0_0_8px_rgba(245,158,11,1)] z-10" />
+              <div className="absolute left-0 -top-1.5 w-3 h-3 bg-gradient-to-br from-cyan-300 to-cyan-500 rotate-45 -translate-x-1.5 shadow-[0_0_10px_rgba(6,182,212,1)] z-10" />
+              <div className="absolute right-0 -top-1.5 w-3 h-3 bg-gradient-to-bl from-amber-300 to-amber-500 rotate-45 translate-x-1.5 shadow-[0_0_10px_rgba(245,158,11,1)] z-10" />
 
               {/* Active Cut Progress & Spark (During dragging) */}
               {tearProgress > 0 && (
@@ -308,9 +294,9 @@ export function BoosterPackCard({
                 <>
                   {/* Gliding Touch Beacon with Trailing Comet Beam */}
                   <div className="absolute top-1/2 -translate-y-1/2 z-20 animate-swipe-glide pointer-events-none">
-                    <div className="absolute right-full top-1/2 -translate-y-1/2 w-24 h-2 bg-gradient-to-r from-transparent via-cyan-400/80 to-white blur-[1px]" />
-                    <div className="relative w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-400 via-white to-amber-300 border-2 border-white shadow-[0_0_20px_rgba(255,255,255,1),0_0_35px_rgba(6,182,212,1),0_0_45px_rgba(245,158,11,0.9)] flex items-center justify-center">
-                      <ChevronRight className="w-4 h-4 text-cyan-950 stroke-[3]" />
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-cyan-400/80 to-white blur-[1px]" />
+                    <div className="relative w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-400 via-white to-amber-300 border-2 border-white shadow-[0_0_16px_rgba(255,255,255,1),0_0_28px_rgba(6,182,212,1),0_0_38px_rgba(245,158,11,0.9)] flex items-center justify-center">
+                      <ChevronRight className="w-3.5 h-3.5 text-cyan-950 stroke-[3]" />
                     </div>
                   </div>
 
@@ -351,11 +337,11 @@ export function BoosterPackCard({
         {/* Shimmer Border Beam */}
         <div className="absolute inset-0 rounded-2xl border border-white/20 pointer-events-none" />
 
-        {/* Holo-Foil Badge */}
+        {/* Holo-Glanz Badge */}
         {interactive && !isRipped && !isLocked && (
           <div className="absolute bottom-5 right-3 z-30 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-cyan-500/40 text-[10px] font-bold text-cyan-300 shadow-lg pointer-events-none">
             <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse" />
-            <span>Holo-Foil</span>
+            <span>Holo-Glanz</span>
           </div>
         )}
 

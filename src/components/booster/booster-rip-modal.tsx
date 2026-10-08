@@ -231,8 +231,14 @@ export function BoosterRipModal() {
       playSoundEffect("tear");
     }
 
-    // Trigger rip if reached 65% OR high-velocity swipe across
-    if (progress >= 65 || (progress >= 30 && velocity > 0.5)) {
+    const totalDx = currentX - startXRef.current;
+    const minSwipeDistance = rect.width * 0.28;
+
+    // Trigger rip if reached 65% AND moved forward, OR high-velocity swipe across
+    if (
+      (progress >= 65 && totalDx > rect.width * 0.15) ||
+      (progress >= 35 && totalDx > minSwipeDistance && velocity > 0.35)
+    ) {
       isDraggingRef.current = false;
       setIsDragging(false);
       try {
@@ -250,7 +256,10 @@ export function BoosterRipModal() {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
 
-    if (tearProgress >= 50) {
+    const trackWidth = tearTrackRef.current ? tearTrackRef.current.getBoundingClientRect().width : 300;
+    const totalDx = lastXRef.current - startXRef.current;
+
+    if (tearProgress >= 50 && totalDx > trackWidth * 0.2) {
       triggerRipComplete();
     } else {
       setTearProgress(0);
@@ -434,96 +443,82 @@ export function BoosterRipModal() {
           </div>
         )}
 
-        {/* ================= CASE 4: ACTIVE RIPPING STAGES (POKÉMON POCKET STYLE) ================= */}
-        {availableBoosters > 0 && (stage === "ready" || stage === "ripping" || stage === "ripped") && (
-          <div className="relative flex flex-col items-center">
-            {/* The 3D Booster Pack */}
-            <div
-              className={cn(
-                "relative transition-all duration-700 ease-out",
-                stage === "ripped" && "scale-[1.01]"
-              )}
-            >
-              <BoosterPackCard
-                size="hero"
-                showRipGuide={stage === "ready" || stage === "ripping"}
-                isRipped={stage === "ripped"}
-                tearProgress={tearProgress}
-                isDragging={isDragging}
-                interactive={stage === "ready"}
-                enableTearInteraction={stage === "ready" || stage === "ripping"}
-                tearTrackRef={tearTrackRef}
-                onTearPointerDown={handlePointerDown}
-                onTearPointerMove={handlePointerMove}
-                onTearPointerUp={handlePointerUp}
-                onTearPointerCancel={handlePointerUp}
-              />
-            </div>
+        {/* ================= ACTIVE RIPPING & CARD EXTRACTION STAGES ================= */}
+        {availableBoosters > 0 &&
+          (stage === "ready" || stage === "ripping" || stage === "ripped" || stage === "extracting") && (
+            <div className="relative flex flex-col items-center">
+              {/* The 3D Booster Pack & Extraction Arena */}
+              <div className="relative flex items-center justify-center">
+                <BoosterPackCard
+                  size="hero"
+                  showRipGuide={stage === "ready" || stage === "ripping"}
+                  isRipped={stage === "ripped" || stage === "extracting"}
+                  tearProgress={tearProgress}
+                  isDragging={isDragging}
+                  interactive={stage === "ready"}
+                  enableTearInteraction={stage === "ready" || stage === "ripping"}
+                  tearTrackRef={tearTrackRef}
+                  onTearPointerDown={handlePointerDown}
+                  onTearPointerMove={handlePointerMove}
+                  onTearPointerUp={handlePointerUp}
+                  onTearPointerCancel={handlePointerUp}
+                />
 
-            {/* Quick 1-Click Rip Fallback (Accessible & Thumb-Friendly per AGENTS.md) */}
-            {(stage === "ready" || stage === "ripping") && (
-              <div className="mt-5 w-full max-w-xs flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={triggerRipComplete}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
-                >
-                  <Zap className="w-4 h-4 fill-white" />
-                  <span>Booster sofort aufreißen (1-Klick)</span>
-                </button>
-                <p className="text-[11px] text-neutral-400 text-center font-medium">
-                  Tipp: Wische mit Finger oder Maus über die leuchtende Naht.
-                </p>
+                {/* STAGE: EXTRACTING - 3 Cards sliding up smoothly out of opened pack */}
+                {stage === "extracting" && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                    {/* Mystical Mana Rays Bursting from Booster Opening */}
+                    <div className="absolute inset-x-4 top-[6%] h-44 bg-gradient-to-t from-cyan-400/60 via-amber-400/35 to-transparent blur-xl animate-pulse z-10" />
+
+                    {/* Left Fan Card */}
+                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/40 bg-neutral-900 animate-card-emerge-left z-20">
+                      <img
+                        src="/manaforge-card-back.jpg"
+                        alt="Manaforge Kartenstapel"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Right Fan Card */}
+                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/40 bg-neutral-900 animate-card-emerge-right z-20">
+                      <img
+                        src="/manaforge-card-back.jpg"
+                        alt="Manaforge Kartenstapel"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Center Main Card rising smoothly out of pack */}
+                    <div className="relative z-30 w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.6)] border-2 border-cyan-400/60 animate-card-emerge-center bg-neutral-900">
+                      <img
+                        src="/manaforge-card-back.jpg"
+                        alt="Hauptkarte"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-radial from-amber-400/30 via-transparent to-transparent animate-pulse" />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* ================= STAGE 2: 3 CARDS SLIDING OUT (KARTEN KOMMEN RAUS) ================= */}
-        {stage === "extracting" && (
-          <div className="relative w-[285px] sm:w-[330px] md:w-[360px] h-[465px] sm:h-[540px] md:h-[590px] flex items-center justify-center z-50 pointer-events-none">
-            {/* Open Booster Pack Body at the bottom */}
-            <div className="absolute inset-0 z-0 opacity-80 scale-95 translate-y-8">
-              <BoosterPackCard
-                size="hero"
-                isRipped={true}
-                tearProgress={100}
-                interactive={false}
-              />
+              {/* Quick 1-Click Rip Fallback (Accessible & Thumb-Friendly per AGENTS.md) */}
+              {(stage === "ready" || stage === "ripping") && (
+                <div className="mt-5 w-full max-w-xs flex flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={triggerRipComplete}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
+                  >
+                    <Zap className="w-4 h-4 fill-white" />
+                    <span>Booster sofort aufreißen (1-Klick)</span>
+                  </button>
+                  <p className="text-[11px] text-neutral-400 text-center font-medium">
+                    Tipp: Wische mit Finger oder Maus über die leuchtende Naht.
+                  </p>
+                </div>
+              )}
             </div>
-
-            {/* Mystical Mana Rays Bursting from Booster Opening */}
-            <div className="absolute inset-x-4 top-[10%] h-36 bg-gradient-to-t from-cyan-400/50 via-amber-400/30 to-transparent blur-xl animate-pulse z-10" />
-
-            {/* Left Fan Card */}
-            <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/30 bg-neutral-900 -rotate-8 -translate-x-12 -translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-70 z-20">
-              <img
-                src="/manaforge-card-back.jpg"
-                alt="Manaforge Kartenstapel"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Right Fan Card */}
-            <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 bg-neutral-900 rotate-8 translate-x-12 -translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-70 z-20">
-              <img
-                src="/manaforge-card-back.jpg"
-                alt="Manaforge Kartenstapel"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Center Main Card rising smoothly out of pack */}
-            <div className="relative z-30 w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] -translate-y-8 rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.6)] border-2 border-cyan-400/60 animate-in slide-in-from-bottom-36 fade-in duration-800 bg-neutral-900">
-              <img
-                src="/manaforge-card-back.jpg"
-                alt="Hauptkarte"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-radial from-amber-400/30 via-transparent to-transparent animate-pulse" />
-            </div>
-          </div>
-        )}
+          )}
 
         {/* ================= STAGES 3 & 4: FLOATING CARD & 3D FLIP REVEAL ================= */}
         {(stage === "reveal_waiting" || stage === "revealed") && reward && (
