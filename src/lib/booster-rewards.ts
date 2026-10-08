@@ -1,4 +1,4 @@
-import { BoosterReward, BoosterRarity } from "@/types";
+import { BoosterReward } from "@/types";
 
 export const BOOSTER_REWARDS: BoosterReward[] = [
   {
@@ -33,7 +33,7 @@ export const BOOSTER_REWARDS: BoosterReward[] = [
   },
   {
     id: "reward-mana-crystal-mythic",
-    title: "Radiant Mana Crystal",
+    title: "Strahlender Mana-Kristall",
     subtitle: "Mythischer Glücksgriff",
     rarity: "mythic",
     rarityLabel: "Mythisch",
@@ -105,7 +105,14 @@ export function formatDailyBoosterCountdown(lastClaimedAt?: string | null): {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-  const formatted = `${hours} Std. ${minutes} Min.`;
+  let formatted: string;
+  if (hours > 0) {
+    formatted = `${hours} Std. ${minutes} Min.`;
+  } else if (minutes > 0) {
+    formatted = `${minutes} Min. ${seconds} Sek.`;
+  } else {
+    formatted = `${seconds} Sek.`;
+  }
 
   return { isReady: false, hours, minutes, seconds, formatted };
 }

@@ -195,7 +195,7 @@ export function DiscordWelcomeModal() {
                 <span>Discord-Bonus erhalten!</span>
               </div>
               <h3 className="text-sm font-black text-white">
-                1x Gratis Manaforge Booster Pack
+                1x Gratis Manaforge Booster
               </h3>
               <p className="text-[11px] text-neutral-300">
                 Öffne deinen Booster digital und sammle Mana-Punkte.

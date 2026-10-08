@@ -10,12 +10,12 @@ import {
   Search,
   PlusCircle,
   ShieldCheck,
-  Settings,
   ChevronDown,
   Home,
   LogOut,
   Zap,
   Flame,
+  Gift,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,7 @@ export function Navbar() {
     logout,
     openAuthModal,
     availableBoosters,
+    canClaimDailyBooster,
     manaPoints,
     openBoosterModal,
   } = useStore();
@@ -135,7 +136,7 @@ export function Navbar() {
               </div>
 
               {/* Booster Ready Button */}
-              {availableBoosters > 0 && (
+              {availableBoosters > 0 ? (
                 <button
                   type="button"
                   onClick={openBoosterModal}
@@ -148,7 +149,20 @@ export function Navbar() {
                     {availableBoosters}
                   </span>
                 </button>
-              )}
+              ) : canClaimDailyBooster ? (
+                <button
+                  type="button"
+                  onClick={openBoosterModal}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-black shadow-[0_0_15px_rgba(16,185,129,0.4)] active:scale-95 transition-all cursor-pointer min-h-[36px] animate-pulse"
+                  title="Täglicher Gratis-Booster bereit!"
+                >
+                  <Gift className="w-3.5 h-3.5 text-white" />
+                  <span className="hidden sm:inline">Gratis-Booster</span>
+                  <span className="bg-black/40 px-1.5 py-0.5 rounded-full text-[10px] font-black">
+                    Neu
+                  </span>
+                </button>
+              ) : null}
 
               <div className="relative">
                 <button
@@ -211,7 +225,7 @@ export function Navbar() {
                       Booster Arena
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 font-black">
-                      {availableBoosters} {availableBoosters === 1 ? "Pack" : "Packs"}
+                      {availableBoosters} {availableBoosters === 1 ? "Booster" : "Booster"}
                     </span>
                   </button>
 

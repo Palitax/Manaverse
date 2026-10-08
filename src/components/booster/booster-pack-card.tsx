@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Scissors, Zap } from "lucide-react";
+import { Sparkles, Scissors, Zap, Lock } from "lucide-react";
 
 interface BoosterPackCardProps {
   className?: string;
@@ -12,6 +12,8 @@ interface BoosterPackCardProps {
   tearProgress?: number; // 0 to 100
   onClick?: () => void;
   interactive?: boolean;
+  isLocked?: boolean;
+  lockedCountdown?: string;
 }
 
 export function BoosterPackCard({
@@ -22,6 +24,8 @@ export function BoosterPackCard({
   tearProgress = 0,
   onClick,
   interactive = true,
+  isLocked = false,
+  lockedCountdown,
 }: BoosterPackCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
@@ -69,8 +73,11 @@ export function BoosterPackCard({
   }[size];
 
   // Calculate tear rotation and displacement from tearProgress
-  const tearAngle = Math.min(25, (tearProgress / 100) * 25);
-  const tearGapY = Math.min(20, (tearProgress / 100) * 20);
+  const tearAngle = Math.min(28, (tearProgress / 100) * 28);
+  const tearOffsetX = (tearProgress / 100) * 20;
+  const tearOffsetY = (tearProgress / 100) * 24;
+
+  const isTearing = tearProgress > 0 && !isRipped;
 
   return (
     <div
@@ -107,88 +114,141 @@ export function BoosterPackCard({
             : "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
         className={cn(
-          "relative w-full h-full rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(249,115,22,0.25)] border border-amber-500/30",
+          "relative w-full h-full rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(249,115,22,0.25)] border border-amber-500/40",
           "bg-gradient-to-b from-[#181d2a] via-[#0d111a] to-[#07090e]"
         )}
       >
-        {/* Top Serrated Crimped Foil Edge */}
-        <div
-          className={cn(
-            "absolute top-0 inset-x-0 h-6 z-20 transition-transform duration-300 origin-bottom-right pointer-events-none",
-            isRipped && "opacity-0 -translate-y-12"
-          )}
-          style={
-            tearProgress > 0 && !isRipped
-              ? {
-                  transform: `rotate(${tearAngle}deg) translateY(-${tearGapY}px)`,
-                }
-              : undefined
-          }
-        >
-          {/* Top Crimping pattern */}
-          <div className="w-full h-full bg-gradient-to-b from-neutral-300 via-neutral-400 to-neutral-600 border-b border-white/40 shadow-md relative overflow-hidden">
+        {/* ================= BACKGROUND CARDS PEEKING OUT WHEN TORN ================= */}
+        {(isTearing || isRipped) && (
+          <div className="absolute inset-x-4 top-4 h-32 rounded-xl overflow-hidden shadow-2xl z-0 opacity-90 transition-opacity">
+            <img
+              src="/manaforge-card-back.jpg"
+              alt="Karten im Booster"
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
+        )}
+
+        {/* ================= WHOLE PACK (WHEN NOT TORN) ================= */}
+        {!isTearing && !isRipped && (
+          <div className="relative w-full h-full">
+            <img
+              src="/manaforge-booster.jpg"
+              alt="Manaforge Premium Booster Pack"
+              className={cn(
+                "w-full h-full object-cover object-center pointer-events-none transition-transform duration-500",
+                isHovered && "scale-[1.02]"
+              )}
+            />
+
+            {/* Dynamic Holographic Foil Glare Overlay */}
             <div
-              className="absolute inset-0 opacity-40"
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
               style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, #fff 0, #fff 3px, #444 3px, #444 6px)",
+                opacity: isHovered ? 0.8 : 0.4,
+                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.9) 0%, rgba(34,211,238,0.45) 25%, rgba(249,115,22,0.35) 50%, transparent 75%)`,
               }}
             />
-            {/* Prismatic Sheen on top crimp */}
+
+            {/* Metallic Rainbow Reflection */}
             <div
-              className="absolute inset-0 opacity-60 mix-blend-color-dodge pointer-events-none"
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-50"
               style={{
-                background: `linear-gradient(${glarePosition.x * 3.6}deg, rgba(255,0,128,0.4), rgba(0,255,255,0.4), rgba(255,215,0,0.4))`,
+                background: `linear-gradient(${
+                  115 + (rotateY * 3)
+                }deg, transparent 20%, rgba(255, 0, 128, 0.4) 40%, rgba(0, 240, 255, 0.5) 50%, rgba(255, 215, 0, 0.4) 60%, transparent 80%)`,
               }}
             />
           </div>
-        </div>
+        )}
 
-        {/* Main Booster Pack Foil Artwork */}
-        <div className="relative w-full h-full">
-          <img
-            src="/manaforge-booster.jpg"
-            alt="Manaforge Premium Booster Pack"
-            className={cn(
-              "w-full h-full object-cover object-center pointer-events-none transition-transform duration-500",
-              isHovered && "scale-[1.03]"
+        {/* ================= SPLIT PACK (DURING TEAR & RIPPED) ================= */}
+        {(isTearing || isRipped) && (
+          <>
+            {/* 1. BOTTOM BODY (Below 16.5% tear line) */}
+            <div
+              className="absolute inset-0 z-10"
+              style={{
+                clipPath: "polygon(0% 16.5%, 100% 16.5%, 100% 100%, 0% 100%)",
+              }}
+            >
+              <img
+                src="/manaforge-booster.jpg"
+                alt="Manaforge Booster Korpus"
+                className="w-full h-full object-cover object-center pointer-events-none"
+              />
+              <div
+                className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-50"
+                style={{
+                  background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.8) 0%, rgba(34,211,238,0.4) 30%, transparent 70%)`,
+                }}
+              />
+            </div>
+
+            {/* 2. TOP CAP (Above 16.5% tear line - Peels and rips off) */}
+            <div
+              className={cn(
+                "absolute inset-0 z-20 pointer-events-none origin-bottom-right transition-all",
+                isRipped
+                  ? "opacity-0 -translate-y-28 rotate-45 scale-90 duration-500 ease-out"
+                  : "duration-75 ease-out"
+              )}
+              style={
+                isTearing
+                  ? {
+                      clipPath: "polygon(0% 0%, 100% 0%, 100% 16.5%, 0% 16.5%)",
+                      transform: `rotate(${tearAngle}deg) translate(${tearOffsetX}px, -${tearOffsetY}px)`,
+                    }
+                  : isRipped
+                  ? undefined
+                  : { clipPath: "polygon(0% 0%, 100% 0%, 100% 16.5%, 0% 16.5%)" }
+              }
+            >
+              <img
+                src="/manaforge-booster.jpg"
+                alt="Manaforge Booster Deckel"
+                className="w-full h-full object-cover object-center"
+              />
+              <div
+                className="absolute inset-0 pointer-events-none mix-blend-color-dodge opacity-60"
+                style={{
+                  background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.9) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
+                }}
+              />
+            </div>
+
+            {/* 3. GLOWING TEAR RIFT (Along tear line) */}
+            {isTearing && (
+              <div
+                className="absolute inset-x-2 z-30 pointer-events-none flex items-center"
+                style={{
+                  top: "16%",
+                  transform: `translateY(-${tearOffsetY * 0.4}px)`,
+                }}
+              >
+                <div className="w-full h-1.5 bg-gradient-to-r from-amber-300 via-cyan-400 to-amber-300 shadow-[0_0_20px_rgba(6,182,212,1),0_0_10px_rgba(245,158,11,1)] rounded-full animate-pulse" />
+              </div>
             )}
-          />
+          </>
+        )}
 
-          {/* Dynamic Holographic Foil Glare Overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
-            style={{
-              opacity: isHovered ? 0.75 : 0.35,
-              background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.85) 0%, rgba(34,211,238,0.4) 25%, rgba(249,115,22,0.3) 50%, transparent 75%)`,
-            }}
-          />
-
-          {/* Metallic Prismatic Rainbow Angle Reflection */}
-          <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-50"
-            style={{
-              background: `linear-gradient(${
-                115 + (rotateY * 3)
-              }deg, transparent 20%, rgba(255, 0, 128, 0.4) 40%, rgba(0, 240, 255, 0.5) 50%, rgba(255, 215, 0, 0.4) 60%, transparent 80%)`,
-            }}
-          />
-
-          {/* Tear Line Guide Highlight (Top ~18% of pack) */}
+        {/* Tear Line Guide Highlight (Top ~16% of pack) */}
+        {showRipGuide && !isRipped && (
           <div
             className={cn(
-              "absolute top-8 sm:top-10 inset-x-2 sm:inset-x-4 z-30 transition-all duration-300",
-              isRipped ? "opacity-0 pointer-events-none" : "opacity-100"
+              "absolute inset-x-2 sm:inset-x-3 z-30 transition-all duration-300 pointer-events-none",
+              isTearing ? "opacity-0" : "opacity-100"
             )}
+            style={{ top: "15.8%" }}
           >
             {/* Dashed Tear Line */}
             <div className="relative flex items-center">
               <div
                 className={cn(
-                  "w-full h-1 border-t-2 border-dashed transition-colors duration-300",
+                  "w-full h-0.5 border-t-2 border-dashed transition-colors duration-300",
                   isHovered || tearProgress > 0
-                    ? "border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.8)]"
-                    : "border-amber-400/80 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+                    ? "border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.9)]"
+                    : "border-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.6)]"
                 )}
               />
 
@@ -202,49 +262,44 @@ export function BoosterPackCard({
             </div>
 
             {/* Tear Here Label & Indicator */}
-            {showRipGuide && (
-              <div className="flex items-center justify-between text-[10px] font-black tracking-wider uppercase mt-1 px-1 text-white">
-                <div className="flex items-center gap-1 text-cyan-300 drop-shadow-[0_1px_3px_rgba(0,0,0,1)]">
-                  <Scissors className="w-3.5 h-3.5 rotate-90" />
-                  <span>Hier Aufreißen</span>
-                </div>
-                <div className="flex items-center gap-1 text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,1)]">
-                  <span>Swipe</span>
-                  <Zap className="w-3 h-3 fill-amber-300" />
-                </div>
+            <div className="flex items-center justify-between text-[10px] font-black tracking-wider uppercase mt-1 px-1 text-white">
+              <div className="flex items-center gap-1 text-cyan-300 drop-shadow-[0_1px_3px_rgba(0,0,0,1)]">
+                <Scissors className="w-3.5 h-3.5 rotate-90" />
+                <span>Hier Aufreißen</span>
               </div>
-            )}
+              <div className="flex items-center gap-1 text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,1)]">
+                <span>Wischen</span>
+                <Zap className="w-3 h-3 fill-amber-300" />
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Bottom Serrated Crimped Foil Edge */}
-        <div className="absolute bottom-0 inset-x-0 h-6 z-20 pointer-events-none">
-          <div className="w-full h-full bg-gradient-to-t from-neutral-300 via-neutral-400 to-neutral-600 border-t border-white/40 shadow-md relative overflow-hidden">
-            <div
-              className="absolute inset-0 opacity-40"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, #fff 0, #fff 3px, #444 3px, #444 6px)",
-              }}
-            />
-            {/* Prismatic Sheen on bottom crimp */}
-            <div
-              className="absolute inset-0 opacity-60 mix-blend-color-dodge pointer-events-none"
-              style={{
-                background: `linear-gradient(${glarePosition.y * 3.6}deg, rgba(0,255,255,0.4), rgba(255,215,0,0.4), rgba(255,0,128,0.4))`,
-              }}
-            />
-          </div>
-        </div>
+        )}
 
         {/* Shimmer Border Beam */}
         <div className="absolute inset-0 rounded-2xl border border-white/20 pointer-events-none" />
 
-        {/* Sparkle icon badge for interactive preview */}
-        {interactive && !isRipped && (
-          <div className="absolute bottom-7 right-3 z-30 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-[10px] font-bold text-amber-300 shadow-lg">
+        {/* Holo-Foil Badge */}
+        {interactive && !isRipped && !isLocked && (
+          <div className="absolute bottom-6 right-3 z-30 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-500/40 text-[10px] font-bold text-amber-300 shadow-lg pointer-events-none">
             <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
-            <span>Digital Foil</span>
+            <span>Holo-Foil</span>
+          </div>
+        )}
+
+        {/* Locked Cooldown Overlay */}
+        {isLocked && (
+          <div className="absolute inset-0 z-40 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-2 shadow-lg shadow-amber-500/20">
+              <Lock className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-black uppercase text-amber-400 tracking-wider">
+              Booster gesperrt
+            </span>
+            {lockedCountdown && (
+              <span className="text-xs text-neutral-300 font-bold mt-1">
+                Verfügbar in: <b className="text-white">{lockedCountdown}</b>
+              </span>
+            )}
           </div>
         )}
       </div>

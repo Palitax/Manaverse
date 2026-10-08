@@ -265,7 +265,7 @@ export default function ProfilePage() {
               <span className="text-[10px] text-neutral-400 block font-semibold">Booster verfügbar</span>
               <span className="text-lg font-black text-white flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
-                {availableBoosters} {availableBoosters === 1 ? "Pack" : "Packs"}
+                {availableBoosters} {availableBoosters === 1 ? "Booster" : "Booster"}
               </span>
             </div>
 
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                 <p className="text-xs text-neutral-300">
                   {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername
                     ? "Dein Discord-Konto wurde verknüpft und dein Free Booster freigeschaltet."
-                    : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster Pack geschenkt!"}
+                    : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster geschenkt!"}
                 </p>
 
                 {!(currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername) && (
@@ -482,7 +482,7 @@ export default function ProfilePage() {
                     Mythisch (5%)
                   </span>
                   <span className="text-xs font-black text-amber-300 mt-0.5 block">1.000 Mana</span>
-                  <span className="text-[9px] text-neutral-300 font-semibold">Radiant Crystal</span>
+                  <span className="text-[9px] text-neutral-300 font-semibold">Strahlender Kristall</span>
                 </div>
               </div>
             </div>
