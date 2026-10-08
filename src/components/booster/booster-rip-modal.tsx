@@ -15,16 +15,15 @@ import {
   Flame,
   Gift,
   Timer,
-  Lock,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 
 type RipStage =
-  | "ready" // User sees the pack with the glowing tear strip and rip tab
+  | "ready" // User sees the pack with the glowing tear seam and animated swipe indicator
   | "ripping" // User is dragging / swiping across
-  | "ripped" // Top tears completely off with energy flash & smoke
-  | "extracting" // 3 cards slide up out from inside the pack
+  | "ripped" // Top cap slices off and flies away with energy flash
+  | "extracting" // 3 cards slide up out from inside the open pack
   | "reveal_waiting" // Card is hovering face-down, prompt to tap to flip
   | "revealed"; // Card is flipped face up, loot shown with celebration!
 
@@ -52,6 +51,7 @@ export function BoosterRipModal() {
 
   const [stage, setStage] = useState<RipStage>("ready");
   const [tearProgress, setTearProgress] = useState(0); // 0 to 100
+  const [isDragging, setIsDragging] = useState(false);
   const [reward, setReward] = useState<BoosterReward | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -61,13 +61,17 @@ export function BoosterRipModal() {
   const tearTrackRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
+  const lastXRef = useRef(0);
+  const lastTimeRef = useRef(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Sound effects simulation with Web Audio API
   const playSoundEffect = useCallback((type: "tear" | "pop" | "reveal" | "mythic") => {
     if (typeof window === "undefined") return;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return;
       if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
         audioCtxRef.current = new AudioCtx();
@@ -78,17 +82,17 @@ export function BoosterRipModal() {
       }
 
       if (type === "tear") {
-        const bufferSize = ctx.sampleRate * 0.15;
+        const bufferSize = ctx.sampleRate * 0.12;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.4));
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
         }
         const noise = ctx.createBufferSource();
         noise.buffer = buffer;
         const filter = ctx.createBiquadFilter();
         filter.type = "bandpass";
-        filter.frequency.value = 1200;
+        filter.frequency.value = 1400;
         noise.connect(filter);
         filter.connect(ctx.destination);
         noise.start();
@@ -96,16 +100,19 @@ export function BoosterRipModal() {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(320, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.18);
-        gain.gain.setValueAtTime(0.5, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        osc.frequency.setValueAtTime(360, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.22);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + 0.19);
+        osc.stop(ctx.currentTime + 0.23);
       } else if (type === "reveal" || type === "mythic") {
-        const frequencies = type === "mythic" ? [523.25, 659.25, 783.99, 1046.5] : [440, 554.37, 659.25];
+        const frequencies =
+          type === "mythic"
+            ? [523.25, 659.25, 783.99, 1046.5]
+            : [440, 554.37, 659.25];
         frequencies.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -131,6 +138,7 @@ export function BoosterRipModal() {
     if (isBoosterModalOpen) {
       setStage("ready");
       setTearProgress(0);
+      setIsDragging(false);
       setReward(null);
       setIsFlipped(false);
       setErrorMsg(null);
@@ -149,19 +157,26 @@ export function BoosterRipModal() {
 
     setStage("ripped");
     setTearProgress(100);
+    setIsDragging(false);
     playSoundEffect("pop");
+
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate([30, 40, 70]);
+      } catch {}
+    }
 
     try {
       const outcome = await ripBoosterPack();
       setReward(outcome);
 
-      // Advance to card extraction after pack pops
+      // Advance to card extraction after pack pops and top cap flies off
       setTimeout(() => {
         setStage("extracting");
         setTimeout(() => {
           setStage("reveal_waiting");
         }, 1100);
-      }, 450);
+      }, 550);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Fehler beim Öffnen des Booster Packs.";
       setErrorMsg(msg);
@@ -174,26 +189,52 @@ export function BoosterRipModal() {
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (stage !== "ready" && stage !== "ripping") return;
     if (availableBoosters <= 0) return;
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+
     isDraggingRef.current = true;
+    setIsDragging(true);
     startXRef.current = e.clientX;
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = performance.now();
+
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {}
+
     setStage("ripping");
     playSoundEffect("tear");
+
+    if (tearTrackRef.current) {
+      const rect = tearTrackRef.current.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+      setTearProgress(progress);
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDraggingRef.current || !tearTrackRef.current) return;
     const rect = tearTrackRef.current.getBoundingClientRect();
     const currentX = e.clientX;
-    const diff = currentX - rect.left;
-    const progress = Math.max(0, Math.min(100, (diff / rect.width) * 100));
+    const progress = Math.max(0, Math.min(100, ((currentX - rect.left) / rect.width) * 100));
+
+    const now = performance.now();
+    const dt = now - lastTimeRef.current;
+    const dx = currentX - lastXRef.current;
+    const velocity = dt > 0 ? dx / dt : 0; // px/ms
+
+    lastXRef.current = currentX;
+    lastTimeRef.current = now;
 
     setTearProgress(progress);
 
-    if (progress >= 70) {
+    if (Math.random() < 0.2) {
+      playSoundEffect("tear");
+    }
+
+    // Trigger rip if reached 65% OR high-velocity swipe across
+    if (progress >= 65 || (progress >= 30 && velocity > 0.5)) {
       isDraggingRef.current = false;
+      setIsDragging(false);
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
       } catch {}
@@ -204,6 +245,7 @@ export function BoosterRipModal() {
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
+    setIsDragging(false);
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
@@ -224,16 +266,16 @@ export function BoosterRipModal() {
     if (reward?.rarity === "mythic") {
       playSoundEffect("mythic");
       confetti({
-        particleCount: 150,
-        spread: 90,
+        particleCount: 160,
+        spread: 95,
         origin: { y: 0.55 },
-        colors: ["#f59e0b", "#ec4899", "#06b6d4", "#a855f7"],
+        colors: ["#f59e0b", "#06b6d4", "#ec4899", "#8b5cf6"],
       });
     } else {
       playSoundEffect("reveal");
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 85,
+        spread: 75,
         origin: { y: 0.55 },
       });
     }
@@ -269,8 +311,8 @@ export function BoosterRipModal() {
             stage === "revealed"
               ? reward?.rarity === "mythic"
                 ? "bg-gradient-to-b from-amber-500/40 via-purple-600/30 to-cyan-500/30"
-                : "bg-gradient-to-b from-orange-500/30 via-cyan-500/20 to-transparent"
-              : "bg-gradient-to-b from-orange-600/25 via-amber-500/15 to-transparent"
+                : "bg-gradient-to-b from-cyan-500/30 via-orange-500/20 to-transparent"
+              : "bg-gradient-to-b from-cyan-600/25 via-amber-500/15 to-transparent"
           )}
         />
         <div className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
@@ -288,12 +330,12 @@ export function BoosterRipModal() {
 
       {/* Header Info Banner */}
       <div className="absolute top-4 sm:top-6 inset-x-0 mx-auto max-w-md text-center z-40 px-4 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-orange-500/30 text-xs font-bold text-neutral-200 backdrop-blur-md shadow-lg shadow-orange-500/10">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-cyan-500/30 text-xs font-bold text-neutral-200 backdrop-blur-md shadow-lg shadow-cyan-500/10">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
           <span>Manaforge Booster Arena</span>
           <span className="text-neutral-500">•</span>
           {availableBoosters > 0 ? (
-            <span className="text-orange-400 font-extrabold">
+            <span className="text-cyan-400 font-extrabold">
               {availableBoosters} {availableBoosters === 1 ? "Booster" : "Booster"} bereit
             </span>
           ) : canClaimDailyBooster ? (
@@ -376,8 +418,8 @@ export function BoosterRipModal() {
                 Du hast heute alle deine Booster aufgerissen. Alle 24 Stunden steht dir ein neuer kostenloser Booster zur Verfügung!
               </p>
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 border border-amber-500/30 text-amber-300 text-xs font-black">
-                  <Timer className="w-4 h-4 text-amber-400" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 border border-cyan-500/30 text-cyan-300 text-xs font-black">
+                  <Timer className="w-4 h-4 text-cyan-400" />
                   <span>Nächster Gratis-Booster in: {dailyBoosterCountdown}</span>
                 </div>
               </div>
@@ -392,87 +434,45 @@ export function BoosterRipModal() {
           </div>
         )}
 
-        {/* ================= CASE 4: ACTIVE RIPPING STAGES ================= */}
+        {/* ================= CASE 4: ACTIVE RIPPING STAGES (POKÉMON POCKET STYLE) ================= */}
         {availableBoosters > 0 && (stage === "ready" || stage === "ripping" || stage === "ripped") && (
           <div className="relative flex flex-col items-center">
             {/* The 3D Booster Pack */}
             <div
               className={cn(
                 "relative transition-all duration-700 ease-out",
-                stage === "ripped" && "scale-[1.02]"
+                stage === "ripped" && "scale-[1.01]"
               )}
             >
               <BoosterPackCard
                 size="hero"
-                showRipGuide={stage === "ready"}
+                showRipGuide={stage === "ready" || stage === "ripping"}
                 isRipped={stage === "ripped"}
                 tearProgress={tearProgress}
+                isDragging={isDragging}
                 interactive={stage === "ready"}
+                enableTearInteraction={stage === "ready" || stage === "ripping"}
+                tearTrackRef={tearTrackRef}
+                onTearPointerDown={handlePointerDown}
+                onTearPointerMove={handlePointerMove}
+                onTearPointerUp={handlePointerUp}
+                onTearPointerCancel={handlePointerUp}
               />
-
-              {/* Seamless Tear Strip Pull Slider (Overlays top 16% tear line of pack) */}
-              {(stage === "ready" || stage === "ripping") && (
-                <div
-                  ref={tearTrackRef}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                  className="absolute inset-x-2 sm:inset-x-4 h-14 z-40 flex items-center cursor-grab active:cursor-grabbing touch-none select-none"
-                  style={{ top: "12%" }}
-                  title="Ziehe den Schieber nach rechts zum Aufreißen!"
-                >
-                  {/* Glowing Tear Bar Runway */}
-                  <div className="relative w-full h-8 sm:h-9 rounded-full bg-black/30 backdrop-blur-[2px] border border-cyan-400/40 flex items-center px-1 shadow-[0_0_15px_rgba(6,182,212,0.3)] overflow-hidden">
-                    {/* Tear Progress fill */}
-                    <div
-                      className="absolute left-0 inset-y-0 bg-gradient-to-r from-amber-500/40 via-orange-500/60 to-cyan-400/80 shadow-[0_0_15px_rgba(249,115,22,0.8)] transition-all duration-75"
-                      style={{ width: `${tearProgress}%` }}
-                    />
-
-                    {/* Pull Tab Knob / Ripper Head */}
-                    <div
-                      className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-300 border-2 border-white flex items-center justify-center text-black font-black shadow-[0_0_18px_rgba(245,158,11,1)] transition-transform duration-75 active:scale-110 flex-shrink-0 cursor-grab active:cursor-grabbing"
-                      style={{
-                        transform: `translateX(${Math.min(
-                          (tearProgress / 100) * 280,
-                          280
-                        )}px)`,
-                      }}
-                    >
-                      <Zap className="w-4 h-4 fill-black text-black animate-pulse" />
-                    </div>
-
-                    {/* Centered Guide Text */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-[10px] sm:text-[11px] font-black tracking-wider uppercase text-white drop-shadow-[0_2px_4px_rgba(0,0,0,1)] pl-8">
-                      <span>👉 Nach rechts aufziehen</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Energy Flare explosion when pack tears open */}
-              {stage === "ripped" && (
-                <div className="absolute inset-x-0 top-12 h-32 flex items-center justify-center pointer-events-none z-50">
-                  <div className="w-full h-2 bg-white rounded-full blur-[2px] animate-ping shadow-[0_0_50px_rgba(255,255,255,1),0_0_90px_rgba(249,115,22,1)]" />
-                  <div className="absolute w-28 h-28 rounded-full bg-cyan-400/80 blur-2xl animate-pulse" />
-                </div>
-              )}
             </div>
 
-            {/* Quick 1-Click Rip Fallback (Accessible & Thumb-Friendly) */}
+            {/* Quick 1-Click Rip Fallback (Accessible & Thumb-Friendly per AGENTS.md) */}
             {(stage === "ready" || stage === "ripping") && (
-              <div className="mt-5 w-full flex flex-col items-center gap-2">
+              <div className="mt-5 w-full max-w-xs flex flex-col items-center gap-2">
                 <button
                   type="button"
                   onClick={triggerRipComplete}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(249,115,22,0.45)] hover:shadow-[0_0_35px_rgba(249,115,22,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
                 >
                   <Zap className="w-4 h-4 fill-white" />
                   <span>Booster sofort aufreißen (1-Klick)</span>
                 </button>
-                <p className="text-[11px] text-neutral-400">
-                  Tipp: Ziehe den Regler an der Markierung oder klicke den Button.
+                <p className="text-[11px] text-neutral-400 text-center font-medium">
+                  Tipp: Wische mit Finger oder Maus über die leuchtende Naht.
                 </p>
               </div>
             )}
@@ -481,9 +481,22 @@ export function BoosterRipModal() {
 
         {/* ================= STAGE 2: 3 CARDS SLIDING OUT (KARTEN KOMMEN RAUS) ================= */}
         {stage === "extracting" && (
-          <div className="relative w-[300px] sm:w-[340px] md:w-[380px] h-[450px] sm:h-[510px] md:h-[570px] flex items-center justify-center z-50 pointer-events-none">
+          <div className="relative w-[285px] sm:w-[330px] md:w-[360px] h-[465px] sm:h-[540px] md:h-[590px] flex items-center justify-center z-50 pointer-events-none">
+            {/* Open Booster Pack Body at the bottom */}
+            <div className="absolute inset-0 z-0 opacity-80 scale-95 translate-y-8">
+              <BoosterPackCard
+                size="hero"
+                isRipped={true}
+                tearProgress={100}
+                interactive={false}
+              />
+            </div>
+
+            {/* Mystical Mana Rays Bursting from Booster Opening */}
+            <div className="absolute inset-x-4 top-[10%] h-36 bg-gradient-to-t from-cyan-400/50 via-amber-400/30 to-transparent blur-xl animate-pulse z-10" />
+
             {/* Left Fan Card */}
-            <div className="absolute w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 bg-neutral-900 -rotate-6 -translate-x-12 translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-60">
+            <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/30 bg-neutral-900 -rotate-8 -translate-x-12 -translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-70 z-20">
               <img
                 src="/manaforge-card-back.jpg"
                 alt="Manaforge Kartenstapel"
@@ -492,7 +505,7 @@ export function BoosterRipModal() {
             </div>
 
             {/* Right Fan Card */}
-            <div className="absolute w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 bg-neutral-900 rotate-6 translate-x-12 translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-60">
+            <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/30 bg-neutral-900 rotate-8 translate-x-12 -translate-y-4 animate-in slide-in-from-bottom-24 duration-700 opacity-70 z-20">
               <img
                 src="/manaforge-card-back.jpg"
                 alt="Manaforge Kartenstapel"
@@ -500,8 +513,8 @@ export function BoosterRipModal() {
               />
             </div>
 
-            {/* Center Main Card rising smoothly */}
-            <div className="relative z-20 w-[260px] sm:w-[300px] h-[390px] sm:h-[450px] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(249,115,22,0.6)] border-2 border-amber-500/60 animate-in slide-in-from-bottom-40 fade-in duration-800 bg-neutral-900">
+            {/* Center Main Card rising smoothly out of pack */}
+            <div className="relative z-30 w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] -translate-y-8 rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.6)] border-2 border-cyan-400/60 animate-in slide-in-from-bottom-36 fade-in duration-800 bg-neutral-900">
               <img
                 src="/manaforge-card-back.jpg"
                 alt="Hauptkarte"
@@ -518,7 +531,7 @@ export function BoosterRipModal() {
             {/* Prompt Banner */}
             <div className="text-center mb-4">
               {!isFlipped ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 border border-orange-500/40 text-xs sm:text-sm font-black text-orange-300 animate-bounce shadow-lg shadow-orange-500/20">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-xs sm:text-sm font-black text-cyan-300 animate-bounce shadow-lg shadow-cyan-500/20">
                   <Sparkles className="w-4 h-4 text-amber-300" />
                   <span>Tippe auf die Karte, um deinen Fund zu enthüllen!</span>
                 </div>
@@ -560,7 +573,7 @@ export function BoosterRipModal() {
               >
                 {/* 1. CARD BACK FACE (Pre-flip) */}
                 <div
-                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border-2 border-amber-500/60 shadow-[0_20px_50px_rgba(0,0,0,0.9)] bg-neutral-900"
+                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border-2 border-cyan-500/50 shadow-[0_20px_50px_rgba(0,0,0,0.9)] bg-neutral-900"
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
@@ -616,7 +629,7 @@ export function BoosterRipModal() {
 
                   {/* Floating Mana Reward Banner (Bottom) */}
                   <div className="absolute bottom-3 inset-x-3 pointer-events-none">
-                    <div className="w-full py-2 px-3 rounded-xl bg-black/85 backdrop-blur-md border border-amber-400/50 flex items-center justify-between shadow-2xl">
+                    <div className="w-full py-2 px-3 rounded-xl bg-black/85 backdrop-blur-md border border-cyan-400/50 flex items-center justify-between shadow-2xl">
                       <div className="text-left">
                         <span className="text-[10px] text-neutral-300 block font-bold">
                           {reward.title}
@@ -625,7 +638,7 @@ export function BoosterRipModal() {
                           {reward.subtitle}
                         </span>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/20 border border-orange-500/40 text-amber-300 text-xs font-black shrink-0">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-black shrink-0">
                         <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                         <span>+{reward.manaPoints} Mana</span>
                       </div>
@@ -647,7 +660,7 @@ export function BoosterRipModal() {
                       setReward(null);
                       setIsFlipped(false);
                     }}
-                    className="w-full flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-orange-500/30 transition-all active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-2"
+                    className="w-full flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-white font-black text-xs sm:text-sm shadow-lg shadow-cyan-500/30 transition-all active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
                     <span>Nächsten Booster rippen ({availableBoosters})</span>

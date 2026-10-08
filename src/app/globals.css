@@ -581,4 +581,108 @@ body {
   }
 }
 
+/* ==============================================================================
+   POKÉMON TCG POCKET STYLE BOOSTER RIP & SEAM ANIMATIONS
+   ============================================================================== */
 
+@keyframes seam-energy-glow {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes swipe-particle-glide {
+  0% {
+    left: 4%;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.6);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  92%, 100% {
+    left: 92%;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.6);
+  }
+}
+
+@keyframes swipe-text-pulse {
+  0%, 100% {
+    opacity: 0.9;
+    transform: translateY(0);
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-1px);
+    text-shadow: 0 0 16px rgba(6, 182, 212, 1), 0 0 28px rgba(245, 158, 11, 0.7);
+  }
+}
+
+@keyframes rip-laser-flash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0.05) scaleY(2.5);
+  }
+  25% {
+    opacity: 1;
+    transform: scaleX(1.15) scaleY(3);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scaleX(1.3) scaleY(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1.4) scaleY(0.1);
+  }
+}
+
+@keyframes spark-sparkle {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.25) rotate(18deg);
+  }
+}
+
+.animate-seam-energy {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(6, 182, 212, 0.25) 20%,
+    rgba(245, 158, 11, 0.9) 45%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(6, 182, 212, 0.9) 55%,
+    rgba(245, 158, 11, 0.25) 80%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  animation: seam-energy-glow 2.2s linear infinite;
+}
+
+.animate-swipe-glide {
+  animation: swipe-particle-glide 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-swipe-text {
+  animation: swipe-text-pulse 2s ease-in-out infinite;
+}
+
+.animate-rip-flash {
+  animation: rip-laser-flash 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.animate-spark-sparkle {
+  animation: spark-sparkle 0.4s ease-in-out infinite;
+}
