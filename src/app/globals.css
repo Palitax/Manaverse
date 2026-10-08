@@ -147,69 +147,73 @@ body {
 
 @keyframes slab-tilt-a {
   0%, 100% {
-    transform: perspective(1000px) rotateY(-12deg) rotateX(3deg) rotateZ(-1deg) translateY(0);
+    transform: perspective(1000px) rotateY(-3.5deg) rotateX(1.5deg) rotateZ(-0.5deg) translateY(0);
   }
   50% {
-    transform: perspective(1000px) rotateY(12deg) rotateX(-3deg) rotateZ(1deg) translateY(-6px);
+    transform: perspective(1000px) rotateY(3.5deg) rotateX(-1.5deg) rotateZ(0.5deg) translateY(-4px);
   }
 }
 
 @keyframes slab-tilt-b {
   0%, 100% {
-    transform: perspective(1000px) rotateY(10deg) rotateX(-2.5deg) rotateZ(1.5deg) translateY(-4px);
+    transform: perspective(1000px) rotateY(3deg) rotateX(-1deg) rotateZ(0.5deg) translateY(-3px);
   }
   50% {
-    transform: perspective(1000px) rotateY(-10deg) rotateX(2.5deg) rotateZ(-1.5deg) translateY(4px);
+    transform: perspective(1000px) rotateY(-3deg) rotateX(1deg) rotateZ(-0.5deg) translateY(3px);
   }
 }
 
 @keyframes slab-tilt-c {
   0%, 100% {
-    transform: perspective(1000px) rotateY(-8deg) rotateX(-4deg) rotateZ(-1deg) translateY(5px);
+    transform: perspective(1000px) rotateY(-2.5deg) rotateX(-1.5deg) rotateZ(-0.5deg) translateY(3px);
   }
   50% {
-    transform: perspective(1000px) rotateY(12deg) rotateX(3deg) rotateZ(1.5deg) translateY(-5px);
+    transform: perspective(1000px) rotateY(3.5deg) rotateX(1deg) rotateZ(0.5deg) translateY(-3px);
   }
 }
 
 @keyframes slab-tilt-d {
   0%, 100% {
-    transform: perspective(1000px) rotateY(11deg) rotateX(2.5deg) rotateZ(-1.5deg) translateY(2px);
+    transform: perspective(1000px) rotateY(3deg) rotateX(1deg) rotateZ(-0.5deg) translateY(2px);
   }
   50% {
-    transform: perspective(1000px) rotateY(-7deg) rotateX(-2.5deg) rotateZ(1deg) translateY(-5px);
+    transform: perspective(1000px) rotateY(-2.5deg) rotateX(-1deg) rotateZ(0.5deg) translateY(-3px);
   }
 }
 
 @keyframes slab-glint {
   0%, 100% {
     transform: translateX(-120%) rotate(-45deg);
-    opacity: 0.08;
+    opacity: 0.04;
   }
   50% {
     transform: translateX(200%) rotate(-45deg);
-    opacity: 0.45;
+    opacity: 0.35;
   }
 }
 
 .animate-slab-tilt-a {
-  animation: slab-tilt-a 7.5s ease-in-out infinite;
+  animation: slab-tilt-a 14s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-slab-tilt-b {
-  animation: slab-tilt-b 8.8s ease-in-out infinite;
+  animation: slab-tilt-b 16.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-slab-tilt-c {
-  animation: slab-tilt-c 6.8s ease-in-out infinite;
+  animation: slab-tilt-c 13.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-slab-tilt-d {
-  animation: slab-tilt-d 9.2s ease-in-out infinite;
+  animation: slab-tilt-d 17.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-slab-glint {
-  animation: slab-glint 7s ease-in-out infinite;
+  animation: slab-glint 10s ease-in-out infinite;
 }
 
 /* Glassmorphism Classes */

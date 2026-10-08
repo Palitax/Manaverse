@@ -5,7 +5,6 @@ import {
   BACKGROUND_SLABS_ROW_1,
   BACKGROUND_SLABS_ROW_2,
   BACKGROUND_SLABS_ROW_3,
-  BACKGROUND_SLABS_ROW_4,
 } from "@/lib/slabs-data";
 import { LuxurySlab } from "./luxury-slab";
 import { BackgroundSlab } from "@/types/slabs";
@@ -19,12 +18,12 @@ const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
   "tilt-d",
 ];
 
-// Helper creating a mathematically seamless repetition block.
-// 24 items (4 sets of 6 cards) ensures LCM(6 cards, 4 tilts) = 12 divides evenly into 24,
-// guaranteeing 100% continuous, zero-jump loop resets and coverage beyond 5K screens.
+// Erzeugt einen nahtlosen Repetition-Block (3 Wiederholungen der 5 Karten = 15 Karten)
+// 15 Karten decken mit den großzügigen Abständen auch 5K-Displays mühelos ab,
+// während die mathematische Dual-Track-Struktur 100% sprungfreie Endlos-Schleifen garantiert.
 function createSeamlessTrack(cards: BackgroundSlab[]) {
   const result: BackgroundSlab[] = [];
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     result.push(...cards);
   }
   return result;
@@ -59,19 +58,20 @@ function MarqueeRow({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden flex items-center py-1 sm:py-2 select-none pointer-events-none",
+        "relative w-full overflow-hidden flex items-center py-2 sm:py-4 select-none pointer-events-none",
         className
       )}
     >
-      {/* Track 1 */}
+      {/* Track 1 - Großzügiger Abstand zwischen den Slabs für pure Eleganz */}
       <div
         className={cn(
-          "flex shrink-0 items-center gap-4 sm:gap-8 pr-4 sm:pr-8",
+          "flex shrink-0 items-center gap-12 sm:gap-20 md:gap-28 pr-12 sm:pr-20 md:pr-28",
           animationClass
         )}
         style={{
           animationDuration: duration,
           animationPlayState: isPaused ? "paused" : "running",
+          willChange: "transform",
         }}
       >
         {trackItems.map((slab, idx) => (
@@ -83,15 +83,16 @@ function MarqueeRow({
         ))}
       </div>
 
-      {/* Track 2 (Pixel-identical twin for mathematically seamless infinite loop) */}
+      {/* Track 2 (Pixel-identischer Zwilling für nahtlose 60fps Endlosschleife) */}
       <div
         className={cn(
-          "flex shrink-0 items-center gap-4 sm:gap-8 pr-4 sm:pr-8",
+          "flex shrink-0 items-center gap-12 sm:gap-20 md:gap-28 pr-12 sm:pr-20 md:pr-28",
           animationClass
         )}
         style={{
           animationDuration: duration,
           animationPlayState: isPaused ? "paused" : "running",
+          willChange: "transform",
         }}
         aria-hidden="true"
       >
@@ -109,49 +110,62 @@ function MarqueeRow({
 
 export function SlabsVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    return false;
+  });
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     if (video) {
       video.defaultMuted = true;
       video.muted = true;
-      video.playbackRate = 0.85;
+      video.playbackRate = 0.75;
 
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsVideoLoaded(true))
-          .catch(() => {
-            // Low-power fallback; poster image displays seamlessly
-            setIsVideoLoaded(false);
-          });
+      if (!prefersReducedMotion) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setIsVideoLoaded(true))
+            .catch(() => {
+              setIsVideoLoaded(false);
+            });
+        }
       }
     }
 
-    // Respect reduced motion accessibility
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) {
-      setIsPaused(true);
-      if (video) video.pause();
-      return;
-    }
+    // Barrierefreiheit: Reduzierte Bewegung bei Änderung umschalten
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      setIsPaused(e.matches);
+      if (e.matches && videoRef.current) {
+        videoRef.current.pause();
+      }
+    };
+    mediaQuery.addEventListener("change", handleMotionChange);
 
-    // Battery & CPU optimization: pause when tab is inactive, resume when active
+    // Batterie- & Performance-Optimierung: Stoppen wenn Tab inaktiv
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setIsPaused(true);
-        if (video) video.pause();
-      } else if (!prefersReducedMotion) {
+        if (videoRef.current) videoRef.current.pause();
+      } else if (!mediaQuery.matches) {
         setIsPaused(false);
-        if (video) video.play().catch(() => {});
+        if (videoRef.current) videoRef.current.play().catch(() => {});
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
+      mediaQuery.removeEventListener("change", handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
@@ -159,7 +173,7 @@ export function SlabsVideoBackground() {
   return (
     <>
       {/* ==================================================================== */}
-      {/* 1. FIXED BACKGROUND SCENE (-Z-10)                                    */}
+      {/* 1. FIXIERTE HINTERGRUND-SZENE (-Z-10)                                */}
       {/* ==================================================================== */}
       <div
         className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-[#07090e]"
@@ -167,7 +181,7 @@ export function SlabsVideoBackground() {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#06080e] via-[#080d19] to-[#05070c]" />
 
-        {/* Ambient fluid video loop */}
+        {/* Ambient Video-Loop im Hintergrund */}
         <video
           ref={videoRef}
           autoPlay
@@ -186,78 +200,66 @@ export function SlabsVideoBackground() {
           <source src="/slow_motion_gradient_bg.mp4" type="video/mp4" />
         </video>
 
-        {/* Subtle radial ambient nebulas for rich depth */}
+        {/* Subtile leuchtende Farbfelder für visuelle Tiefe */}
         <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-cyan-600/[0.07] blur-[120px] pointer-events-none" />
         <div className="absolute top-1/2 -right-32 w-[600px] h-[600px] rounded-full bg-purple-600/[0.08] blur-[140px] pointer-events-none" />
         <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] rounded-full bg-amber-600/[0.07] blur-[130px] pointer-events-none" />
 
-        {/* Multi-Row 3D Slab Marquee Bands */}
-        <div className="absolute inset-x-0 -top-4 -bottom-4 flex flex-col justify-between overflow-hidden opacity-95">
-          {/* ROW 1: Direction Left -> Right (Slow Motion 90s) */}
+        {/* ==================================================================== */}
+        {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
+        {/* ==================================================================== */}
+        <div className="absolute inset-0 flex flex-col justify-around py-4 sm:py-8 overflow-hidden opacity-95">
+          {/* REIHE 1: Links -> Rechts (Sehr langsame 150s) */}
           <MarqueeRow
             rowId="r1"
             cards={BACKGROUND_SLABS_ROW_1}
             direction="right"
-            duration="90s"
+            duration="150s"
             tiltOffset={0}
             isPaused={isPaused}
           />
 
-          {/* ROW 2: Direction Right -> Left (Slow Motion 110s) */}
+          {/* REIHE 2: Rechts -> Links (Sehr langsame 180s) */}
           <MarqueeRow
             rowId="r2"
             cards={BACKGROUND_SLABS_ROW_2}
             direction="left"
-            duration="110s"
+            duration="180s"
             tiltOffset={1}
             isPaused={isPaused}
           />
 
-          {/* ROW 3: Direction Left -> Right (Slow Motion 80s) */}
+          {/* REIHE 3: Links -> Rechts (Sehr langsame 165s) */}
           <MarqueeRow
             rowId="r3"
             cards={BACKGROUND_SLABS_ROW_3}
             direction="right"
-            duration="80s"
+            duration="165s"
             tiltOffset={2}
             isPaused={isPaused}
           />
-
-          {/* ROW 4: Direction Right -> Left (Slow Motion 100s - Desktop for spacious breathing room) */}
-          <MarqueeRow
-            rowId="r4"
-            cards={BACKGROUND_SLABS_ROW_4}
-            direction="left"
-            duration="100s"
-            tiltOffset={3}
-            isPaused={isPaused}
-            className="hidden sm:flex"
-          />
         </div>
 
-        {/* Top and Bottom gradient shadows for smooth fading under header & footer */}
-        <div className="absolute inset-x-0 top-0 h-32 sm:h-44 bg-gradient-to-b from-[#07090e] via-[#07090e]/85 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-32 sm:h-44 bg-gradient-to-t from-[#07090e] via-[#07090e]/85 to-transparent pointer-events-none" />
+        {/* Weiche Verläufe oben und unten für sauberes Ausblenden unter Navigation */}
+        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
 
-        {/* Atmospheric center scrim overlay for perfect contrast with foreground typography */}
+        {/* Atmosphärischer Kontrastfilter für optimale Lesbarkeit */}
         <div
           className={cn(
             "absolute inset-0 transition-opacity duration-700 pointer-events-none",
-            focusMode === "ambient"
-              ? "bg-[#07090e]/40"
-              : "bg-[#07090e]/15"
+            focusMode === "ambient" ? "bg-[#07090e]/40" : "bg-[#07090e]/15"
           )}
         />
 
-        {/* Radial spotlight focusing onto center */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_35%,rgba(7,9,14,0.65)_95%)] pointer-events-none" />
+        {/* Radialer Scheinwerfer zur Betonung des Zentrum-Contents */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_40%,rgba(7,9,14,0.6)_95%)] pointer-events-none" />
       </div>
 
       {/* ==================================================================== */}
       {/* 2. DISKRETER AMBIENCE TOGGLE (DESKTOP + MOBILE EXTRALOCKE)           */}
-      {/* Placed outside -z-10 for unconstrained stacking context & tap events */}
       {/* ==================================================================== */}
-      {/* Desktop Ambience Button */}
+      {/* Desktop-Schalter */}
       <div className="fixed bottom-4 right-4 z-50 pointer-events-auto hidden md:block">
         <button
           type="button"
@@ -275,7 +277,7 @@ export function SlabsVideoBackground() {
         </button>
       </div>
 
-      {/* Mobile Ambience Button (Extralocke: mind. 44x44px Touch-Target, sicher über Mobile Island Bar) */}
+      {/* Mobile-Schalter (Extralocke: mind. 44x44px Touch-Target, sicher über Mobile Island Bar) */}
       <div
         className="fixed right-3.5 z-50 pointer-events-auto md:hidden"
         style={{

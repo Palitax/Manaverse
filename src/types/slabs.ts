@@ -9,7 +9,7 @@ export interface BackgroundSlab {
   setName: string;
   year: string;
   cardNumber: string;
-  certNumber: string;
+  certNumber?: string;
   grade: string;
   gradeLabel: string;
   subgrades?: {
