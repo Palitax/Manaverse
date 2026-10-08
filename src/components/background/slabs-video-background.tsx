@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import {
   BACKGROUND_SLABS_ROW_1,
   BACKGROUND_SLABS_ROW_2,
@@ -109,6 +110,9 @@ function MarqueeRow({
 }
 
 export function SlabsVideoBackground() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   const [isPaused, setIsPaused] = useState(() => {
     if (typeof window !== "undefined") {
       return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -152,8 +156,19 @@ export function SlabsVideoBackground() {
       >
         {/* ==================================================================== */}
         {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
+        {/* Auf der Startseite dezent gedimmt mit weicher Tiefenschärfe,         */}
+        {/* auf Unterseiten extrem stark abgedunkelt (opacity-15)               */}
         {/* ==================================================================== */}
-        <div className="absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none">
+        <div
+          className={cn(
+            "absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
+            isHome
+              ? focusMode === "ambient"
+                ? "opacity-35 brightness-[0.55] contrast-[0.9] blur-[0.8px]"
+                : "opacity-60 brightness-[0.75] contrast-[0.95]"
+              : "opacity-15 brightness-[0.35] contrast-[0.8] blur-[2px]"
+          )}
+        >
           {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
           <MarqueeRow
             rowId="r1"
@@ -189,64 +204,75 @@ export function SlabsVideoBackground() {
         <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-10" />
 
-        {/* Atmosphärischer Kontrastfilter für dezenten oder scharfen Karten-Fokus */}
-        <div
-          className={cn(
-            "absolute inset-0 transition-opacity duration-700 pointer-events-none",
-            focusMode === "ambient" ? "bg-black/30" : "bg-black/0"
-          )}
-        />
-      </div>
+        {/* UNTERSEITEN-OVERLAY: Stark abgedunkelt, damit Formulare, Tabellen & UI-Karten klar hervorstechen */}
+        {!isHome && (
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-[1px] pointer-events-none z-10 transition-opacity duration-500" />
+        )}
 
-      {/* ==================================================================== */}
-      {/* 2. DISKRETER AMBIENCE TOGGLE (DESKTOP + MOBILE EXTRALOCKE)           */}
-      {/* ==================================================================== */}
-      {/* Desktop-Schalter */}
-      <div className="fixed bottom-4 right-4 z-50 pointer-events-auto hidden md:block">
-        <button
-          type="button"
-          onClick={() =>
-            setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
-          }
-          className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-black/75 hover:bg-black/95 text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 backdrop-blur-md text-xs font-semibold transition-all shadow-xl cursor-pointer"
-          title="Hintergrund-Fokus umschalten (Dezent / Scharf)"
-          aria-label="Hintergrund-Fokus umschalten"
-        >
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>
-            {focusMode === "ambient" ? "Hintergrund: Dezent" : "Hintergrund: Scharf"}
-          </span>
-        </button>
-      </div>
-
-      {/* Mobile-Schalter (Extralocke: mind. 44x44px Touch-Target, sicher über Mobile Island Bar) */}
-      <div
-        className="fixed right-3.5 z-50 pointer-events-auto md:hidden"
-        style={{
-          bottom: "calc(4.75rem + env(safe-area-inset-bottom, 0px))",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() =>
-            setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
-          }
-          className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#0c111d]/90 text-amber-400 border border-white/25 backdrop-blur-md flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.85)] active:scale-90 transition-all cursor-pointer"
-          title="Hintergrund-Fokus umschalten"
-          aria-label={
-            focusMode === "ambient"
-              ? "Hintergrund auf Scharf stellen"
-              : "Hintergrund auf Dezent stellen"
-          }
-        >
-          <Sparkles
+        {/* STARTSEITEN-SCRIM: Feiner Kontrastfilter für optimalen Fokus auf die 4 interaktiven Hauptkarten */}
+        {isHome && (
+          <div
             className={cn(
-              "w-5 h-5 transition-transform duration-300",
-              focusMode === "bright" && "rotate-45 text-yellow-300 scale-110"
+              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-10",
+              focusMode === "ambient" ? "bg-black/35" : "bg-black/10"
             )}
           />
-        </button>
+        )}
       </div>
+
+      {/* ==================================================================== */}
+      {/* 2. DISKRETER AMBIENCE TOGGLE (NUR AUF DER STARTSEITE SICHTBAR)       */}
+      {/* ==================================================================== */}
+      {isHome && (
+        <>
+          {/* Desktop-Schalter */}
+          <div className="fixed bottom-4 right-4 z-50 pointer-events-auto hidden md:block">
+            <button
+              type="button"
+              onClick={() =>
+                setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
+              }
+              className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-black/80 hover:bg-black text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 backdrop-blur-md text-xs font-semibold transition-all shadow-xl cursor-pointer"
+              title="Hintergrund-Fokus umschalten (Dezent / Scharf)"
+              aria-label="Hintergrund-Fokus umschalten"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>
+                {focusMode === "ambient" ? "Hintergrund: Dezent" : "Hintergrund: Scharf"}
+              </span>
+            </button>
+          </div>
+
+          {/* Mobile-Schalter (Extralocke: mind. 44x44px Touch-Target, sicher über Mobile Island Bar) */}
+          <div
+            className="fixed right-3.5 z-50 pointer-events-auto md:hidden"
+            style={{
+              bottom: "calc(4.75rem + env(safe-area-inset-bottom, 0px))",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() =>
+                setFocusMode((prev) => (prev === "ambient" ? "bright" : "ambient"))
+              }
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-black/90 text-amber-400 border border-white/25 backdrop-blur-md flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.85)] active:scale-90 transition-all cursor-pointer"
+              title="Hintergrund-Fokus umschalten"
+              aria-label={
+                focusMode === "ambient"
+                  ? "Hintergrund auf Scharf stellen"
+                  : "Hintergrund auf Dezent stellen"
+              }
+            >
+              <Sparkles
+                className={cn(
+                  "w-5 h-5 transition-transform duration-300",
+                  focusMode === "bright" && "rotate-45 text-yellow-300 scale-110"
+                )}
+              />
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 }
