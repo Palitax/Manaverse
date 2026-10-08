@@ -58,7 +58,7 @@ function MarqueeRow({
   return (
     <div
       className={cn(
-        "relative w-full overflow-x-clip overflow-y-visible flex items-center py-3 sm:py-6 select-none pointer-events-none",
+        "relative w-full flex items-center py-2 sm:py-3.5 select-none pointer-events-none",
         className
       )}
     >
@@ -208,7 +208,7 @@ export function SlabsVideoBackground() {
         {/* ==================================================================== */}
         {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
         {/* ==================================================================== */}
-        <div className="absolute inset-0 flex flex-col justify-evenly py-4 sm:py-8 h-[100dvh] overflow-hidden opacity-95">
+        <div className="absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none">
           {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
           <MarqueeRow
             rowId="r1"
@@ -241,8 +241,8 @@ export function SlabsVideoBackground() {
         </div>
 
         {/* Weiche Verläufe oben und unten für sauberes Ausblenden unter Navigation */}
-        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-[#07090e] via-[#07090e]/80 to-transparent pointer-events-none z-10" />
 
         {/* Atmosphärischer Kontrastfilter für optimale Lesbarkeit */}
         <div
