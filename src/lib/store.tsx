@@ -420,6 +420,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        setLocalBoosterStats(profile.id, {
+          manaPoints,
+          boosterPacks,
+          lastDailyBoosterClaimedAt,
+          hasReceivedDiscordWelcomePack,
+          openedBoostersCount,
+        });
+
         const authUser: UserProfile = {
           id: profile.id,
           username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || (isLuffyAdmin ? "all_out_luffy" : "Trainer"),
@@ -503,6 +511,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               }
 
               const localStats = getLocalBoosterStats(p.id);
+              const boosterPacks = p.booster_packs ?? localStats.boosterPacks ?? 0;
+              const manaPoints = p.mana_points ?? localStats.manaPoints ?? 0;
+              if (p.booster_packs !== undefined && p.booster_packs !== null) {
+                setLocalBoosterStats(p.id, {
+                  manaPoints,
+                  boosterPacks,
+                  lastDailyBoosterClaimedAt: p.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null,
+                  hasReceivedDiscordWelcomePack: Boolean(p.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack),
+                  openedBoostersCount: p.opened_boosters_count ?? localStats.openedBoostersCount ?? 0,
+                });
+              }
+
               return {
                 id: p.id,
                 username: p.username,
@@ -514,8 +534,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 discordUsername: p.discord_username || (isLuffy ? "freakyfamous#0" : undefined),
                 bio: p.bio || (isLuffy ? "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
                 createdAt: p.created_at,
-                manaPoints: p.mana_points ?? localStats.manaPoints ?? 0,
-                boosterPacks: p.booster_packs ?? localStats.boosterPacks ?? 0,
+                manaPoints,
+                boosterPacks,
                 lastDailyBoosterClaimedAt: p.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null,
                 hasReceivedDiscordWelcomePack: Boolean(p.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack),
                 openedBoostersCount: p.opened_boosters_count ?? localStats.openedBoostersCount ?? 0,
