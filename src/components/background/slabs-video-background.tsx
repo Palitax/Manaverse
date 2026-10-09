@@ -11,6 +11,8 @@ import { LuxurySlab } from "./luxury-slab";
 import { BackgroundSlab } from "@/types/slabs";
 import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
+import { useAmbientHoveredCard } from "@/lib/ambient-theme";
+import { ForgeEmbersCanvas } from "./forge-embers-canvas";
 
 const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
   "tilt-a",
@@ -120,6 +122,7 @@ export function SlabsVideoBackground() {
     return false;
   });
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
+  const hoveredCard = useAmbientHoveredCard();
 
   useEffect(() => {
     try {
@@ -167,26 +170,118 @@ export function SlabsVideoBackground() {
   return (
     <>
       {/* ==================================================================== */}
-      {/* 1. REIN SCHWARZER HINTERGRUND MIT SCHWEBENDEN KARTEN (-Z-10)          */}
+      {/* 1. MANAFORGE HINTERGRUND MIT SCHWEBENDEN KARTEN (-Z-10)               */}
       {/* ==================================================================== */}
       <div
         className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-black"
         aria-hidden="true"
       >
+        {/* ================================================================== */}
+        {/* LAYER A (HINTER DEN KARTEN - z-0): SCHMIEDE-MAGMA, HOVER & FUNKEN */}
+        {/* Alle Orange-/Glut- und Partikeleffekte liegen HINTER den Slabs,   */}
+        {/* damit die Sammelkarten absolut ungetrübt & kristallklar bleiben! */}
+        {/* ================================================================== */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {/* Reiner schwarzer Raum-Hintergrund */}
+          <div className="absolute inset-0 bg-black" />
+
+          {/* Basis 1: Warmer Magma- & Glut-Glimmer der Mana-Schmiede am unteren Bildrand */}
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 h-[68vh] pointer-events-none transition-opacity duration-1000",
+              isHome ? "opacity-100" : "opacity-35"
+            )}
+            style={{
+              background:
+                "radial-gradient(ellipse 95% 58% at 50% 100%, rgba(249, 115, 22, 0.22) 0%, rgba(180, 83, 9, 0.12) 40%, rgba(0, 0, 0, 0) 78%)",
+            }}
+          />
+
+          {/* Basis 2: Pulsierender Schmiedeherd-Glutkern am unteren Rand */}
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 h-48 sm:h-68 pointer-events-none transition-opacity duration-700",
+              isHome ? "opacity-85" : "opacity-30"
+            )}
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 50% at 50% 100%, rgba(251, 191, 36, 0.22) 0%, rgba(234, 88, 12, 0.10) 45%, transparent 75%)",
+            }}
+          />
+
+          {/* ================================================================ */}
+          {/* DYNAMISCHE HOVER-AUREN (4 elementare Farbfelder der Hauptkarten)  */}
+          {/* ================================================================ */}
+
+          {/* 1. Verkaufen (Rayquaza): Smaragdgrünes Kraftfeld */}
+          <div
+            className={cn(
+              "absolute inset-0 pointer-events-none transition-opacity duration-700 ease-out",
+              hoveredCard === "sell" ? "opacity-100" : "opacity-0"
+            )}
+            style={{
+              background:
+                "radial-gradient(circle 65vw at 25% 62%, rgba(16, 185, 129, 0.35) 0%, rgba(5, 150, 105, 0.16) 38%, transparent 70%)",
+            }}
+          />
+
+          {/* 2. Kaufen (Pikachu): Elektrisches Goldgelb & Cyan-Schimmer */}
+          <div
+            className={cn(
+              "absolute inset-0 pointer-events-none transition-opacity duration-700 ease-out",
+              hoveredCard === "buy" ? "opacity-100" : "opacity-0"
+            )}
+            style={{
+              background:
+                "radial-gradient(circle 65vw at 42% 62%, rgba(245, 158, 11, 0.35) 0%, rgba(6, 182, 212, 0.16) 38%, transparent 70%)",
+            }}
+          />
+
+          {/* 3. Tauschen (Mewtu): Mystisches Psycho-Violett & Magenta */}
+          <div
+            className={cn(
+              "absolute inset-0 pointer-events-none transition-opacity duration-700 ease-out",
+              hoveredCard === "trade" ? "opacity-100" : "opacity-0"
+            )}
+            style={{
+              background:
+                "radial-gradient(circle 65vw at 58% 62%, rgba(168, 85, 247, 0.36) 0%, rgba(217, 70, 239, 0.16) 40%, transparent 70%)",
+            }}
+          />
+
+          {/* 4. Gesucht (Glurak): Lodernder Flammen-Orange & Glutrot-Schleier */}
+          <div
+            className={cn(
+              "absolute inset-0 pointer-events-none transition-opacity duration-700 ease-out",
+              hoveredCard === "looking-for" ? "opacity-100" : "opacity-0"
+            )}
+            style={{
+              background:
+                "radial-gradient(circle 65vw at 75% 62%, rgba(249, 115, 22, 0.38) 0%, rgba(239, 68, 68, 0.18) 40%, transparent 70%)",
+            }}
+          />
+
+          {/* Aufsteigende Glutfunken der Mana-Schmiede (Canvas) - HINTER DEN KARTEN */}
+          <ForgeEmbersCanvas
+            activeTheme={hoveredCard}
+            isPaused={isPaused}
+            className="absolute inset-0 pointer-events-none z-0"
+          />
+        </div>
+
         {/* ==================================================================== */}
-        {/* GENAU 3 REIHEN: Ruhige, flüssige Slow-Motion-Bänder                  */}
-        {/* Auf der Startseite lebendig & elegant, auf Unterseiten dezent        */}
-        {/* und klar sichtbar statt abgedunkelt                                  */}
+        {/* LAYER B (ÜBER DEN FUNKEN & DEM ORANGE - z-10): DIE SCHWEBENDEN KARTEN */}
+        {/* 100% kristallklar sichtbar, nicht von Funken oder Nebel überdeckt!   */}
         {/* ==================================================================== */}
         <div
           className={cn(
-            "absolute inset-0 flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
+            "relative z-10 w-full h-full flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
             focusMode === "ambient"
               ? isHome
-                ? "opacity-55 brightness-[0.75] contrast-[0.95] blur-[0.4px]"
+                ? "opacity-60 brightness-[0.80] contrast-[0.98]"
                 : "opacity-45 brightness-[0.70] contrast-[0.92] blur-[0.6px]"
               : isHome
-                ? "opacity-80 brightness-[0.92] contrast-[1]"
+                ? "opacity-85 brightness-[0.96] contrast-[1]"
                 : "opacity-70 brightness-[0.88] contrast-[0.98]"
           )}
         >
@@ -221,26 +316,18 @@ export function SlabsVideoBackground() {
           />
         </div>
 
-        {/* Weiche Verläufe oben und unten für sauberes Ausblenden unter Navigation */}
-        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none z-10" />
+        {/* ==================================================================== */}
+        {/* LAYER C (z-20): KONTRAST-VERLÄUFE FÜR NAVIGATION & FOOTER           */}
+        {/* ==================================================================== */}
+        <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-24 sm:h-36 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-20" />
 
-        {/* UNTERSEITEN-OVERLAY: Sanfter Kontrastfilter, damit Formulare, Tabellen & UI-Karten klar hervorstechen, das Video aber lebendig sichtbar bleibt */}
+        {/* UNTERSEITEN-OVERLAY: Sanfter Kontrastfilter für Inhaltsseiten */}
         {!isHome && (
           <div
             className={cn(
-              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-10",
+              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-20",
               focusMode === "ambient" ? "bg-black/35 backdrop-blur-[0.5px]" : "bg-black/15"
-            )}
-          />
-        )}
-
-        {/* STARTSEITEN-SCRIM: Reduzierter Kontrastfilter (um 30% aufgehellt) für brillante Kartensichtbarkeit */}
-        {isHome && (
-          <div
-            className={cn(
-              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-10",
-              focusMode === "ambient" ? "bg-black/25" : "bg-black/[0.07]"
             )}
           />
         )}

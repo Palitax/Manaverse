@@ -20,6 +20,7 @@ import {
   PlusCircle,
   ArrowLeftRight,
 } from "lucide-react";
+import { setAmbientHoveredCard } from "@/lib/ambient-theme";
 
 export default function HomePage() {
   const router = useRouter();
@@ -211,6 +212,12 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 * index }}
                   onClick={() => router.push(card.href)}
+                  onMouseEnter={() => setAmbientHoveredCard(card.id as any)}
+                  onMouseLeave={() => setAmbientHoveredCard(null)}
+                  onTouchStart={() => setAmbientHoveredCard(card.id as any)}
+                  onTouchEnd={() => {
+                    setTimeout(() => setAmbientHoveredCard(null), 1200);
+                  }}
                   className="group relative w-full sm:w-[170px] md:w-[195px] lg:w-[235px] xl:w-[275px] 2xl:w-[315px] h-[205px] min-[390px]:h-[220px] min-[420px]:h-[235px] sm:h-[295px] md:h-[335px] lg:h-[395px] xl:h-[455px] 2xl:h-[505px] shrink-0 cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-2.5 active:scale-95"
                 >
                   {/* Main Card Box Container (Pokemon Artwork as Background) */}
@@ -348,10 +355,20 @@ export default function HomePage() {
         <div className="w-full rounded-3xl border border-white/10 bg-black/95 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/5">
           {bentoDetails.map((bento) => {
             const isLeft = bento.align === "left";
+            const bentoThemeKey =
+              bento.id === "bento-sell"
+                ? "sell"
+                : bento.id === "bento-buy"
+                ? "buy"
+                : bento.id === "bento-trade"
+                ? "trade"
+                : "looking-for";
 
             return (
               <div
                 key={bento.id}
+                onMouseEnter={() => setAmbientHoveredCard(bentoThemeKey)}
+                onMouseLeave={() => setAmbientHoveredCard(null)}
                 className="group relative flex flex-col md:flex-row items-center justify-between overflow-hidden transition-colors duration-300 hover:bg-white/[0.02] p-6 sm:p-8 md:p-10 min-h-[260px] sm:min-h-[280px]"
               >
                 {/* Full-Height Stretched Pokemon Artwork as seamless background (Left-aligned for 01 & 03, Right-aligned for 02 & 04) */}
