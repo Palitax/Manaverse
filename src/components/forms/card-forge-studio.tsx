@@ -23,7 +23,6 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  Flame,
   ShieldCheck,
   Video,
   Info,
@@ -193,6 +192,12 @@ export function CardForgeStudio({
 
   // Form State
   const [type, setType] = useState<ListingType>(initialType);
+
+  useEffect(() => {
+    if (initialType) {
+      setType(initialType);
+    }
+  }, [initialType]);
   const [name, setName] = useState("");
   const [setNameText, setSetNameText] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -389,7 +394,7 @@ export function CardForgeStudio({
           <CheckCircle2 className="w-10 h-10" />
         </div>
         <h3 className="text-2xl sm:text-3xl font-black text-white">
-          Karte erfolgreich in der Schmiede verewigt!
+          Inserat erfolgreich veröffentlicht!
         </h3>
         <p className="text-sm text-neutral-300 max-w-md mx-auto">
           Dein Inserat für <strong className="text-white">{name}</strong> ist ab sofort live im Manaverse Marktplatz
@@ -408,7 +413,7 @@ export function CardForgeStudio({
             }}
             className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/20 min-h-[44px]"
           >
-            + Weitere Karte schmieden
+            + Weiteres Inserat erstellen
           </button>
           {onCancel && (
             <button
@@ -447,7 +452,7 @@ export function CardForgeStudio({
       />
 
       {/* Top Header Bar */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10 mb-6">
         <div className="flex items-center gap-3">
           <div className={cn("p-3 rounded-2xl border shadow-lg flex-shrink-0", themeAccentBg)}>
             {isSell ? (
@@ -460,17 +465,29 @@ export function CardForgeStudio({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/90 border border-white/15 flex items-center gap-1">
-                <Flame className="w-3 h-3 text-amber-400" /> MANAFORGE KARTEN-SCHMIEDE
+              <span
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border flex items-center gap-1.5",
+                  isSell
+                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                    : isTrade
+                    ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                    : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                )}
+              >
+                {isSell && <Tag className="w-3 h-3 text-emerald-400" />}
+                {isTrade && <ArrowLeftRight className="w-3 h-3 text-purple-400" />}
+                {isLookingFor && <Target className="w-3 h-3 text-cyan-400" />}
+                {isSell ? "SOFORTKAUF & VERKAUF" : isTrade ? "1:1 SAMMLERTAUSCH" : "KOPFGELD & GESUCH"}
               </span>
-              <span className="hidden sm:inline-flex text-[10px] text-neutral-400">• 0% Handelsgebühr</span>
+              <span className="hidden sm:inline-flex text-[10px] text-neutral-400">• 0% Provision</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
               {isSell
                 ? "Karte zum Verkauf einstellen"
                 : isTrade
-                ? "Tausch-Inserat aufgeben"
-                : "Kopfgeld aussetzen (Gesuch)"}
+                ? "Karte zum Tausch anbieten"
+                : "Gesuch aufgeben (Kopfgeld)"}
             </h2>
           </div>
         </div>
@@ -479,66 +496,15 @@ export function CardForgeStudio({
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {onCancel && (
             <button
+              type="button"
               onClick={onCancel}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all min-h-[40px] cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
             >
               <X className="w-4 h-4" />
-              <span>Schmiede schließen</span>
+              <span>Schließen</span>
             </button>
           )}
         </div>
-      </div>
-
-      {/* Mode Switcher Tabs */}
-      <div className="relative z-10 grid grid-cols-3 gap-2 my-5 p-1.5 bg-black/40 rounded-2xl border border-white/10">
-        <button
-          type="button"
-          onClick={() => {
-            setType("sell");
-            setMobileStep(1);
-          }}
-          className={cn(
-            "py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]",
-            type === "sell"
-              ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/30 scale-[1.01]"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
-          )}
-        >
-          <Tag className="w-4 h-4" />
-          <span>Verkaufen</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setType("trade");
-            setMobileStep(1);
-          }}
-          className={cn(
-            "py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]",
-            type === "trade"
-              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30 scale-[1.01]"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
-          )}
-        >
-          <ArrowLeftRight className="w-4 h-4" />
-          <span>Tauschen</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setType("looking_for");
-            setMobileStep(1);
-          }}
-          className={cn(
-            "py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px]",
-            type === "looking_for"
-              ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30 scale-[1.01]"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
-          )}
-        >
-          <Target className="w-4 h-4" />
-          <span>Gesucht (Bounty)</span>
-        </button>
       </div>
 
       {/* ======================================================== */}
@@ -986,7 +952,7 @@ export function CardForgeStudio({
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" /> In Schmiede verewigen...
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Inserat wird veröffentlicht...
                 </>
               ) : (
                 <>
@@ -1506,7 +1472,7 @@ export function CardForgeStudio({
               {isSubmitting ? (
                 <>
                   <RefreshCw className="w-5 h-5 animate-spin" />
-                  Wird in der Schmiede verewigt...
+                  Inserat wird veröffentlicht...
                 </>
               ) : (
                 <>

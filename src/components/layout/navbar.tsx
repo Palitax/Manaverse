@@ -57,7 +57,6 @@ export function Navbar() {
 
   const navItems = [
     { label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
-    { label: "Schmiede", href: "/create", icon: <Flame className="w-4 h-4 text-amber-400" /> },
     { label: "Verkaufen", href: "/sell", icon: <PlusCircle className="w-4 h-4" /> },
     { label: "Kaufen", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
     { label: "Tauschen", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },

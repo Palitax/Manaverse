@@ -82,7 +82,7 @@ export default function BuyPage() {
     setStudioOpen((prev) => !prev);
     if (!studioOpen) {
       setTimeout(() => {
-        document.getElementById("buy-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("buy-create-section")?.scrollIntoView({ behavior: "smooth" });
       }, 50);
     }
   };
@@ -132,9 +132,9 @@ export default function BuyPage() {
         onResetFilters={resetFilters}
       />
 
-      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {/* In-Page Inserat-Erstellung */}
       {studioOpen && (
-        <div id="buy-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="buy-create-section" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardForgeStudio
             initialType="sell"
             mode="inline"

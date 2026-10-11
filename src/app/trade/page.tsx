@@ -104,7 +104,7 @@ export default function TradePage() {
     setStudioOpen((prev) => !prev);
     if (!studioOpen) {
       setTimeout(() => {
-        document.getElementById("trade-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("trade-create-section")?.scrollIntoView({ behavior: "smooth" });
       }, 50);
     }
   };
@@ -156,9 +156,9 @@ export default function TradePage() {
         onResetFilters={resetFilters}
       />
 
-      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {/* In-Page Inserat-Erstellung */}
       {studioOpen && (
-        <div id="trade-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="trade-create-section" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardForgeStudio
             initialType="trade"
             mode="inline"

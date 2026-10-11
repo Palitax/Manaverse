@@ -93,7 +93,7 @@ export default function LookingForPage() {
     setStudioOpen((prev) => !prev);
     if (!studioOpen) {
       setTimeout(() => {
-        document.getElementById("bounty-forge-studio")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("bounty-create-section")?.scrollIntoView({ behavior: "smooth" });
       }, 50);
     }
   };
@@ -141,9 +141,9 @@ export default function LookingForPage() {
         onResetFilters={resetFilters}
       />
 
-      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {/* In-Page Inserat-Erstellung */}
       {studioOpen && (
-        <div id="bounty-forge-studio" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="bounty-create-section" className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardForgeStudio
             initialType="looking_for"
             mode="inline"

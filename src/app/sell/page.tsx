@@ -57,7 +57,7 @@ export default function SellPage() {
     setStudioOpen((prev) => !prev);
     if (!studioOpen) {
       setTimeout(() => {
-        document.getElementById("forge-studio-section")?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("sell-create-section")?.scrollIntoView({ behavior: "smooth" });
       }, 50);
     }
   };
@@ -127,9 +127,9 @@ export default function SellPage() {
         </Link>
       </div>
 
-      {/* In-Page Expandable Karten-Schmiede (No popup) */}
+      {/* In-Page Inserat-Erstellung (Sofortkauf & Einzelkarten) */}
       {studioOpen && (
-        <div id="forge-studio-section" className="mb-10 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="sell-create-section" className="mb-10 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardForgeStudio
             initialType="sell"
             mode="inline"
