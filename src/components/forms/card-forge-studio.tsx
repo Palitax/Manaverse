@@ -214,20 +214,46 @@ export function CardForgeStudio({
   const [mobileStep, setMobileStep] = useState<number>(1);
   const [showManualFields, setShowManualFields] = useState(false);
 
-  // Mouse hover 3D tilt effect on desktop slab preview
-  const slabRef = useRef<HTMLDivElement>(null);
-  const [slabTilt, setSlabTilt] = useState({ x: 0, y: 0 });
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!slabRef.current) return;
-    const rect = slabRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setSlabTilt({ x: x * 15, y: -y * 15 });
+    const slab = e.currentTarget;
+    const r = slab.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -15).toFixed(1)}deg`);
+    slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 15).toFixed(1)}deg`);
+    slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
+    slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
   };
 
-  const handleMouseLeave = () => {
-    setSlabTilt({ x: 0, y: 0 });
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    const slab = e.currentTarget;
+    slab.style.setProperty('--rx', '0deg');
+    slab.style.setProperty('--ry', '0deg');
+    slab.style.setProperty('--px', '50%');
+    slab.style.setProperty('--py', '50%');
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!e.touches[0]) return;
+    const slab = e.currentTarget;
+    const r = slab.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - r.left;
+    const y = touch.clientY - r.top;
+    if (x >= 0 && x <= r.width && y >= 0 && y <= r.height) {
+      slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -10).toFixed(1)}deg`);
+      slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 10).toFixed(1)}deg`);
+      slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
+      slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const slab = e.currentTarget;
+    slab.style.setProperty('--rx', '0deg');
+    slab.style.setProperty('--ry', '0deg');
+    slab.style.setProperty('--px', '50%');
+    slab.style.setProperty('--py', '50%');
   };
 
   // Sync initial type when changed
@@ -986,93 +1012,92 @@ export function CardForgeStudio({
             <span className="text-[10px] text-neutral-400">Bewegt sich mit der Maus</span>
           </div>
 
-          {/* Graded Slab Box with 3D tilt */}
-          <div
-            ref={slabRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              transform: `perspective(1000px) rotateX(${slabTilt.y}deg) rotateY(${slabTilt.x}deg)`,
-              transition: "transform 0.15s ease-out",
-            }}
-            className="relative w-full max-w-[340px] mx-auto rounded-3xl p-3 bg-gradient-to-b from-[#1c2438] via-[#101524] to-[#0a0d16] border-2 border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden group select-none"
-          >
-            {/* Holographic light sheen reflection */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.08] to-transparent pointer-events-none group-hover:opacity-100 transition-opacity" />
+          {/* Ultra-Clean Acrylic Display Slab Component Preview */}
+          <div className="acrylic-slab-container" style={{ perspective: "1200px" }}>
+            <div
+              className="acrylic-display-slab select-none"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {/* Chamfered Bevel & Specular Glare */}
+              <div className="slab-edge-bevel" />
+              <div className="slab-glare-effect" />
 
-            {/* Slab Header (PSA / Manaforge Grading Label) */}
-            <div className="rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-400/20 to-amber-500/15 border border-amber-400/30 p-2.5 mb-2.5 shadow-inner backdrop-blur-sm text-center relative overflow-hidden">
-              <div className="flex items-center justify-between text-[9px] uppercase font-black tracking-widest text-amber-300/80 mb-1">
-                <span>MANAFORGE LABS</span>
-                <span>{activeLanguage.flag} {activeLanguage.label}</span>
+              {/* Clean Header Plate */}
+              <div className="slab-header-plate">
+                <div className="plate-top-row">
+                  <span className="collection-tag">
+                    {type === "sell"
+                      ? "SOFORTKAUF"
+                      : type === "trade"
+                      ? "1:1 TAUSCH"
+                      : "KOPFGELD"}
+                  </span>
+                  <span className="foil-badge">
+                    {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
+                  </span>
+                </div>
+                <div className="plate-main-row">
+                  <div>
+                    <h4 className="card-name truncate" title={name || "DEINE POKÉMON KARTE"}>
+                      {name || "DEINE POKÉMON KARTE"} {cardNumber ? `#${cardNumber}` : ""}
+                    </h4>
+                    <p className="set-info truncate">
+                      {setNameText || "Edition / Set"} • {activeCondition.gradeLabel} ({activeCondition.stars})
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xs font-black text-white truncate px-1">
-                {name || "DEINE POKÉMON KARTE"}
-              </h3>
-              <p className="text-[10px] font-semibold text-neutral-300 truncate">
-                {setNameText || "Set nicht spezifiziert"} {cardNumber ? `• #${cardNumber}` : ""}
-              </p>
 
-              {/* Grade Pill */}
-              <div className="mt-1.5 flex items-center justify-center gap-2 pt-1 border-t border-amber-400/20">
-                <span className="text-[11px] font-black text-amber-300 font-mono tracking-wider">
-                  {activeCondition.gradeLabel}
-                </span>
-                <span className="text-amber-400 text-xs tracking-tight">
-                  {activeCondition.stars}
-                </span>
-              </div>
-            </div>
-
-            {/* Card Window Container */}
-            <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-black/80 border border-white/15 flex items-center justify-center shadow-inner">
-              {photos[0] ? (
-                <div className="relative w-full h-full flex items-center justify-center p-2">
+              {/* Recessed Card Well */}
+              <div className="slab-card-window">
+                {photos[0] ? (
                   <img
                     src={photos[0]}
                     alt={name || "Kartenvorschau"}
-                    className="max-h-full max-w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] transition-transform group-hover:scale-105 duration-300"
+                    className="card-img aspect-[2.5/3.5] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
                   />
-                  {/* Subtle holofoil shimmer on image */}
-                  <div className="absolute inset-0 animate-holo pointer-events-none opacity-20 mix-blend-screen" />
-                </div>
-              ) : (
-                <div className="text-center p-6 text-neutral-500 space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
-                    <ImageIcon className="w-6 h-6" />
+                ) : (
+                  <div className="aspect-[2.5/3.5] flex flex-col items-center justify-center text-neutral-400 gap-2 bg-black/60 rounded-lg">
+                    <ImageIcon className="w-8 h-8 opacity-40 text-neutral-400" />
+                    <span className="text-xs font-semibold text-neutral-300">Noch kein Bild gewählt</span>
+                    <span className="text-[10px] text-neutral-500 text-center px-4">
+                      Nutze die Suche rechts oder eine Vorlage für automatisches Artwork.
+                    </span>
                   </div>
-                  <p className="text-xs font-semibold text-neutral-300">Noch kein Bild gewählt</p>
-                  <p className="text-[11px] text-neutral-500 max-w-[200px]">
-                    Nutze die Suche rechts oder eine Vorlage für automatisches Artwork.
-                  </p>
+                )}
+                <div className="holo-foil-layer pointer-events-none" />
+              </div>
+
+              {/* Bottom Slab Footer / Price Tag */}
+              <div className="mt-3.5 p-2.5 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-between text-xs relative z-10 shadow-inner">
+                <div className="min-w-0">
+                  <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
+                    {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
+                  </span>
+                  <span className="text-base font-black text-white truncate block">
+                    {isSell
+                      ? price
+                        ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
+                        : "Preis festlegen"
+                      : isTrade
+                      ? estimatedTradeValue
+                        ? `~${estimatedTradeValue} €`
+                        : "Tauschwert offen"
+                      : priceRange || "VB"}
+                  </span>
                 </div>
-              )}
-
-              {/* Top Slab Notch Reflection */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-1 rounded-full bg-white/20 pointer-events-none" />
-            </div>
-
-            {/* Bottom Slab Footer / Price Tag */}
-            <div className="mt-2.5 p-2 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-xs">
-              <div>
-                <span className="text-[10px] text-neutral-400 uppercase font-bold block leading-none">
-                  {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld"}
-                </span>
-                <span className="text-sm font-black text-white">
-                  {isSell
-                    ? price
-                      ? `${price} €`
-                      : "Preis festlegen"
-                    : isTrade
-                    ? estimatedTradeValue
-                      ? `${estimatedTradeValue} €`
-                      : "Tauschwert offen"
-                    : priceRange || "VB"}
+                <span className={cn("text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border", themeAccentBg)}>
+                  {isSell ? "Verkauf" : isTrade ? "Tausch" : "Gesuch"}
                 </span>
               </div>
-              <span className={cn("text-[10px] font-black uppercase px-2 py-0.5 rounded-md border", themeAccentBg)}>
-                {isSell ? "Verkauf" : isTrade ? "Tausch" : "Gesuch"}
-              </span>
+
+              {/* Polished Bottom Acrylic Rim (Clean) */}
+              <div className="slab-bottom-rim">
+                <div className="rim-reflection" />
+              </div>
             </div>
           </div>
 
