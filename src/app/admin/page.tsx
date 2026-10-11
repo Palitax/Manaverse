@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Zap,
+  Flame,
   Users,
   Search,
   ShieldCheck,
@@ -103,7 +104,7 @@ export default function AdminPage() {
           type: "success",
           text:
             newRole === "admin"
-              ? `⚡ ${targetUsername} ist jetzt Administrator! Der animierte Blitz-Avatarrahmen wurde aktiviert.`
+              ? `🔥 ${targetUsername} ist jetzt Administrator! Der animierte Flammen-Avatarrahmen wurde aktiviert.`
               : `Rolle von ${targetUsername} wurde erfolgreich auf „${newRole}“ geändert.`,
         });
       } else {
@@ -225,12 +226,12 @@ export default function AdminPage() {
           className={cn(
             "flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap min-h-[44px]",
             activeTab === "roles"
-              ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/25"
+              ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/25"
               : "text-neutral-400 hover:text-white hover:bg-white/5"
           )}
         >
-          <Zap className="w-4 h-4" />
-          <span>⚡ Admins & Blitzrahmen</span>
+          <Flame className="w-4 h-4 text-amber-300 fill-amber-300" />
+          <span>🔥 Admins & Flammenrahmen</span>
           <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-black/20">
             {users.length}
           </span>
@@ -274,9 +275,9 @@ export default function AdminPage() {
       {activeTab === "roles" && (
         <div className="space-y-6">
           {/* Hero Feature Showcase Card */}
-          <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-cyan-500/30 relative overflow-hidden shadow-2xl">
+          <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-orange-500/30 relative overflow-hidden shadow-2xl">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-              {/* Live Preview of the Electric Lightning Frame */}
+              {/* Live Preview of the Molten Flame Frame */}
               <div className="flex-shrink-0">
                 <HoloAvatarFrame
                   avatarUrl={
@@ -291,14 +292,14 @@ export default function AdminPage() {
               </div>
 
               <div className="flex-1 text-center sm:text-left space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-xs font-black shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-                  <Zap className="w-3.5 h-3.5 fill-cyan-400" /> Exklusiver Anime-Blitz-Avatarrahmen
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-400/40 text-xs font-black shadow-[0_0_15px_rgba(255,80,0,0.4)]">
+                  <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-500" /> Exklusiver Molten-Flammen-Avatarrahmen
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-white">
-                  Administrator-Berechtigung & Blitz-Aura
+                  Administrator-Berechtigung & Molten-Lava-Aura
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-2xl">
-                  Dieser animierte Kreisrahmen im dynamischen Anime-Blitz-Stil mit rotierender Plasma-Corona und regelmäßigen Blitzeinschlägen ins Avatarbild ist <b>streng exklusiv für Administratoren</b>.
+                  Dieser animierte Kreisrahmen im flüssigen Molten-Lava- & Flammen-Stil mit rotierender Magma-Corona, glühenden Rissen und aufsteigenden Funken ist <b>streng exklusiv für Administratoren</b>.
                   Als Administrator kannst du unten registrierten Nutzern die Admin-Rechte manuell zuweisen oder wieder entziehen.
                 </p>
               </div>
@@ -360,7 +361,7 @@ export default function AdminPage() {
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {[
                 { id: "all", label: "Alle" },
-                { id: "admin", label: "⚡ Admins" },
+                { id: "admin", label: "🔥 Admins" },
                 { id: "founder", label: "Gründer" },
                 { id: "member", label: "Mitglieder" },
               ].map((f) => (
@@ -400,7 +401,7 @@ export default function AdminPage() {
                     className={cn(
                       "p-4 sm:p-5 rounded-2xl glass-panel transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 border",
                       isAdmin
-                        ? "border-cyan-500/40 bg-cyan-950/10 shadow-[0_0_20px_rgba(0,240,255,0.06)]"
+                        ? "border-orange-500/40 bg-orange-950/15 shadow-[0_0_20px_rgba(255,80,0,0.08)]"
                         : isFounder
                         ? "border-amber-500/40 bg-amber-950/10"
                         : "border-white/10"
@@ -430,8 +431,8 @@ export default function AdminPage() {
 
                           {/* Current Role Badge */}
                           {isAdmin && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-[10px] font-black shadow-[0_0_8px_rgba(0,240,255,0.3)]">
-                              <Zap className="w-3 h-3 fill-cyan-400" /> Administrator (Blitz)
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-400/40 text-[10px] font-black shadow-[0_0_8px_rgba(255,80,0,0.3)]">
+                              <Flame className="w-3 h-3 fill-amber-400 text-orange-500" /> Administrator (Flammen)
                             </span>
                           )}
 
@@ -482,10 +483,10 @@ export default function AdminPage() {
                           type="button"
                           disabled={isProcessing}
                           onClick={() => handleRoleChange(user.id, "admin", user.username)}
-                          className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-cyan-500/25 min-h-[44px] cursor-pointer"
+                          className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-red-600 hover:from-orange-400 hover:to-red-500 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-orange-500/25 min-h-[44px] cursor-pointer"
                         >
-                          <Zap className="w-3.5 h-3.5 fill-black" />
-                          <span>⚡ Als Admin ernennen</span>
+                          <Flame className="w-3.5 h-3.5 fill-black text-black" />
+                          <span>🔥 Als Admin ernennen</span>
                         </button>
                       ) : (
                         <button
@@ -506,9 +507,9 @@ export default function AdminPage() {
                         onChange={(e) =>
                           handleRoleChange(user.id, e.target.value as UserRole, user.username)
                         }
-                        className="bg-[#101524] text-neutral-200 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-cyan-500 min-h-[44px]"
+                        className="bg-[#101524] text-neutral-200 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 min-h-[44px]"
                       >
-                        <option value="admin">⚡ Administrator (Blitzrahmen)</option>
+                        <option value="admin">🔥 Administrator (Flammenrahmen)</option>
                         <option value="founder">👑 Gründer (Goldrahmen)</option>
                         <option value="beta">✨ Beta-Tester (Holo-Rahmen)</option>
                         <option value="member">👤 Standard-Mitglied</option>

@@ -503,6 +503,214 @@ body {
 }
 
 /* ==============================================================================
+   MOLTEN MAGMA & FLAME ANIMATIONS (Admin Avatar Frame)
+   ============================================================================== */
+
+@keyframes molten-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes molten-spin-reverse {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes molten-heat-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.75;
+    filter: drop-shadow(0 0 14px rgba(255, 68, 0, 0.7)) drop-shadow(0 0 28px rgba(200, 20, 0, 0.45));
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 24px rgba(255, 95, 0, 0.95)) drop-shadow(0 0 42px rgba(255, 35, 0, 0.7));
+  }
+}
+
+@keyframes molten-rim-pulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(255, 68, 0, 0.85), 0 0 32px rgba(200, 25, 0, 0.5), inset 0 0 6px rgba(255, 200, 50, 0.5);
+    border-color: rgba(255, 80, 0, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(255, 120, 0, 1), 0 0 44px rgba(255, 45, 0, 0.75), inset 0 0 10px rgba(255, 230, 80, 0.8);
+    border-color: rgba(255, 140, 0, 1);
+  }
+}
+
+@keyframes molten-lava-flicker {
+  0%, 100% {
+    opacity: 0.92;
+    filter: drop-shadow(0 0 6px #ff3b00);
+  }
+  25% {
+    opacity: 0.78;
+    filter: drop-shadow(0 0 4px #ff2200);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 9px #ff7700);
+  }
+  75% {
+    opacity: 0.84;
+    filter: drop-shadow(0 0 5px #ff4500);
+  }
+}
+
+@keyframes molten-avatar-glow {
+  0%, 75% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  82% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+  90% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes ember-float-1 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-3px, -6px) scale(1);
+  }
+  70% {
+    opacity: 0.7;
+    transform: translate(-8px, -18px) scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-14px, -30px) scale(0.2);
+  }
+}
+
+@keyframes ember-float-2 {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.95;
+    transform: translate(4px, -8px) scale(1.1);
+  }
+  75% {
+    opacity: 0.65;
+    transform: translate(9px, -22px) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(15px, -34px) scale(0.1);
+  }
+}
+
+@keyframes ember-float-3 {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-2px, -10px) scale(1);
+  }
+  80% {
+    opacity: 0.5;
+    transform: translate(-4px, -26px) scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-6px, -38px) scale(0);
+  }
+}
+
+@keyframes ember-float-4 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+    transform: translate(3px, -7px) scale(0.9);
+  }
+  70% {
+    opacity: 0.6;
+    transform: translate(7px, -20px) scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(11px, -32px) scale(0.1);
+  }
+}
+
+.animate-molten-spin {
+  animation: molten-spin 7s linear infinite;
+}
+
+.animate-molten-spin-slow {
+  animation: molten-spin 14s linear infinite;
+}
+
+.animate-molten-spin-reverse {
+  animation: molten-spin-reverse 10s linear infinite;
+}
+
+.animate-molten-heat-pulse {
+  animation: molten-heat-pulse 2.8s ease-in-out infinite;
+}
+
+.animate-molten-rim-pulse {
+  animation: molten-rim-pulse 2.2s ease-in-out infinite;
+}
+
+.animate-molten-lava-flicker {
+  animation: molten-lava-flicker 1.6s ease-in-out infinite;
+}
+
+.animate-molten-avatar-glow {
+  animation: molten-avatar-glow 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-ember-1 {
+  animation: ember-float-1 2.4s ease-out infinite;
+}
+
+.animate-ember-2 {
+  animation: ember-float-2 3.1s ease-out infinite 0.7s;
+}
+
+.animate-ember-3 {
+  animation: ember-float-3 2.8s ease-out infinite 1.4s;
+}
+
+.animate-ember-4 {
+  animation: ember-float-4 3.3s ease-out infinite 0.3s;
+}
+
+.molten-glow {
+  box-shadow: 0 0 22px -1px rgba(255, 68, 0, 0.75), 0 0 38px 2px rgba(200, 20, 0, 0.45);
+}
+
+/* ==============================================================================
    TCG COLLECTOR SLAB & HOLOFOIL EFFECTS
    ============================================================================== */
 

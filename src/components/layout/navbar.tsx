@@ -195,13 +195,13 @@ export function Navbar() {
                       <span
                         className={cn(
                           "text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded",
-                          currentUser.role === "admin" && "bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_10px_rgba(0,240,255,0.3)]",
+                          currentUser.role === "admin" && "bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-[0_0_10px_rgba(255,80,0,0.35)]",
                           currentUser.role === "founder" && "bg-amber-400/20 text-amber-300",
                           currentUser.role === "beta" && "bg-cyan-400/20 text-cyan-300",
                           currentUser.role === "member" && "bg-neutral-800 text-neutral-300"
                         )}
                       >
-                        {currentUser.role === "admin" ? "⚡ Admin" : currentUser.role}
+                        {currentUser.role === "admin" ? "🔥 Admin" : currentUser.role}
                       </span>
                     </p>
                     {currentUser.discordUsername && (

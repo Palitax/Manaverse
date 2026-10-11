@@ -27,7 +27,7 @@ export const MOCK_USERS: UserProfile[] = [
     dealsCount: 18,
     whatnotUsername: "all_out_luffy",
     discordUsername: "freakyfamous#0",
-    bio: "Manaforge Administrator ⚡ • Whatnot: all_out_luffy • Discord: @freakyfamous#0",
+    bio: "Manaforge Administrator 🔥 • Whatnot: all_out_luffy • Discord: @freakyfamous#0",
     createdAt: "2024-01-20T10:00:00Z",
     manaPoints: 1200,
     boosterPacks: 10,

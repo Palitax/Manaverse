@@ -167,8 +167,8 @@ export default function ProfilePage() {
               )}
 
               {selectedRole === "admin" && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-xs font-black shadow-[0_0_12px_rgba(0,240,255,0.4)]">
-                  <Zap className="w-3.5 h-3.5 fill-cyan-400" /> Administrator ⚡
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.4)]">
+                  <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-500" /> Administrator 🔥
                 </span>
               )}
 
@@ -571,8 +571,8 @@ export default function ProfilePage() {
                   Spezial-Avatarrahmen
                 </label>
                 {currentUser?.role === "admin" && (
-                  <span className="text-[10px] text-cyan-400 font-bold flex items-center gap-1">
-                    <Zap className="w-3 h-3 fill-cyan-400" /> Admin-Blitzrahmen aktiv
+                  <span className="text-[10px] text-orange-400 font-bold flex items-center gap-1">
+                    <Flame className="w-3 h-3 fill-amber-400 text-orange-500" /> Admin-Flammenrahmen aktiv
                   </span>
                 )}
               </div>
@@ -581,9 +581,9 @@ export default function ProfilePage() {
                 {[
                   {
                     id: "admin",
-                    label: "Admin ⚡",
-                    sublabel: "Anime-Blitz",
-                    icon: <Zap className="w-3.5 h-3.5 fill-cyan-400 text-cyan-300" />,
+                    label: "Admin 🔥",
+                    sublabel: "Molten Lava",
+                    icon: <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-400" />,
                     isLocked: currentUser?.role !== "admin" && currentUser?.role !== "founder",
                   },
                   {
@@ -635,7 +635,7 @@ export default function ProfilePage() {
                         "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all min-h-[58px] cursor-pointer",
                         isSelected
                           ? roleOption.id === "admin"
-                            ? "bg-cyan-950/40 border-cyan-400 text-white font-black shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+                            ? "bg-orange-950/40 border-orange-500 text-white font-black shadow-[0_0_15px_rgba(255,80,0,0.45)]"
                             : "bg-indigo-600/20 border-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20"
                           : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
                       )}
@@ -652,7 +652,7 @@ export default function ProfilePage() {
 
               {currentUser?.role !== "admin" && currentUser?.role !== "founder" && (
                 <p className="text-[11px] text-neutral-500 italic">
-                  ⚡ Der animierte Blitzrahmen ist exklusiv für Administratoren und muss manuell von einem Admin im Dashboard vergeben werden.
+                  🔥 Der animierte Molten-Flammenrahmen ist exklusiv für Administratoren und muss manuell von einem Admin im Dashboard vergeben werden.
                 </p>
               )}
             </div>

@@ -2,9 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/types";
-import { ShieldCheck, Sparkles, Crown } from "lucide-react";
+import { ShieldCheck, Sparkles, Crown, Flame } from "lucide-react";
 import Image from "next/image";
-import { AdminLightningFrame } from "./admin-lightning-frame";
+import { AdminMoltenFrame } from "./admin-molten-frame";
 
 interface HoloAvatarFrameProps {
   avatarUrl: string;
@@ -25,10 +25,10 @@ export function HoloAvatarFrame({
   showBadges = true,
   className,
 }: HoloAvatarFrameProps) {
-  // EXCLUSIVE ADMIN LIGHTNING FRAME
+  // EXCLUSIVE ADMIN MOLTEN FLAME FRAME
   if (role === "admin") {
     return (
-      <AdminLightningFrame
+      <AdminMoltenFrame
         avatarUrl={avatarUrl}
         username={username}
         size={size}
@@ -69,10 +69,10 @@ export function HoloAvatarFrame({
       label: "Beta",
     },
     admin: {
-      outer: "p-[3px] bg-gradient-to-r from-rose-500 via-purple-500 to-pink-500 shadow-rose-500/30",
-      inner: "border-2 border-rose-400/80",
-      badgeColor: "bg-rose-500 text-white",
-      icon: <Crown className="w-3 h-3" />,
+      outer: "p-[3px] bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 shadow-orange-500/50",
+      inner: "border-2 border-orange-500/90 shadow-[0_0_15px_rgba(255,80,0,0.6)]",
+      badgeColor: "bg-orange-600 text-white",
+      icon: <Flame className="w-3 h-3 text-amber-200 fill-amber-300" />,
       label: "Admin",
     },
     member: {
