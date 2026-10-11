@@ -184,7 +184,7 @@ export function DiscordWelcomeModal() {
           <div className="flex items-center gap-3.5 w-full sm:w-auto">
             <div className="w-12 h-16 rounded-xl overflow-hidden border border-amber-400/50 shadow-md shrink-0 bg-neutral-900">
               <img
-                src="/manaforge-booster.jpg"
+                src="/manaforge-booster.png"
                 alt="Manaforge Booster"
                 className="w-full h-full object-cover"
               />

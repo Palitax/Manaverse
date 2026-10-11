@@ -471,27 +471,27 @@ export function BoosterRipModal() {
                     <div className="absolute inset-x-4 top-[6%] h-44 bg-gradient-to-t from-cyan-400/60 via-amber-400/35 to-transparent blur-xl animate-pulse z-10" />
 
                     {/* Left Fan Card */}
-                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/40 bg-neutral-900 animate-card-emerge-left z-20">
+                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/40 bg-neutral-900 animate-card-emerge-left z-20">
                       <img
-                        src="/manaforge-card-back.jpg"
+                        src="/manaforge-card-back.png"
                         alt="Manaforge Kartenstapel"
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     {/* Right Fan Card */}
-                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-amber-500/40 bg-neutral-900 animate-card-emerge-right z-20">
+                    <div className="absolute w-[220px] sm:w-[260px] h-[330px] sm:h-[390px] rounded-2xl overflow-hidden shadow-2xl border border-orange-500/40 bg-neutral-900 animate-card-emerge-right z-20">
                       <img
-                        src="/manaforge-card-back.jpg"
+                        src="/manaforge-card-back.png"
                         alt="Manaforge Kartenstapel"
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     {/* Center Main Card rising smoothly out of pack */}
-                    <div className="relative z-30 w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.6)] border-2 border-cyan-400/60 animate-card-emerge-center bg-neutral-900">
+                    <div className="relative z-30 w-[240px] sm:w-[280px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(245,158,11,0.6)] border-2 border-amber-400/60 animate-card-emerge-center bg-neutral-900">
                       <img
-                        src="/manaforge-card-back.jpg"
+                        src="/manaforge-card-back.png"
                         alt="Hauptkarte"
                         className="w-full h-full object-cover"
                       />
@@ -507,7 +507,7 @@ export function BoosterRipModal() {
                   <button
                     type="button"
                     onClick={triggerRipComplete}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(245,158,11,0.45)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
                   >
                     <Zap className="w-4 h-4 fill-white" />
                     <span>Booster sofort aufreißen (1-Klick)</span>
@@ -526,7 +526,7 @@ export function BoosterRipModal() {
             {/* Prompt Banner */}
             <div className="text-center mb-4">
               {!isFlipped ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-xs sm:text-sm font-black text-cyan-300 animate-bounce shadow-lg shadow-cyan-500/20">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-xs sm:text-sm font-black text-amber-300 animate-bounce shadow-lg shadow-amber-500/20">
                   <Sparkles className="w-4 h-4 text-amber-300" />
                   <span>Tippe auf die Karte, um deinen Fund zu enthüllen!</span>
                 </div>
@@ -568,14 +568,14 @@ export function BoosterRipModal() {
               >
                 {/* 1. CARD BACK FACE (Pre-flip) */}
                 <div
-                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border-2 border-cyan-500/50 shadow-[0_20px_50px_rgba(0,0,0,0.9)] bg-neutral-900"
+                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_35px_rgba(245,158,11,0.3)] bg-neutral-900"
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
                   }}
                 >
                   <img
-                    src="/manaforge-card-back.jpg"
+                    src="/manaforge-card-back.png"
                     alt="Manaforge Rückseite"
                     className="w-full h-full object-cover"
                   />
