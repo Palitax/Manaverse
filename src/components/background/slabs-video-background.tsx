@@ -327,7 +327,7 @@ export function SlabsVideoBackground() {
           <div
             className={cn(
               "absolute inset-0 transition-opacity duration-700 pointer-events-none z-20",
-              focusMode === "ambient" ? "bg-black/35 backdrop-blur-[0.5px]" : "bg-black/15"
+              focusMode === "ambient" ? "bg-black/65 backdrop-blur-[2px]" : "bg-black/45 backdrop-blur-[1px]"
             )}
           />
         )}

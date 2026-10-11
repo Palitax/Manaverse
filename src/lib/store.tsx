@@ -880,6 +880,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             fields,
             image: listing.photos[0] ? { url: listing.photos[0] } : undefined,
           },
+          slabData: {
+            name: listing.name,
+            set: listing.set,
+            cardNumber: listing.cardNumber,
+            condition: listing.condition,
+            language: listing.language,
+            type: listing.type,
+            price: listing.price,
+            estimatedTradeValue: listing.estimatedTradeValue,
+            photoUrl: listing.photos[0],
+            username: listing.user?.username || "Manaforge Trainer",
+          },
         }),
       });
     } catch (err) {

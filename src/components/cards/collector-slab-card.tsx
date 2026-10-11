@@ -377,7 +377,7 @@ export function CollectorSlabCard({
       {/* ==================================================================== */}
       {detailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-150">
-          <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel p-6 sm:p-8 border border-white/20 shadow-2xl">
+          <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 sm:p-8 border border-white/20 shadow-2xl">
             <button
               onClick={() => setDetailModalOpen(false)}
               className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center z-20"

@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
+import { VerificationShield } from "@/components/profile/verification-shield";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { UserRole } from "@/types";
 import {
-  ShieldCheck,
   CheckCircle,
   CheckCircle2,
   Crown,
@@ -76,7 +76,7 @@ export default function ProfilePage() {
   if (!currentUser) {
     return (
       <div className="min-h-[75vh] flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-6 relative overflow-hidden shadow-2xl">
+        <div className="max-w-md w-full p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 text-center space-y-6 relative overflow-hidden shadow-2xl">
           <BorderBeam size={220} duration={10} colorFrom="#6366f1" colorTo="#06b6d4" />
 
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
@@ -143,7 +143,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 pb-24">
       {/* Header Profile Hero Card */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-white/10 relative overflow-hidden shadow-2xl">
+      <div className="p-6 sm:p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 relative overflow-hidden shadow-2xl">
         <BorderBeam size={260} duration={10} colorFrom="#6366f1" colorTo="#ec4899" />
 
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -156,15 +156,14 @@ export default function ProfilePage() {
           />
 
           <div className="flex-1 text-center sm:text-left space-y-2">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
               <h1 className="text-2xl sm:text-3xl font-black text-white">{username}</h1>
 
-              {/* Badges */}
-              {currentUser.verified && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold shadow-md shadow-blue-500/20">
-                  <ShieldCheck className="w-4 h-4 text-blue-400" /> Verifizierter User
-                </span>
-              )}
+              {/* Dynamic Verification Shield (Hover to reveal level details) */}
+              <VerificationShield
+                dealsCount={currentUser.dealsCount}
+                size="md"
+              />
 
               {selectedRole === "admin" && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.4)]">
@@ -209,35 +208,10 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-
-        {/* Verification Progress Bar */}
-        <div className="mt-8 pt-6 border-t border-white/10">
-          <div className="flex justify-between items-center text-xs mb-2">
-            <span className="text-neutral-300 font-semibold flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-blue-400" /> Verifizierungs-Status (ab 3 Deals)
-            </span>
-            <span className={currentUser.verified ? "text-blue-400 font-bold" : "text-amber-400 font-bold"}>
-              {currentUser.verified
-                ? "✓ 100% Verifiziert"
-                : `${currentUser.dealsCount} von 3 Deals abgeschlossen`}
-            </span>
-          </div>
-          <div className="w-full h-3 bg-neutral-900 rounded-full overflow-hidden border border-white/10 p-0.5">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                currentUser.verified
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-500 w-full"
-                  : "bg-gradient-to-r from-amber-500 to-yellow-400"
-              )}
-              style={{ width: `${Math.min(100, (currentUser.dealsCount / 3) * 100)}%` }}
-            />
-          </div>
-        </div>
       </div>
 
       {/* MANAFORGE BOOSTER ARENA & SCHATZKAMMER (HIGHLIGHT SECTION) */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-orange-500/30 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(249,115,22,0.15)] bg-gradient-to-b from-[#131622]/95 via-[#0c0f18]/95 to-[#080a10]/95">
+      <div className="p-6 sm:p-8 rounded-3xl border border-orange-500/30 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(249,115,22,0.15)] bg-gradient-to-b from-[#131622] via-[#0c0f18] to-[#080a10]">
         <BorderBeam size={280} duration={8} colorFrom="#f59e0b" colorTo="#06b6d4" />
 
         {/* Ambient Top Glow */}
@@ -261,7 +235,7 @@ export default function ProfilePage() {
 
           {/* Quick Counter Badges */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="px-4 py-2 rounded-2xl bg-black/50 border border-white/10 backdrop-blur-md">
+            <div className="px-4 py-2 rounded-2xl bg-[#0f121d] border border-white/10 shadow-lg">
               <span className="text-[10px] text-neutral-400 block font-semibold">Booster verfügbar</span>
               <span className="text-lg font-black text-white flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -269,7 +243,7 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            <div className="px-4 py-2 rounded-2xl bg-black/50 border border-orange-500/30 backdrop-blur-md">
+            <div className="px-4 py-2 rounded-2xl bg-[#0f121d] border border-orange-500/30 shadow-lg">
               <span className="text-[10px] text-neutral-400 block font-semibold">Mana-Guthaben</span>
               <span className="text-lg font-black text-amber-400 flex items-center gap-1.5">
                 <Flame className="w-4 h-4 fill-amber-400" />
@@ -351,7 +325,7 @@ export default function ProfilePage() {
           {/* Right Column: Rewards Dashboard & Daily Claim Cards */}
           <div className="lg:col-span-7 space-y-4">
             {/* Card 1: Daily 24h Booster Claim */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-orange-500/40 transition-colors">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-orange-500/40 transition-colors shadow-md">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
@@ -399,7 +373,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Card 2: Discord Welcome Pack Status */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-indigo-500/40 transition-colors">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-indigo-500/40 transition-colors shadow-md">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2]">
@@ -446,7 +420,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Card 3: Loot Table & Drop Rarities */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 space-y-3 shadow-md">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-white flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-400" />
@@ -491,7 +465,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Discord Account Status & Quick Connect Card */}
-      <div className="p-5 rounded-3xl glass-panel border border-white/10 relative overflow-hidden">
+      <div className="p-5 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 relative overflow-hidden">
         {isAuthenticated ? (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
@@ -546,7 +520,7 @@ export default function ProfilePage() {
       {/* Grid: Edit Profile & Deals History */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Edit Profile & Frames */}
-        <div className="p-6 rounded-3xl glass-panel border border-white/10 space-y-5">
+        <div className="p-6 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 space-y-5">
           <h2 className="text-lg font-black text-white flex items-center gap-2">
             Profil & Rahmen bearbeiten
           </h2>
@@ -730,7 +704,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Right: Deals & Mutual Confirmation */}
-        <div className="p-6 rounded-3xl glass-panel border border-white/10 space-y-4">
+        <div className="p-6 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-black text-white flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-emerald-400" />

@@ -219,7 +219,7 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
       {/* Detail Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl glass-panel p-6 border border-white/15 shadow-2xl">
+          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 border border-white/15 shadow-2xl">
             {/* Close Button */}
             <button
               onClick={() => setModalOpen(false)}

@@ -120,6 +120,17 @@ export async function POST(request: Request) {
 
     const cfg = channelConfig[channel as AllowedChannel];
 
+    // Optionally generate full Acrylic Collector Slab PNG if slabData is provided
+    let slabBuffer: Buffer | null = null;
+    if (body.slabData) {
+      try {
+        const { generateSlabImageBuffer } = await import("@/lib/discord-slab-generator");
+        slabBuffer = await generateSlabImageBuffer(body.slabData);
+      } catch (err) {
+        console.warn("Failed to generate slab PNG for Discord webhook:", err);
+      }
+    }
+
     // Sanitize and style embed data with distinctive branding
     const sanitizedEmbed = embed
       ? {
@@ -137,8 +148,16 @@ export async function POST(request: Request) {
                 inline: Boolean(f.inline),
               }))
             : [],
-          image: embed.image?.url ? { url: String(embed.image.url) } : undefined,
-          footer: { text: "Manaforge Community • Pokémon TCG Hub" },
+          image: slabBuffer
+            ? { url: "attachment://manaforge-slab.png" }
+            : embed.image?.url
+            ? { url: String(embed.image.url) }
+            : undefined,
+          footer: {
+            text: slabBuffer
+              ? "Manaforge Collector Slab • Echtheitszertifiziert"
+              : "Manaforge Community • Pokémon TCG Hub",
+          },
           timestamp: new Date().toISOString(),
         }
       : undefined;
@@ -150,11 +169,30 @@ export async function POST(request: Request) {
       embeds: sanitizedEmbed ? [sanitizedEmbed] : undefined,
     };
 
-    const response = await fetch(targetWebhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    let response: Response;
+
+    if (slabBuffer) {
+      // Send as multipart/form-data with attached slab PNG
+      const formData = new FormData();
+      formData.append("payload_json", JSON.stringify(payload));
+      formData.append(
+        "files[0]",
+        new Blob([new Uint8Array(slabBuffer)], { type: "image/png" }),
+        "manaforge-slab.png"
+      );
+
+      response = await fetch(targetWebhookUrl, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      // Standard JSON payload
+      response = await fetch(targetWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
 
     if (!response.ok) {
       return NextResponse.json(

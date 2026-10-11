@@ -201,11 +201,11 @@ body {
   will-change: transform;
 }
 
-/* Glassmorphism Classes */
+/* Glassmorphism Classes (Blickdicht / Kaum transparent für ungestörte Lesbarkeit) */
 .glass-panel {
-  background: rgba(18, 24, 38, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(11, 14, 23, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -213,7 +213,7 @@ body {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-panel-hover:hover {
-  background: rgba(24, 32, 50, 0.85);
+  background: rgba(15, 19, 32, 0.99);
   border-color: rgba(99, 102, 241, 0.4);
   box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
   transform: translateY(-2px);

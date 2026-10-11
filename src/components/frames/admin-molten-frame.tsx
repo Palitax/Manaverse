@@ -2,7 +2,6 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { ShieldCheck, Flame } from "lucide-react";
 
 interface AdminMoltenFrameProps {
   avatarUrl: string;
@@ -37,30 +36,6 @@ export function AdminMoltenFrame({
     lg: "p-[5.5px]",
     xl: "p-[7px]",
     "2xl": "p-[8.5px]",
-  };
-
-  const badgeSizeMap = {
-    sm: "w-3.5 h-3.5 -bottom-1 -right-1 text-[8px]",
-    md: "w-5 h-5 -bottom-1.5 -right-1.5 text-[10px]",
-    lg: "w-6 h-6 -bottom-1 -right-1 text-xs",
-    xl: "w-8 h-8 -bottom-1.5 -right-1.5 text-sm",
-    "2xl": "w-9 h-9 -bottom-2 -right-2 text-base",
-  };
-
-  const adminChipSizeMap = {
-    sm: "w-3.5 h-3.5 -top-1 -right-1 p-0.5",
-    md: "w-4.5 h-4.5 -top-1.5 -right-1.5 p-0.5",
-    lg: "w-6 h-6 -top-2 -right-2 p-1",
-    xl: "w-7 h-7 -top-2 -right-2 p-1",
-    "2xl": "w-8 h-8 -top-2.5 -right-2.5 p-1.5",
-  };
-
-  const flameIconSizeMap = {
-    sm: "w-2.5 h-2.5",
-    md: "w-3 h-3",
-    lg: "w-3.5 h-3.5",
-    xl: "w-4 h-4",
-    "2xl": "w-5 h-5",
   };
 
   return (
@@ -269,44 +244,6 @@ export function AdminMoltenFrame({
           <div className="absolute inset-0 pointer-events-none bg-radial from-transparent via-orange-950/20 to-black/55 mix-blend-multiply" />
         </div>
       </div>
-
-      {/* ==================================================================== */}
-      {/* 6. VERIFIED BADGE (Bottom Right)                                     */}
-      {/* ==================================================================== */}
-      {showBadges && verified && (
-        <div
-          title="Verifizierter Benutzer (Mind. 3 erfolgreiche Deals)"
-          className={cn(
-            "absolute rounded-full flex items-center justify-center bg-blue-600 text-white border-2 border-[#090b10] shadow-md shadow-blue-500/60 z-30 animate-bounce",
-            badgeSizeMap[size]
-          )}
-          style={{ animationDuration: "3s" }}
-        >
-          <ShieldCheck className="w-full h-full p-0.5" />
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* 7. EXCLUSIVE MOLTEN ADMIN BADGE (Top Right with Fiery Flame)          */}
-      {/* ==================================================================== */}
-      {showBadges && (
-        <div
-          title="Administrator 🔥 (Höchste Berechtigung)"
-          className={cn(
-            "absolute rounded-full flex items-center justify-center z-30",
-            "bg-[#140301] text-amber-300 border border-orange-500 shadow-[0_0_14px_rgba(255,75,0,0.95)]",
-            "transition-transform duration-200 group-hover:scale-110",
-            adminChipSizeMap[size]
-          )}
-        >
-          <Flame
-            className={cn(
-              "text-amber-400 fill-orange-500 drop-shadow-[0_0_6px_#ff4500] animate-pulse",
-              flameIconSizeMap[size]
-            )}
-          />
-        </div>
-      )}
     </div>
   );
 }
