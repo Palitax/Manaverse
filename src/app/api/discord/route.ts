@@ -120,12 +120,41 @@ export async function POST(request: Request) {
 
     const cfg = channelConfig[channel as AllowedChannel];
 
-    // Optionally generate full Acrylic Collector Slab PNG if slabData is provided
+    // Generate full Acrylic Collector Slab PNG if slabData or card data is provided
     let slabBuffer: Buffer | null = null;
-    if (body.slabData) {
+    const slabOptions =
+      body.slabData ||
+      (embed && embed.title
+        ? {
+            name: String(embed.title).replace(/^\[[^\]]+\]\s*/, ""),
+            set: embed.fields?.find((f: { name?: string }) =>
+              f.name?.toLowerCase().includes("set")
+            )?.value,
+            condition:
+              embed.fields?.find((f: { name?: string }) =>
+                f.name?.toLowerCase().includes("zustand")
+              )?.value || "NM",
+            language:
+              embed.fields?.find((f: { name?: string }) =>
+                f.name?.toLowerCase().includes("sprache")
+              )?.value || "DE",
+            price: embed.fields?.find((f: { name?: string }) => {
+              const n = f.name?.toLowerCase() || "";
+              return n.includes("preis") || n.includes("budget") || n.includes("etv");
+            })?.value,
+            photoUrl: embed.image?.url || body.photoUrl,
+            type: channel,
+            username: embed.fields?.find((f: { name?: string }) => {
+              const n = f.name?.toLowerCase() || "";
+              return n.includes("anbieter") || n.includes("gesucht") || n.includes("partner");
+            })?.value,
+          }
+        : null);
+
+    if (slabOptions) {
       try {
         const { generateSlabImageBuffer } = await import("@/lib/discord-slab-generator");
-        slabBuffer = await generateSlabImageBuffer(body.slabData);
+        slabBuffer = await generateSlabImageBuffer(slabOptions);
       } catch (err) {
         console.warn("Failed to generate slab PNG for Discord webhook:", err);
       }

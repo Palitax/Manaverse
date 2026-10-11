@@ -24,7 +24,7 @@ export async function resolveImageToDataUrl(imageUrl?: string): Promise<string |
     try {
       const fs = await import("fs/promises");
       const path = await import("path");
-      const cleanPath = imageUrl.split("?")[0];
+      const cleanPath = imageUrl.split("?")[0].replace(/^\/+/, "");
       const filePath = path.join(process.cwd(), "public", cleanPath);
       const buffer = await fs.readFile(filePath);
       const ext = path.extname(filePath).toLowerCase();
@@ -149,6 +149,7 @@ export async function generateSlabImageBuffer(
       {/* Outer ambient glow behind acrylic slab */}
       <div
         style={{
+          display: "flex",
           position: "absolute",
           width: "440px",
           height: "780px",
@@ -178,6 +179,7 @@ export async function generateSlabImageBuffer(
         {/* Chamfered Bevel Inner Rim */}
         <div
           style={{
+            display: "flex",
             position: "absolute",
             top: "6px",
             left: "6px",
@@ -191,6 +193,7 @@ export async function generateSlabImageBuffer(
         {/* 4 Corner Screws / Acrylic Rivets */}
         <div
           style={{
+            display: "flex",
             position: "absolute",
             top: "14px",
             left: "14px",
@@ -203,6 +206,7 @@ export async function generateSlabImageBuffer(
         />
         <div
           style={{
+            display: "flex",
             position: "absolute",
             top: "14px",
             right: "14px",
@@ -215,6 +219,7 @@ export async function generateSlabImageBuffer(
         />
         <div
           style={{
+            display: "flex",
             position: "absolute",
             bottom: "14px",
             left: "14px",
@@ -227,6 +232,7 @@ export async function generateSlabImageBuffer(
         />
         <div
           style={{
+            display: "flex",
             position: "absolute",
             bottom: "14px",
             right: "14px",
@@ -289,7 +295,7 @@ export async function generateSlabImageBuffer(
                 letterSpacing: "0.5px",
               }}
             >
-              {condition.toUpperCase()} • {language.toUpperCase()}
+              {`${condition.toUpperCase()} • ${language.toUpperCase()}`}
             </div>
           </div>
 
@@ -303,23 +309,25 @@ export async function generateSlabImageBuffer(
           >
             <div
               style={{
+                display: "flex",
                 fontSize: "18px",
                 fontWeight: 900,
                 color: "#0f172a",
                 lineHeight: 1.2,
               }}
             >
-              {name} {cardNumber ? `#${cardNumber}` : ""}
+              {`${name}${cardNumber ? ` #${cardNumber}` : ""}`}
             </div>
             <div
               style={{
+                display: "flex",
                 fontSize: "11px",
                 fontWeight: 600,
                 color: "#64748b",
                 marginTop: "2px",
               }}
             >
-              {set} • Manaforge Certified
+              {`${set} • Manaforge Certified`}
             </div>
           </div>
         </div>
@@ -373,6 +381,7 @@ export async function generateSlabImageBuffer(
           {/* Holographic light sheen diagonal overlay */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               top: 0,
               left: 0,
@@ -402,22 +411,24 @@ export async function generateSlabImageBuffer(
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div
               style={{
+                display: "flex",
                 fontSize: "10px",
                 fontWeight: 800,
                 color: "#94a3b8",
                 letterSpacing: "0.5px",
               }}
             >
-              CERT: {certId}
+              {`CERT: ${certId}`}
             </div>
             <div
               style={{
+                display: "flex",
                 fontSize: "9px",
                 color: "#64748b",
                 marginTop: "1px",
               }}
             >
-              Trainer: @{username}
+              {`Trainer: @${username}`}
             </div>
           </div>
 
@@ -425,6 +436,7 @@ export async function generateSlabImageBuffer(
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
             <div
               style={{
+                display: "flex",
                 fontSize: "9px",
                 fontWeight: 800,
                 color: "#94a3b8",
@@ -435,6 +447,7 @@ export async function generateSlabImageBuffer(
             </div>
             <div
               style={{
+                display: "flex",
                 fontSize: "17px",
                 fontWeight: 900,
                 color: currentType.valueColor,

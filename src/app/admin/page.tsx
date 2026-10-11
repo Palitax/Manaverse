@@ -130,10 +130,31 @@ export default function AdminPage() {
     const currentName = currentUser?.username || "Admin";
     const currentDiscord = currentUser?.discordUsername || "Levin";
 
-    const sampleEmbeds: Record<string, { title: string; description: string; fields: Array<{ name: string; value: string; inline?: boolean }> }> = {
+    const sampleEmbeds: Record<
+      string,
+      {
+        title: string;
+        description: string;
+        photoUrl: string;
+        fields: Array<{ name: string; value: string; inline?: boolean }>;
+        slabData: {
+          name: string;
+          set?: string;
+          cardNumber?: string;
+          condition: string;
+          language: string;
+          type: "sell" | "trade" | "looking_for" | "bulk";
+          price?: string;
+          estimatedTradeValue?: string;
+          photoUrl: string;
+          username: string;
+        };
+      }
+    > = {
       sell: {
         title: "Glurak VMAX (Secret Rare #074/073) – Flammende Finsternis",
         description: "Makellose deutsche Karte, direkt aus dem Booster gesleevt und im Toploader gelagert.",
+        photoUrl: "/background-slabs/pokemon-mega-gengar-ex.jpg",
         fields: [
           { name: "Zustand", value: "Near Mint (NM)", inline: true },
           { name: "Sprache", value: "Deutsch (DE)", inline: true },
@@ -141,10 +162,22 @@ export default function AdminPage() {
           { name: "Set / Kartennr.", value: "Flammende Finsternis #074/073", inline: true },
           { name: "Anbieter", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
+        slabData: {
+          name: "Glurak VMAX",
+          set: "Flammende Finsternis",
+          cardNumber: "074/073",
+          condition: "Near Mint (NM)",
+          language: "DE",
+          type: "sell",
+          price: "115,00",
+          photoUrl: "/background-slabs/pokemon-mega-gengar-ex.jpg",
+          username: currentName,
+        },
       },
       trade: {
         title: "Nachtara VMAX (#215/203) – Drachenwandel (Moonbreon)",
         description: "Suche gleichwertigen Tausch gegen Glurak Gold Star oder Rayquaza VMAX Alt Art.",
+        photoUrl: "/background-slabs/pokemon-gengar-vmax-alt.webp",
         fields: [
           { name: "Zustand", value: "Mint (M)", inline: true },
           { name: "Sprache", value: "Englisch (EN)", inline: true },
@@ -152,25 +185,60 @@ export default function AdminPage() {
           { name: "Gesuchte Tauschkarten (Wants)", value: "Rayquaza VMAX Alt Art oder Gengar VMAX Alt Art", inline: false },
           { name: "Tauschpartner", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
+        slabData: {
+          name: "Nachtara VMAX",
+          set: "Drachenwandel",
+          cardNumber: "215/203",
+          condition: "Mint (M)",
+          language: "EN",
+          type: "trade",
+          estimatedTradeValue: "850,00",
+          photoUrl: "/background-slabs/pokemon-gengar-vmax-alt.webp",
+          username: currentName,
+        },
       },
       looking_for: {
         title: "Suche: Pikachu mit Grauem Filzhut (Van Gogh Promo)",
         description: "Suche original versiegelt (Sealed) oder im perfekten Zustand für meine persönliche Sammlung.",
+        photoUrl: "/background-slabs/pokemon-pikachu-ex-asc.jpg",
         fields: [
           { name: "Gesuchter Zustand", value: "Sealed / Gem Mint", inline: true },
           { name: "Sprache", value: "Englisch (EN)", inline: true },
           { name: "Maximales Budget", value: "Bis zu 130,00 €", inline: true },
           { name: "Gesucht von", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
+        slabData: {
+          name: "Pikachu mit Grauem Filzhut",
+          set: "Van Gogh Promo",
+          cardNumber: "085",
+          condition: "Sealed / Gem Mint",
+          language: "EN",
+          type: "looking_for",
+          price: "130,00",
+          photoUrl: "/background-slabs/pokemon-pikachu-ex-asc.jpg",
+          username: currentName,
+        },
       },
       bulk: {
         title: "Sammlungs-Ankauf: 14 Holo & Secret Rare Karten eingereicht",
         description: "Sammlung zur Überprüfung und für ein Ankaufsangebot an Manacards eingereicht.",
+        photoUrl: "/background-slabs/pokemon-lugia-v-alt.jpeg",
         fields: [
           { name: "Kartenanzahl", value: "14 Karten", inline: true },
           { name: "Wunschpreis", value: "320,00 € (VB)", inline: true },
           { name: "Eingereicht von", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
+        slabData: {
+          name: "14x Holo & Secret Rare Sammlung",
+          set: "Verschiedene Editionen",
+          cardNumber: "14 Karten",
+          condition: "NM-EX",
+          language: "DE",
+          type: "bulk",
+          price: "320,00",
+          photoUrl: "/background-slabs/pokemon-lugia-v-alt.jpeg",
+          username: currentName,
+        },
       },
     };
 
@@ -186,7 +254,9 @@ export default function AdminPage() {
             title: chosenSample.title,
             description: chosenSample.description,
             fields: chosenSample.fields,
+            image: { url: chosenSample.photoUrl },
           },
+          slabData: chosenSample.slabData,
         }),
       });
 
