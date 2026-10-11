@@ -148,36 +148,44 @@ export default function AdminPage() {
           estimatedTradeValue?: string;
           photoUrl: string;
           username: string;
+          discordUsername?: string;
+          avatarUrl?: string;
+          dealsCount?: number;
+          allowOffers?: boolean;
         };
       }
     > = {
       sell: {
-        title: "Glurak VMAX (Secret Rare #074/073) – Flammende Finsternis",
-        description: "Makellose deutsche Karte, direkt aus dem Booster gesleevt und im Toploader gelagert.",
-        photoUrl: "/background-slabs/pokemon-mega-gengar-ex.jpg",
+        title: "Umbreon VMAX / Nachtara VMAX (Moonbreon) – Evolving Skies",
+        description: "Original Manaforge Acrylic Slab Karte direkt aus dem Marktplatz.",
+        photoUrl: "/background-slabs/pokemon-umbreon-moonbreon.png",
         fields: [
           { name: "Zustand", value: "Near Mint (NM)", inline: true },
           { name: "Sprache", value: "Deutsch (DE)", inline: true },
-          { name: "Festpreis", value: "115,00 €", inline: true },
-          { name: "Set / Kartennr.", value: "Flammende Finsternis #074/073", inline: true },
+          { name: "Kaufpreis", value: "35,00 €", inline: true },
+          { name: "Set / Kartennr.", value: "Evolving Skies #215/203", inline: true },
           { name: "Anbieter", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
         slabData: {
-          name: "Glurak VMAX",
-          set: "Flammende Finsternis",
-          cardNumber: "074/073",
+          name: "Umbreon VMAX / Nachtara VMAX",
+          set: "Evolving Skies",
+          cardNumber: "215/203",
           condition: "Near Mint (NM)",
           language: "DE",
           type: "sell",
-          price: "115,00",
-          photoUrl: "/background-slabs/pokemon-mega-gengar-ex.jpg",
+          price: "35,00",
+          photoUrl: "/background-slabs/pokemon-umbreon-moonbreon.png",
           username: currentName,
+          discordUsername: currentDiscord,
+          avatarUrl: currentUser?.avatarUrl,
+          dealsCount: 18,
+          allowOffers: true,
         },
       },
       trade: {
         title: "Nachtara VMAX (#215/203) – Drachenwandel (Moonbreon)",
         description: "Suche gleichwertigen Tausch gegen Glurak Gold Star oder Rayquaza VMAX Alt Art.",
-        photoUrl: "/background-slabs/pokemon-gengar-vmax-alt.webp",
+        photoUrl: "/background-slabs/pokemon-crystal-lugia-30th.webp",
         fields: [
           { name: "Zustand", value: "Mint (M)", inline: true },
           { name: "Sprache", value: "Englisch (EN)", inline: true },
@@ -186,15 +194,19 @@ export default function AdminPage() {
           { name: "Tauschpartner", value: `${currentName} (@${currentDiscord})`, inline: false },
         ],
         slabData: {
-          name: "Nachtara VMAX",
+          name: "Nachtara VMAX (Moonbreon)",
           set: "Drachenwandel",
           cardNumber: "215/203",
           condition: "Mint (M)",
           language: "EN",
           type: "trade",
           estimatedTradeValue: "850,00",
-          photoUrl: "/background-slabs/pokemon-gengar-vmax-alt.webp",
+          photoUrl: "/background-slabs/pokemon-crystal-lugia-30th.webp",
           username: currentName,
+          discordUsername: currentDiscord,
+          avatarUrl: currentUser?.avatarUrl,
+          dealsCount: 18,
+          allowOffers: true,
         },
       },
       looking_for: {
@@ -217,6 +229,10 @@ export default function AdminPage() {
           price: "130,00",
           photoUrl: "/background-slabs/pokemon-pikachu-ex-asc.jpg",
           username: currentName,
+          discordUsername: currentDiscord,
+          avatarUrl: currentUser?.avatarUrl,
+          dealsCount: 18,
+          allowOffers: true,
         },
       },
       bulk: {
@@ -238,6 +254,10 @@ export default function AdminPage() {
           price: "320,00",
           photoUrl: "/background-slabs/pokemon-lugia-v-alt.jpeg",
           username: currentName,
+          discordUsername: currentDiscord,
+          avatarUrl: currentUser?.avatarUrl,
+          dealsCount: 18,
+          allowOffers: true,
         },
       },
     };
