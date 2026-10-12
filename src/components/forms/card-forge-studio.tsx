@@ -37,6 +37,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SlabTopSigil } from "../cards/slab-top-sigil";
 
 // 1-Click Quick Picks for instant test delight
 const QUICK_PRESETS = [
@@ -961,18 +962,8 @@ export function CardForgeStudio({
           {/* Ultra-Clean Acrylic Display Slab Component Preview (Stable, no wobble) */}
           <div className="acrylic-slab-container">
             <div className="acrylic-display-slab select-none">
-              {/* Overhanging Top Crest Sigil (Manaforge Sigil / 90° Hover Rotation) */}
-              <div className="slab-top-sigil-wrapper">
-                <div className="slab-top-sigil">
-                  <img
-                    src="/manaforge-emblem.png"
-                    alt="Manaforge Sigil"
-                    className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(249,115,22,0.45)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]"
-                    loading="eager"
-                    draggable={false}
-                  />
-                </div>
-              </div>
+              {/* Overhanging Top Crest Sigil (Manaforge Sigil / Magma Glow / Rising Ash / 90° Hover Rotation) */}
+              <SlabTopSigil />
 
               {/* Chamfered Bevel & Specular Glare */}
               <div className="slab-edge-bevel" />
