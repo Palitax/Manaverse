@@ -128,12 +128,6 @@ export function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {/* Mana Points Counter Pill */}
-              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 border border-orange-500/30 text-amber-300 text-xs font-bold backdrop-blur-md shadow-sm">
-                <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span>{manaPoints.toLocaleString()} Mana</span>
-              </div>
-
               {/* Booster Ready Button */}
               {availableBoosters > 0 ? (
                 <button

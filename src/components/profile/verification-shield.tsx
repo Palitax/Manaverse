@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Shield,
-  Sparkles,
+  Gem,
   Crown,
   Flame,
   Award,
@@ -244,7 +244,7 @@ export function VerificationShield({
           {tier.level === 5 && (
             <div className="relative flex items-center justify-center">
               <ShieldCheck className={cn(iconSizes[size], "text-purple-200 fill-purple-400/30")} />
-              <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1.5 animate-spin" style={{ animationDuration: "6s" }} />
+              <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1.5 animate-pulse" />
             </div>
           )}
 

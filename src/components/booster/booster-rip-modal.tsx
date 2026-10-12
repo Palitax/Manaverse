@@ -6,7 +6,6 @@ import { BoosterReward } from "@/types";
 import { BoosterPackCard } from "./booster-pack-card";
 import {
   X,
-  Sparkles,
   Zap,
   ArrowRight,
   RotateCcw,
@@ -362,8 +361,8 @@ export function BoosterRipModal() {
 
       {/* Header Info Banner */}
       <div className="absolute top-4 sm:top-6 inset-x-0 mx-auto max-w-md text-center z-40 px-4 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-cyan-500/30 text-xs font-bold text-neutral-200 backdrop-blur-md shadow-lg shadow-cyan-500/10">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/60 border border-orange-500/30 text-xs font-bold text-neutral-200 backdrop-blur-md shadow-lg shadow-orange-500/10">
+          <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
           <span>Manaforge Booster Arena</span>
           <span className="text-neutral-500">•</span>
           {availableBoosters > 0 ? (
@@ -549,12 +548,12 @@ export function BoosterRipModal() {
             {/* Prompt Banner */}
             <div className="text-center mb-4">
               {!isFlipped ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-xs sm:text-sm font-black text-amber-300 animate-bounce shadow-lg shadow-amber-500/20">
-                  <Sparkles className="w-4 h-4 text-amber-300" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-xs sm:text-sm font-black text-amber-300 animate-bounce shadow-lg shadow-amber-500/20">
+                  <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
                   <span>Tippe auf die Karte, um deinen Fund zu enthüllen!</span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-xs sm:text-sm font-black text-emerald-300 shadow-md">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-xs sm:text-sm font-black text-emerald-300 shadow-md">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>Erfolgreich erhalten!</span>
                 </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Scissors, Zap, Lock, ChevronRight } from "lucide-react";
+import { Scissors, Zap, Lock, ChevronRight } from "lucide-react";
 
 interface BoosterPackCardProps {
   className?: string;

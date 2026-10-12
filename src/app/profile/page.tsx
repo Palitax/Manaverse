@@ -10,7 +10,6 @@ import {
   CheckCircle,
   CheckCircle2,
   Crown,
-  Sparkles,
   ExternalLink,
   Layers,
   ArrowRight,
@@ -83,7 +82,7 @@ export default function ProfilePage() {
           <BorderBeam size={220} duration={10} colorFrom="#6366f1" colorTo="#06b6d4" />
 
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
-            <Sparkles className="w-8 h-8 text-amber-200" />
+            <Flame className="w-8 h-8 fill-amber-200 text-amber-300" />
           </div>
 
           <div className="space-y-2">
@@ -192,30 +191,30 @@ export default function ProfilePage() {
                 size="md"
               />
 
-              {/* Prominent Mana Points Badge in Profile Header */}
+              {/* Prominent Mana Points Badge in Profile Header (Unified h-9 rounded-xl) */}
               <div
                 title="Dein aktuelles Mana-Guthaben"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/25 via-orange-500/20 to-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-black shadow-[0_0_14px_rgba(245,158,11,0.25)]"
+                className="h-9 px-3 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 text-xs font-black shadow-[0_0_12px_rgba(245,158,11,0.2)] flex items-center gap-1.5 select-none"
               >
-                <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-400 animate-pulse" />
+                <Flame className="w-4 h-4 fill-amber-400 text-orange-400" />
                 <span>{manaPoints.toLocaleString()} Mana</span>
               </div>
 
               {selectedRole === "admin" && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.4)]">
-                  <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-500" /> Administrator 🔥
+                <span className="h-9 px-3 rounded-xl bg-orange-500/15 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.3)] flex items-center gap-1.5 select-none">
+                  <Flame className="w-4 h-4 fill-amber-400 text-orange-500" /> Administrator 🔥
                 </span>
               )}
 
               {selectedRole === "founder" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
-                  <Crown className="w-3.5 h-3.5 text-amber-400" /> Founder
+                <span className="h-9 px-3 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 select-none">
+                  <Crown className="w-4 h-4 text-amber-400" /> Founder
                 </span>
               )}
 
               {selectedRole === "beta" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Beta Tester
+                <span className="h-9 px-3 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center gap-1.5 select-none">
+                  <Zap className="w-4 h-4 text-cyan-400" /> Beta Tester
                 </span>
               )}
             </div>
@@ -225,12 +224,6 @@ export default function ProfilePage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2 text-xs text-neutral-400">
-              {/* Mana Quick Stat */}
-              <span className="text-amber-400 font-extrabold flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
-                <Zap className="w-3.5 h-3.5 fill-amber-400" />
-                {manaPoints.toLocaleString()} Mana Punkte
-              </span>
-
               {whatnotUsername && (
                 <a
                   href={`https://whatnot.com/user/${whatnotUsername}`}
@@ -262,9 +255,9 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-orange-500/40 text-[11px] font-black uppercase text-amber-300 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>Digital Booster Opening</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-[11px] font-black uppercase text-orange-300 mb-2 tracking-wider">
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <span>Booster Arena</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
               <span>Manaforge Booster Arena</span>
@@ -286,36 +279,36 @@ export default function ProfilePage() {
             </div>
 
             <div className="px-4 py-2 rounded-2xl bg-[#0f121d] border border-orange-500/30 shadow-lg">
-              <span className="text-[10px] text-neutral-400 block font-semibold">Mana-Guthaben</span>
-              <span className="text-lg font-black text-amber-400 flex items-center gap-1.5">
-                <Flame className="w-4 h-4 fill-amber-400" />
-                {manaPoints.toLocaleString()}
+              <span className="text-[10px] text-neutral-400 block font-semibold">Geöffnete Booster</span>
+              <span className="text-lg font-black text-orange-400 flex items-center gap-1.5">
+                <Flame className="w-4 h-4 fill-orange-500 text-orange-400" />
+                {openedBoostersCount} {openedBoostersCount === 1 ? "Booster" : "Booster"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Content Body: Left 3D Booster Showcase / Right Rewards Dashboard */}
+        {/* Content Body: Left Booster Showcase / Right Rewards Dashboard */}
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8">
-          {/* Left Column: Interactive 3D Booster Showcase */}
+          {/* Left Column: Stationary Booster Showcase (No Tilt/Hover-Movement) */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-4">
             <div
               onClick={() => {
                 openBoosterModal();
               }}
-              className="relative cursor-pointer transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              className="relative cursor-pointer select-none"
               title="Klicke hier, um den Booster zu öffnen!"
             >
               <BoosterPackCard
                 size="hero"
-                showRipGuide={true}
-                interactive={true}
+                showRipGuide={false}
+                interactive={false}
                 className="mx-auto"
               />
 
               {/* Ready Indicator Floating Tag */}
               {availableBoosters > 0 && (
-                <div className="absolute -top-3 inset-x-0 mx-auto w-fit px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 border border-white/40 text-black text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.8)] animate-bounce flex items-center gap-1.5">
+                <div className="absolute -top-3 inset-x-0 mx-auto w-fit px-3.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 border border-white/40 text-black text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.8)] flex items-center gap-1.5 select-none">
                   <Zap className="w-3.5 h-3.5 fill-black" />
                   <span>{availableBoosters}x Bereit zum Rippen!</span>
                 </div>
@@ -328,7 +321,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={openBoosterModal}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-sm shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2 group"
+                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-sm shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2 group"
                 >
                   <Zap className="w-5 h-5 fill-white text-white group-hover:scale-110 transition-transform" />
                   <span>Jetzt Booster rippen!</span>
@@ -341,13 +334,13 @@ export default function ProfilePage() {
                     await claimDailyBooster();
                     openBoosterModal();
                   }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
                 >
                   <Gift className="w-5 h-5 text-white" />
                   <span>Täglichen Booster abholen & öffnen</span>
                 </button>
               ) : (
-                <div className="text-center p-3 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+                <div className="text-center p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
                   <p className="text-xs font-bold text-white">
                     Du hast keine Booster mehr zum Rippen.
                   </p>
@@ -362,7 +355,7 @@ export default function ProfilePage() {
               )}
 
               <p className="text-[11px] text-center text-neutral-400">
-                Mit der Maus oder per Wischgeste aufziehen & Karte aufdecken.
+                Klicke auf den Booster oder den Button, um den Rip-Screen zu öffnen.
               </p>
             </div>
           </div>
@@ -371,9 +364,14 @@ export default function ProfilePage() {
           <div className="lg:col-span-7 space-y-4">
             {/* Card 1: Daily 24h Booster Claim */}
             <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-orange-500/40 transition-colors shadow-md">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-11 h-11 rounded-xl border flex items-center justify-center shrink-0",
+                    canClaimDailyBooster
+                      ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                      : "bg-white/5 border-white/10 text-neutral-400"
+                  )}>
                     <Gift className="w-5 h-5" />
                   </div>
                   <div>
@@ -382,46 +380,37 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div>
+                <div className="w-full sm:w-auto flex items-center justify-end">
                   {canClaimDailyBooster ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      Jetzt abholbereit
-                    </span>
+                    <button
+                      type="button"
+                      onClick={claimDailyBooster}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
+                    >
+                      <Gift className="w-4 h-4" />
+                      <span>Booster abholen</span>
+                    </button>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
+                    <span className="px-3 py-1.5 rounded-xl bg-white/5 text-neutral-400 border border-white/10 text-xs font-semibold flex items-center gap-1.5">
                       <Timer className="w-3.5 h-3.5 text-amber-400" />
-                      In {dailyBoosterCountdown}
+                      <span>In {dailyBoosterCountdown}</span>
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-                <p className="text-xs text-neutral-300">
-                  {canClaimDailyBooster
-                    ? "Dein täglicher Bonus liegt bereit. Klicke auf Abholen, um deinen Booster direkt gutgeschrieben zu bekommen."
-                    : `Du hast deinen täglichen Booster bereits abgeholt. Schau in ${dailyBoosterCountdown} wieder vorbei.`}
-                </p>
-
-                {canClaimDailyBooster && (
-                  <button
-                    type="button"
-                    onClick={claimDailyBooster}
-                    className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all shadow-md shadow-emerald-600/30 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
-                  >
-                    <Gift className="w-4 h-4" />
-                    <span>Booster einsammeln</span>
-                  </button>
-                )}
-              </div>
+              <p className="text-xs text-neutral-300 mt-2.5 pt-2.5 border-t border-white/5">
+                {canClaimDailyBooster
+                  ? "Dein täglicher Bonus liegt bereit. Klicke auf Abholen, um deinen Booster direkt gutgeschrieben zu bekommen."
+                  : `Du hast deinen täglichen Booster bereits abgeholt. Schau in ${dailyBoosterCountdown} wieder vorbei.`}
+              </p>
             </div>
 
             {/* Card 2: Discord Welcome Pack Status */}
             <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-indigo-500/40 transition-colors shadow-md">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] shrink-0">
                     <DiscordIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -430,45 +419,37 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div>
+                <div className="w-full sm:w-auto flex items-center justify-end">
                   {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-bold">
+                    <span className="px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
-                      Freigeschaltet
+                      <span>Freigeschaltet</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black animate-pulse">
-                      ⚡ 1x Gratis Booster Bonus
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => loginWithDiscord()}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-black text-xs shadow-md shadow-[#5865F2]/30 active:scale-95 transition-all cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
+                    >
+                      <DiscordIcon className="w-4 h-4" />
+                      <span>Discord verknüpfen</span>
+                    </button>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-                <p className="text-xs text-neutral-300">
-                  {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername
-                    ? "Dein Discord-Konto wurde verknüpft und dein Free Booster freigeschaltet."
-                    : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster geschenkt!"}
-                </p>
-
-                {!(currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername) && (
-                  <button
-                    type="button"
-                    onClick={() => loginWithDiscord()}
-                    className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-black text-xs transition-all shadow-md shadow-[#5865F2]/30 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5"
-                  >
-                    <DiscordIcon className="w-4 h-4" />
-                    <span>Mit Discord verbinden</span>
-                  </button>
-                )}
-              </div>
+              <p className="text-xs text-neutral-300 mt-2.5 pt-2.5 border-t border-white/5">
+                {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername
+                  ? "Dein Discord-Konto wurde verknüpft und dein Free Booster freigeschaltet."
+                  : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster geschenkt!"}
+              </p>
             </div>
 
             {/* Card 3: Loot Table & Drop Rarities */}
             <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 space-y-3 shadow-md">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-white flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <Flame className="w-4 h-4 text-orange-400" />
                   Mögliche Funde & Seltenheitsgrade
                 </span>
                 <span className="text-neutral-400 text-[11px]">
@@ -620,7 +601,7 @@ export default function ProfilePage() {
                     id: "beta",
                     label: "Beta",
                     sublabel: "Holo-Effekt",
-                    icon: <Sparkles className="w-3.5 h-3.5 text-cyan-400" />,
+                    icon: <Zap className="w-3.5 h-3.5 text-cyan-400" />,
                     isLocked: false,
                   },
                   {

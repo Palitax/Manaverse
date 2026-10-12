@@ -10,7 +10,8 @@ import {
   Check,
   Flame,
   Crown,
-  Sparkles,
+  Zap,
+  Layers,
   Lock,
   User,
   Image as ImageIcon,
@@ -129,7 +130,7 @@ export function AvatarCustomizerModal({
       id: "beta" as UserRole,
       label: "Beta Tester",
       sublabel: "Holo-Prisma Glanz",
-      icon: <Sparkles className="w-3.5 h-3.5 text-cyan-400" />,
+      icon: <Zap className="w-3.5 h-3.5 text-cyan-400" />,
       isLocked: false,
     },
     {
@@ -223,7 +224,7 @@ export function AvatarCustomizerModal({
                     : "text-neutral-400 hover:text-white"
                 )}
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Layers className="w-3.5 h-3.5 text-amber-400" />
                 <span>Vorlagen</span>
               </button>
               <button
