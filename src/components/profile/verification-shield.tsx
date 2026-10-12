@@ -129,6 +129,7 @@ interface VerificationShieldProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   showLevelNumber?: boolean;
+  textOnly?: boolean;
 }
 
 export function VerificationShield({
@@ -136,6 +137,7 @@ export function VerificationShield({
   size = "md",
   className,
   showLevelNumber = false,
+  textOnly = false,
 }: VerificationShieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -187,75 +189,86 @@ export function VerificationShield({
       onMouseLeave={() => setIsOpen(false)}
     >
       {/* Interactive Trigger Button with min 44x44px Touch Target */}
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label={`${tier.title} (Klicken für Details)`}
-        className={cn(
-          "relative flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px]",
-          "active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50",
-          tier.glowColor
-        )}
-      >
-        {/* Shield Icon Visual Container */}
-        <div
+      {textOnly ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label={`${tier.title} (Klicken für Details)`}
+          className="h-9 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95"
+        >
+          <span>{tier.level > 0 ? "Verifiziert" : "Nicht verifiziert"}</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label={`${tier.title} (Klicken für Details)`}
           className={cn(
-            "relative flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300",
-            sizeClasses[size],
-            tier.borderColor,
-            tier.badgeBg
+            "relative flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px]",
+            "active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50",
+            tier.glowColor
           )}
         >
-          {/* Level 0: Minimaler matter Schild */}
-          {tier.level === 0 && (
-            <Shield className={cn(iconSizes[size], "text-neutral-500 opacity-60")} />
-          )}
+          {/* Shield Icon Visual Container */}
+          <div
+            className={cn(
+              "relative flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300",
+              sizeClasses[size],
+              tier.borderColor,
+              tier.badgeBg
+            )}
+          >
+            {/* Level 0: Minimaler matter Schild */}
+            {tier.level === 0 && (
+              <Shield className={cn(iconSizes[size], "text-neutral-500 opacity-60")} />
+            )}
 
-          {/* Level 1: Blauer Verifizierungs-Schild */}
-          {tier.level === 1 && (
-            <ShieldCheck className={cn(iconSizes[size], "text-blue-400")} />
-          )}
+            {/* Level 1: Blauer Verifizierungs-Schild */}
+            {tier.level === 1 && (
+              <ShieldCheck className={cn(iconSizes[size], "text-blue-400")} />
+            )}
 
-          {/* Level 2: Cyan Veteran Schild mit Doppelring-Effekt */}
-          {tier.level === 2 && (
-            <div className="relative flex items-center justify-center">
-              <ShieldCheck className={cn(iconSizes[size], "text-cyan-300")} />
-              <div className="absolute inset-0 border border-cyan-400/40 rounded-full scale-125 opacity-70 animate-ping pointer-events-none" style={{ animationDuration: "3s" }} />
-            </div>
-          )}
+            {/* Level 2: Cyan Veteran Schild mit Doppelring-Effekt */}
+            {tier.level === 2 && (
+              <div className="relative flex items-center justify-center">
+                <ShieldCheck className={cn(iconSizes[size], "text-cyan-300")} />
+                <div className="absolute inset-0 border border-cyan-400/40 rounded-full scale-125 opacity-70 animate-ping pointer-events-none" style={{ animationDuration: "3s" }} />
+              </div>
+            )}
 
-          {/* Level 3: Goldener Elite Schild mit Krone/Stern */}
-          {tier.level === 3 && (
-            <div className="relative flex items-center justify-center">
-              <ShieldCheck className={cn(iconSizes[size], "text-amber-300 fill-amber-500/20")} />
-              <Crown className="w-2 h-2 text-yellow-300 absolute -top-1 -right-1 drop-shadow-[0_0_4px_#f59e0b]" />
-            </div>
-          )}
+            {/* Level 3: Goldener Elite Schild mit Krone/Stern */}
+            {tier.level === 3 && (
+              <div className="relative flex items-center justify-center">
+                <ShieldCheck className={cn(iconSizes[size], "text-amber-300 fill-amber-500/20")} />
+                <Crown className="w-2 h-2 text-yellow-300 absolute -top-1 -right-1 drop-shadow-[0_0_4px_#f59e0b]" />
+              </div>
+            )}
 
-          {/* Level 4: Feuriger Rubin-Schild mit Glut */}
-          {tier.level === 4 && (
-            <div className="relative flex items-center justify-center">
-              <ShieldCheck className={cn(iconSizes[size], "text-rose-300 fill-rose-500/30 animate-pulse")} />
-              <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-500 absolute -top-1.5 -right-1 drop-shadow-[0_0_6px_#ff4500]" />
-            </div>
-          )}
+            {/* Level 4: Feuriger Rubin-Schild mit Glut */}
+            {tier.level === 4 && (
+              <div className="relative flex items-center justify-center">
+                <ShieldCheck className={cn(iconSizes[size], "text-rose-300 fill-rose-500/30 animate-pulse")} />
+                <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-500 absolute -top-1.5 -right-1 drop-shadow-[0_0_6px_#ff4500]" />
+              </div>
+            )}
 
-          {/* Level 5: Kosmischer Prismen-Schild mit Regenbogen-Aura */}
-          {tier.level === 5 && (
-            <div className="relative flex items-center justify-center">
-              <ShieldCheck className={cn(iconSizes[size], "text-purple-200 fill-purple-400/30")} />
-              <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1.5 animate-pulse" />
-            </div>
-          )}
+            {/* Level 5: Kosmischer Prismen-Schild mit Regenbogen-Aura */}
+            {tier.level === 5 && (
+              <div className="relative flex items-center justify-center">
+                <ShieldCheck className={cn(iconSizes[size], "text-purple-200 fill-purple-400/30")} />
+                <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1 animate-pulse" />
+              </div>
+            )}
 
-          {/* Optional Level Number Badge */}
-          {showLevelNumber && tier.level > 0 && (
-            <span className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded-full bg-black/90 border border-white/20 text-[9px] font-black text-white">
-              {tier.level}
-            </span>
-          )}
-        </div>
-      </button>
+            {/* Optional Level Number Badge */}
+            {showLevelNumber && tier.level > 0 && (
+              <span className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded-full bg-black/90 border border-white/20 text-[9px] font-black text-white">
+                {tier.level}
+              </span>
+            )}
+          </div>
+        </button>
+      )}
 
       {/* Hover & Tap Popover Tooltip */}
       {isOpen && (

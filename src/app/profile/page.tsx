@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
 import { VerificationShield } from "@/components/profile/verification-shield";
@@ -185,38 +186,28 @@ export default function ProfilePage() {
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
               <h1 className="text-2xl sm:text-3xl font-black text-white">{username}</h1>
 
-              {/* Dynamic Verification Shield (Hover to reveal level details) */}
+              {/* Option 1: Verification Status (No symbols, neutral styling, hover popover preserved) */}
               <VerificationShield
                 dealsCount={currentUser.dealsCount}
                 size="md"
+                textOnly
               />
 
-              {/* Prominent Mana Points Badge in Profile Header (Unified h-9 rounded-xl) */}
+              {/* Option 2: Mana Points (No symbols, neutral styling matching Option 1) */}
               <div
                 title="Dein aktuelles Mana-Guthaben"
-                className="h-9 px-3 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 text-xs font-black shadow-[0_0_12px_rgba(245,158,11,0.2)] flex items-center gap-1.5 select-none"
+                className="h-9 px-3.5 rounded-xl bg-white/5 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center select-none"
               >
-                <Flame className="w-4 h-4 fill-amber-400 text-orange-400" />
                 <span>{manaPoints.toLocaleString()} Mana</span>
               </div>
 
-              {selectedRole === "admin" && (
-                <span className="h-9 px-3 rounded-xl bg-orange-500/15 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.3)] flex items-center gap-1.5 select-none">
-                  <Flame className="w-4 h-4 fill-amber-400 text-orange-500" /> Administrator 🔥
-                </span>
-              )}
-
-              {selectedRole === "founder" && (
-                <span className="h-9 px-3 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 select-none">
-                  <Crown className="w-4 h-4 text-amber-400" /> Founder
-                </span>
-              )}
-
-              {selectedRole === "beta" && (
-                <span className="h-9 px-3 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center gap-1.5 select-none">
-                  <Zap className="w-4 h-4 text-cyan-400" /> Beta Tester
-                </span>
-              )}
+              {/* Option 3: Deals Count (No symbols, neutral styling matching Options 1 & 2) */}
+              <div
+                title="Deine erfolgreichen Deals"
+                className="h-9 px-3.5 rounded-xl bg-white/5 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center select-none"
+              >
+                <span>{currentUser.dealsCount} Deals</span>
+              </div>
             </div>
 
             <p className="text-xs sm:text-sm text-neutral-300 max-w-xl">
@@ -237,21 +228,21 @@ export default function ProfilePage() {
               {discordUsername && (
                 <span className="text-indigo-400">Discord: @{discordUsername}</span>
               )}
-              <span className="text-white font-semibold">
-                {currentUser.dealsCount} erfolgreiche Deals
-              </span>
+              {(currentUser.role === "admin" || currentUser.role === "founder") && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1 text-cyan-400 hover:underline"
+                >
+                  Admin-Zentrale <ExternalLink className="w-3 h-3" />
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* MANAFORGE BOOSTER ARENA & SCHATZKAMMER (HIGHLIGHT SECTION) */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-orange-500/30 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(249,115,22,0.15)] bg-gradient-to-b from-[#131622] via-[#0c0f18] to-[#080a10]">
-        <BorderBeam size={280} duration={8} colorFrom="#f59e0b" colorTo="#06b6d4" />
-
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-orange-500/15 via-amber-500/5 to-transparent pointer-events-none" />
-
+      {/* MANAFORGE BOOSTER ARENA (HIGHLIGHT SECTION) */}
+      <div className="p-6 sm:p-8 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl bg-[#0c101c]">
         {/* Header */}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
@@ -278,9 +269,9 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            <div className="px-4 py-2 rounded-2xl bg-[#0f121d] border border-orange-500/30 shadow-lg">
+            <div className="px-4 py-2 rounded-2xl bg-[#0f121d] border border-white/10 shadow-lg">
               <span className="text-[10px] text-neutral-400 block font-semibold">Geöffnete Booster</span>
-              <span className="text-lg font-black text-orange-400 flex items-center gap-1.5">
+              <span className="text-lg font-black text-neutral-200 flex items-center gap-1.5">
                 <Flame className="w-4 h-4 fill-orange-500 text-orange-400" />
                 {openedBoostersCount} {openedBoostersCount === 1 ? "Booster" : "Booster"}
               </span>
@@ -290,7 +281,7 @@ export default function ProfilePage() {
 
         {/* Content Body: Left Booster Showcase / Right Rewards Dashboard */}
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8">
-          {/* Left Column: Stationary Booster Showcase (No Tilt/Hover-Movement) */}
+          {/* Left Column: Stationary Booster Showcase (No Tilt, No Blur, No Shimmer) */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-4">
             <div
               onClick={() => {
@@ -303,6 +294,7 @@ export default function ProfilePage() {
                 size="hero"
                 showRipGuide={false}
                 interactive={false}
+                disableEffects={true}
                 className="mx-auto"
               />
 
@@ -443,48 +435,6 @@ export default function ProfilePage() {
                   ? "Dein Discord-Konto wurde verknüpft und dein Free Booster freigeschaltet."
                   : "Verknüpfe jetzt deinen Discord-Account und erhalte direkt 1x kostenlosen Booster geschenkt!"}
               </p>
-            </div>
-
-            {/* Card 3: Loot Table & Drop Rarities */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 space-y-3 shadow-md">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-white flex items-center gap-1.5">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  Mögliche Funde & Seltenheitsgrade
-                </span>
-                <span className="text-neutral-400 text-[11px]">
-                  Bisher geöffnet: <b className="text-white font-bold">{openedBoostersCount}</b>
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                  <span className="text-[10px] uppercase font-black text-emerald-400 block">Häufig (50%)</span>
-                  <span className="text-xs font-bold text-white mt-0.5 block">100 Mana</span>
-                  <span className="text-[9px] text-neutral-400">Mana-Splitter</span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                  <span className="text-[10px] uppercase font-black text-cyan-400 block">Selten (30%)</span>
-                  <span className="text-xs font-bold text-white mt-0.5 block">250 Mana</span>
-                  <span className="text-[9px] text-neutral-400">Leuchtkristall</span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30">
-                  <span className="text-[10px] uppercase font-black text-purple-400 block">Episch (15%)</span>
-                  <span className="text-xs font-bold text-white mt-0.5 block">500 Mana</span>
-                  <span className="text-[9px] text-neutral-400">Prisma-Kristall</span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-                  <span className="text-[10px] uppercase font-black text-amber-400 block flex items-center justify-center gap-1">
-                    <Crown className="w-3 h-3 fill-amber-400" />
-                    Mythisch (5%)
-                  </span>
-                  <span className="text-xs font-black text-amber-300 mt-0.5 block">1.000 Mana</span>
-                  <span className="text-[9px] text-neutral-300 font-semibold">Strahlender Kristall</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

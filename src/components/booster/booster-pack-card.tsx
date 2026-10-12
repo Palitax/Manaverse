@@ -21,6 +21,7 @@ interface BoosterPackCardProps {
   onTearPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
   onTearPointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
   tearTrackRef?: React.RefObject<HTMLDivElement | null>;
+  disableEffects?: boolean;
 }
 
 export function BoosterPackCard({
@@ -35,6 +36,7 @@ export function BoosterPackCard({
   lockedCountdown,
   isDragging = false,
   enableTearInteraction = false,
+  disableEffects = false,
   onTearPointerDown,
   onTearPointerMove,
   onTearPointerUp,
@@ -107,14 +109,16 @@ export function BoosterPackCard({
       onClick={onClick}
     >
       {/* Outer ambient glow */}
-      <div
-        className={cn(
-          "absolute -inset-4 rounded-3xl transition-all duration-500 pointer-events-none blur-2xl opacity-60",
-          isHovered
-            ? "bg-gradient-to-tr from-amber-500/50 via-orange-500/35 to-yellow-500/50 scale-105"
-            : "bg-gradient-to-tr from-amber-600/30 via-transparent to-orange-600/30"
-        )}
-      />
+      {!disableEffects && (
+        <div
+          className={cn(
+            "absolute -inset-4 rounded-3xl transition-all duration-500 pointer-events-none blur-2xl opacity-60",
+            isHovered
+              ? "bg-gradient-to-tr from-amber-500/50 via-orange-500/35 to-yellow-500/50 scale-105"
+              : "bg-gradient-to-tr from-amber-600/30 via-transparent to-orange-600/30"
+          )}
+        />
+      )}
 
       <div
         ref={cardRef}
@@ -131,7 +135,10 @@ export function BoosterPackCard({
             : "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
         className={cn(
-          "relative w-full h-full rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.25)] border border-amber-500/35",
+          "relative w-full h-full rounded-xl overflow-hidden",
+          disableEffects
+            ? "shadow-2xl border border-white/10"
+            : "shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.25)] border border-amber-500/35",
           "bg-gradient-to-b from-[#181d2a] via-[#0d111a] to-[#07090e]"
         )}
       >
@@ -176,23 +183,27 @@ export function BoosterPackCard({
           />
 
           {/* Dynamic Holographic Foil Glare Overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
-            style={{
-              opacity: isHovered ? 0.75 : 0.35,
-              background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.95) 0%, rgba(251,191,36,0.45) 25%, rgba(249,115,22,0.3) 50%, transparent 75%)`,
-            }}
-          />
+          {!disableEffects && (
+            <div
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-color-dodge"
+              style={{
+                opacity: isHovered ? 0.75 : 0.35,
+                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.95) 0%, rgba(251,191,36,0.45) 25%, rgba(249,115,22,0.3) 50%, transparent 75%)`,
+              }}
+            />
+          )}
 
           {/* Metallic Rainbow Reflection */}
-          <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-40"
-            style={{
-              background: `linear-gradient(${
-                115 + rotateY * 3
-              }deg, transparent 20%, rgba(255, 0, 128, 0.35) 40%, rgba(0, 240, 255, 0.45) 50%, rgba(255, 215, 0, 0.35) 60%, transparent 80%)`,
-            }}
-          />
+          {!disableEffects && (
+            <div
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300 mix-blend-overlay opacity-40"
+              style={{
+                background: `linear-gradient(${
+                  115 + rotateY * 3
+                }deg, transparent 20%, rgba(255, 0, 128, 0.35) 40%, rgba(0, 240, 255, 0.45) 50%, rgba(255, 215, 0, 0.35) 60%, transparent 80%)`,
+              }}
+            />
+          )}
         </div>
 
         {/* ================= TOP CAP (Above 15.4% tear line - Peels and flies off!) ================= */}
@@ -223,13 +234,15 @@ export function BoosterPackCard({
               style={{ height: "649.35%" }}
             />
             {/* Top Cap Holo Glare */}
-            <div
-              className="absolute inset-0 pointer-events-none mix-blend-color-dodge transition-opacity duration-300"
-              style={{
-                opacity: isHovered ? 0.75 : 0.4,
-                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y * 6.49}%, rgba(255,255,255,0.95) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
-              }}
-            />
+            {!disableEffects && (
+              <div
+                className="absolute inset-0 pointer-events-none mix-blend-color-dodge transition-opacity duration-300"
+                style={{
+                  opacity: isHovered ? 0.75 : 0.4,
+                  background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y * 6.49}%, rgba(255,255,255,0.95) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
+                }}
+              />
+            )}
           </div>
         </div>
 

@@ -9,10 +9,7 @@ import {
   ArrowLeftRight,
   Search,
   PlusCircle,
-  ShieldCheck,
-  ChevronDown,
   Home,
-  LogOut,
   Zap,
   Flame,
   Gift,
@@ -43,7 +40,6 @@ export function Navbar() {
     manaPoints,
     openBoosterModal,
   } = useStore();
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isHome = pathname === "/";
 
@@ -157,106 +153,26 @@ export function Navbar() {
                 </button>
               ) : null}
 
-              <div className="relative">
-                <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md transition-colors focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] cursor-pointer"
-                >
-                  <HoloAvatarFrame
-                    avatarUrl={currentUser.avatarUrl}
-                    username={currentUser.username}
-                    role={currentUser.role}
-                    verified={currentUser.verified}
-                    size="sm"
-                  />
-                  <span className="hidden sm:inline-block text-sm font-semibold text-white">
-                    {currentUser.username}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-neutral-300" />
-                </button>
-
-              {userDropdownOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0c111d]/98 backdrop-blur-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 border border-white/15 animate-in fade-in duration-150"
-                  onClick={() => setUserDropdownOpen(false)}
-                >
-                  <div className="px-3 py-2 border-b border-white/10 mb-1">
-                    <p className="text-xs text-neutral-400">
-                      {currentUser.discordUsername ? "Via Discord angemeldet" : "Angemeldet"}
-                    </p>
-                    <p className="text-sm font-bold text-white flex items-center gap-2">
-                      {currentUser.username}
-                      <span
-                        className={cn(
-                          "text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded",
-                          currentUser.role === "admin" && "bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-[0_0_10px_rgba(255,80,0,0.35)]",
-                          currentUser.role === "founder" && "bg-amber-400/20 text-amber-300",
-                          currentUser.role === "beta" && "bg-cyan-400/20 text-cyan-300",
-                          currentUser.role === "member" && "bg-neutral-800 text-neutral-300"
-                        )}
-                      >
-                        {currentUser.role === "admin" ? "🔥 Admin" : currentUser.role}
-                      </span>
-                    </p>
-                    {currentUser.discordUsername && (
-                      <p className="text-[10px] text-indigo-300 mt-0.5">
-                        Discord: @{currentUser.discordUsername}
-                      </p>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      openBoosterModal();
-                    }}
-                    className="w-full text-left flex items-center justify-between px-3 py-2 text-sm text-amber-300 hover:text-white hover:bg-orange-500/15 rounded-lg transition-colors font-bold cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      Booster Arena
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 font-black">
-                      {availableBoosters} {availableBoosters === 1 ? "Booster" : "Booster"}
-                    </span>
-                  </button>
-
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-blue-400" />
-                    Mein Profil & Deals ({currentUser.dealsCount})
-                  </Link>
-
-                  {(currentUser.role === "founder" || currentUser.role === "admin") && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                      <Zap className="w-4 h-4 text-cyan-400 fill-cyan-400" />
-                      Admin-Zentrale & Rollen
-                    </Link>
-                  )}
-
-                  <div className="border-t border-white/10 my-1 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => logout()}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors font-semibold cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Abmelden
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 hover:border-white/30 backdrop-blur-md transition-all focus:outline-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] cursor-pointer active:scale-95"
+                title="Mein Profil anzeigen"
+              >
+                <HoloAvatarFrame
+                  avatarUrl={currentUser.avatarUrl}
+                  username={currentUser.username}
+                  role={currentUser.role}
+                  verified={currentUser.verified}
+                  size="sm"
+                />
+                <span className="hidden sm:inline-block text-sm font-semibold text-white">
+                  {currentUser.username}
+                </span>
+              </Link>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
 
       {/* Modern iOS 26 Floating Island Tab Bar */}
       <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-2.5 right-2.5 max-w-md mx-auto z-50 pointer-events-auto">
