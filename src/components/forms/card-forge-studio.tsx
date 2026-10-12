@@ -12,7 +12,6 @@ import { PokemonSearchInput } from "./pokemon-search-input";
 import { resolveCardTitles, formatSlabTitle } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
-  Sparkles,
   Tag,
   ArrowLeftRight,
   Target,
@@ -509,7 +508,7 @@ export function CardForgeStudio({
               {photos[0] ? (
                 <img src={photos[0]} alt={name} className="w-full h-full object-contain p-0.5" />
               ) : (
-                <Sparkles className="w-5 h-5 text-neutral-500" />
+                <ImageIcon className="w-5 h-5 text-neutral-500" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -548,7 +547,7 @@ export function CardForgeStudio({
             {/* Quick-Pick Presets */}
             <div className="space-y-2 pt-2">
               <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Schnell-Vorlagen (1 Klick)
+                <Zap className="w-3.5 h-3.5 text-amber-400" /> Schnell-Vorlagen (1 Klick)
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {QUICK_PRESETS.map((preset) => (
@@ -937,7 +936,7 @@ export function CardForgeStudio({
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" /> Jetzt veröffentlichen
+                  <CheckCircle2 className="w-4 h-4" /> Jetzt veröffentlichen
                 </>
               )}
             </button>
@@ -953,7 +952,7 @@ export function CardForgeStudio({
         <div className="col-span-12 lg:col-span-5 space-y-4">
           <div className="flex items-center justify-between text-xs font-bold text-neutral-400 px-1">
             <span className="flex items-center gap-1.5 text-white">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Layers className="w-4 h-4 text-amber-400" />
               Live Graded-Slab Vorschau
             </span>
             <span className="text-[10px] text-neutral-400">Acryl-Display-Slab</span>
@@ -1060,7 +1059,7 @@ export function CardForgeStudio({
           {/* Quick-Pick 1-Click Starter Cards */}
           <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
             <span className="text-[11px] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> 1-Klick Schnellvorlagen zum Testen:
+              <Zap className="w-3.5 h-3.5 text-amber-400" /> 1-Klick Schnellvorlagen zum Testen:
             </span>
             <div className="grid grid-cols-2 gap-2">
               {QUICK_PRESETS.map((preset) => (
@@ -1478,7 +1477,7 @@ export function CardForgeStudio({
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5" />
+                  <CheckCircle2 className="w-5 h-5" />
                   {isSell
                     ? "Karte jetzt im Marktplatz zum Verkauf listen"
                     : isTrade

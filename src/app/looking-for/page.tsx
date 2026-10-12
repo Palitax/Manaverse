@@ -11,7 +11,6 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Target,
   Plus,
-  Sparkles,
   HelpCircle,
   Coins,
   ShieldCheck,

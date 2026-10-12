@@ -8,7 +8,6 @@ import {
   Crown,
   Settings,
   Send,
-  Sparkles,
   Inbox,
   ShieldAlert,
   Lock,
@@ -534,7 +533,7 @@ export default function AdminPage() {
 
                           {user.role === "beta" && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-300 border border-cyan-400/30 text-[10px] font-bold">
-                              <Sparkles className="w-3 h-3 text-cyan-400" /> Beta Tester
+                              <Zap className="w-3 h-3 text-cyan-400" /> Beta-Tester
                             </span>
                           )}
 
@@ -601,7 +600,7 @@ export default function AdminPage() {
                       >
                         <option value="admin">🔥 Administrator (Flammenrahmen)</option>
                         <option value="founder">👑 Gründer (Goldrahmen)</option>
-                        <option value="beta">✨ Beta-Tester (Holo-Rahmen)</option>
+                        <option value="beta">⚡ Beta-Tester (Holo-Rahmen)</option>
                         <option value="member">👤 Standard-Mitglied</option>
                       </select>
                     </div>
@@ -743,7 +742,7 @@ export default function AdminPage() {
 
           <div className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/30 text-xs text-neutral-300 space-y-2">
             <p className="font-bold text-white flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Datenschutz & Sicherheit
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" /> Datenschutz & Sicherheit
             </p>
             <p className="text-neutral-400 text-[11px] leading-relaxed">
               Deine Discord Webhook-Tokens werden <b>ausschließlich serverseitig</b> in Umgebungsvariablen verwaltet (z.B. in Vercel oder <code className="text-indigo-300">.env</code>). Dadurch sind sie <b>im Browser, in der Console und im Network-Tab unantastbar und unsichtbar</b>.

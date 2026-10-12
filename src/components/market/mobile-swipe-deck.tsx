@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CardListing } from "@/types";
 import { CollectorSlabCard } from "../cards/collector-slab-card";
-import { ChevronLeft, ChevronRight, Layers, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MobileSwipeDeckProps {

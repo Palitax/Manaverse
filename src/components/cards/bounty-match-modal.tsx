@@ -7,7 +7,6 @@ import { HoloAvatarFrame } from "../frames/holo-avatar-frame";
 import {
   X,
   Target,
-  Sparkles,
   CheckCircle2,
   DollarSign,
   Send,

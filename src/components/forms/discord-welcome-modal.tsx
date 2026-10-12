@@ -6,7 +6,6 @@ import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
 import {
   X,
   CheckCircle2,
-  Sparkles,
   User,
   Radio,
   Image as ImageIcon,
@@ -191,7 +190,7 @@ export function DiscordWelcomeModal() {
             </div>
             <div>
               <div className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-amber-400">
-                <Sparkles className="w-3 h-3 text-amber-300" />
+                <Zap className="w-3 h-3 text-amber-300" />
                 <span>Discord-Bonus erhalten!</span>
               </div>
               <h3 className="text-sm font-black text-white">

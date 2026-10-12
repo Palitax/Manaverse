@@ -10,7 +10,6 @@ import {
   Tag,
   Plus,
   Crown,
-  Sparkles,
   ArrowRight,
   TrendingUp,
   ShieldCheck,

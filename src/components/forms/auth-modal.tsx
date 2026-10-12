@@ -7,7 +7,6 @@ import {
   Mail,
   Lock,
   User,
-  Sparkles,
   ArrowRight,
   Loader2,
   AlertCircle,

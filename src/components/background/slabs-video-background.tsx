@@ -10,7 +10,7 @@ import {
 import { LuxurySlab } from "./luxury-slab";
 import { BackgroundSlab } from "@/types/slabs";
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useAmbientHoveredCard } from "@/lib/ambient-theme";
 import { ForgeEmbersCanvas } from "./forge-embers-canvas";
 
@@ -347,7 +347,7 @@ export function SlabsVideoBackground() {
               title="Hintergrund-Fokus umschalten (Dezent / Scharf)"
               aria-label="Hintergrund-Fokus umschalten"
             >
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Eye className="w-4 h-4 text-amber-400" />
               <span>
                 {focusMode === "ambient" ? "Hintergrund: Dezent" : "Hintergrund: Scharf"}
               </span>
@@ -372,10 +372,10 @@ export function SlabsVideoBackground() {
                   : "Hintergrund auf Dezent stellen"
               }
             >
-              <Sparkles
+              <Eye
                 className={cn(
                   "w-5 h-5 transition-transform duration-300",
-                  focusMode === "bright" && "rotate-45 text-yellow-300 scale-110"
+                  focusMode === "bright" && "text-yellow-300 scale-110"
                 )}
               />
             </button>

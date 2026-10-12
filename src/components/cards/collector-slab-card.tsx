@@ -8,7 +8,6 @@ import {
   Tag,
   ArrowLeftRight,
   Target,
-  Sparkles,
   ShieldCheck,
   Scale,
   Eye,
@@ -334,7 +333,7 @@ export function CollectorSlabCard({
                   className="px-3 py-2 rounded-xl text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
                   title="Dies ist deine eigene angebotene Karte"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Deine Karte</span>
                 </div>
               ) : (
@@ -577,7 +576,7 @@ export function CollectorSlabCard({
                   ) : isOwnCard ? (
                     <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1">
                       <div className="flex items-center justify-center gap-1.5 text-xs font-black text-emerald-400">
-                        <Sparkles className="w-4 h-4" />
+                        <CheckCircle2 className="w-4 h-4" />
                         <span>Deine eigene Karte</span>
                       </div>
                       <p className="text-[11px] text-neutral-400">

@@ -13,7 +13,6 @@ import {
   Plus,
   ShieldCheck,
   RotateCcw,
-  Sparkles,
   Layers,
   X,
 } from "lucide-react";
@@ -239,7 +238,7 @@ export function MarketHubNavigation({
               onChange={(e) => onConditionChange(e.target.value)}
               className="bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px]"
             >
-              <option value="ALL">✨ Alle Zustände</option>
+              <option value="ALL">Alle Zustände</option>
               <option value="NM">Near Mint (Makellos)</option>
               <option value="EX">Excellent</option>
               <option value="GD">Good</option>
@@ -332,7 +331,7 @@ export function MarketHubNavigation({
                   onChange={(e) => onConditionChange(e.target.value)}
                   className="w-full bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none min-h-[44px]"
                 >
-                  <option value="ALL">✨ Alle Zustände</option>
+                  <option value="ALL">Alle Zustände</option>
                   <option value="NM">Near Mint</option>
                   <option value="EX">Excellent</option>
                   <option value="GD">Good</option>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Loader2, Sparkles } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { PokemonApiCard } from "@/types";
 
 interface PokemonSearchInputProps {
@@ -97,7 +97,7 @@ export function PokemonSearchInput({
         <div className="absolute left-0 right-0 mt-2 bg-[#121826] border border-indigo-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto backdrop-blur-xl">
           <div className="px-3 py-2 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center justify-between text-[11px] text-indigo-300 font-semibold">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> Pokémon TCG Autovervollständigung
+              <Search className="w-3.5 h-3.5" /> Pokémon TCG Autovervollständigung
             </span>
             <span className="opacity-70">Klick füllt Details & Artwork</span>
           </div>

@@ -15,7 +15,6 @@ import {
   Plus,
   Scale,
   Inbox,
-  Sparkles,
   Info,
   CheckCircle2,
   X as XIcon,

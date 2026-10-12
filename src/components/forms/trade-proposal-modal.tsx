@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CardListing } from "@/types";
 import { useStore } from "@/lib/store";
-import { X, ArrowLeftRight, Sparkles, Upload } from "lucide-react";
+import { X, ArrowLeftRight, CheckCircle2, Upload } from "lucide-react";
 import { PokemonSearchInput } from "./pokemon-search-input";
 
 interface TradeProposalModalProps {
@@ -57,7 +57,7 @@ export function TradeProposalModal({
         {submitted ? (
           <div className="py-12 text-center space-y-3">
             <div className="w-14 h-14 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full flex items-center justify-center mx-auto">
-              <Sparkles className="w-7 h-7" />
+              <CheckCircle2 className="w-7 h-7" />
             </div>
             <h3 className="text-xl font-black text-white">Tauschangebot gesendet!</h3>
             <p className="text-sm text-neutral-400">

@@ -7,7 +7,7 @@ import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { BorderBeam } from "@/components/magicui/border-beam";
-import { Tag, Sparkles, Plus, ArrowRight, ShieldCheck, Crown } from "lucide-react";
+import { Tag, Plus, ArrowRight, ShieldCheck, Crown } from "lucide-react";
 import Link from "next/link";
 
 export default function BuyPage() {

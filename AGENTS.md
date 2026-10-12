@@ -36,4 +36,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **Immer zu Git pushen:** Nach jedem erfolgreich umgesetzten Feature, Bugfix, Design- oder Code-Update MÜSSEN alle Änderungen und neuen Dateien umgehend mit einer präzisen Commit-Message committed und direkt auf das Remote-Repository gepusht werden (`git push`).
 - **Keine offenen Arbeitsstände:** Beende niemals einen Auftrag oder eine Antwort an den User, ohne die vorgenommenen Änderungen committet und gepusht zu haben.
 
+## 🚫 Verbotene Icons & Symbole (STRIKTE REGEL)
+- **Sparkles-Icon (`Sparkles` / `✨`) strikt verboten:**
+  - Verwende NIEMALS das `Sparkles`-Icon (weder `<Sparkles />` aus `lucide-react`, Heroicons, Phosphor oder beliebigen anderen Icon-Bibliotheken) und auch keine Sparkle-Glint-Sterne / Sternenglanz-Symbole.
+  - Verwende auch im Text, in UI-Labels, Buttons oder Benachrichtigungen keine Glitzer-/Sparkle-Emojis (`✨`).
+  - Dieses Icon ist vom User ausdrücklich gehasst und darf in keinem Kontext jemals verwendet werden.
+  - Wenn ein Status, Highlight oder eine Aktion visuell untermalt werden soll, nutze klare, passende Alternativen (z. B. `CheckCircle2`, `Tag`, `ShieldCheck`, `Crown`, `Zap`, `Flame` oder schlichte typografische Badges) – aber unter keinen Umständen `Sparkles`.
+
 

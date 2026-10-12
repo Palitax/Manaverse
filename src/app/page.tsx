@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  Sparkles,
   RefreshCw,
   Search,
   TrendingUp,

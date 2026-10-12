@@ -8,7 +8,6 @@ import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Upload,
-  Sparkles,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,

@@ -8,7 +8,7 @@ import {
   X,
   ArrowLeftRight,
   Scale,
-  Sparkles,
+  Flame,
   CheckCircle2,
   AlertTriangle,
   Upload,
@@ -86,7 +86,7 @@ export function TradeBalanceDrawer({
         text: `🔥 Großzügiges Angebot (+${Math.round(diff)} € über Tauschwert)`,
         color: "text-purple-400",
         bg: "bg-purple-950/40 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)]",
-        icon: Sparkles,
+        icon: Flame,
       };
     }
   }
