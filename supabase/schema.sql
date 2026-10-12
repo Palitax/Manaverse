@@ -120,6 +120,7 @@ create table if not exists public.listings (
   looking_for_wants text,
   allow_offers boolean default true,
   post_to_discord boolean default true,
+  show_discord_name boolean default true,
   status text default 'active' check (status in ('active', 'reserved', 'completed')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

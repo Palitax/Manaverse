@@ -193,7 +193,7 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
                 onClick={() => setModalOpen(true)}
                 className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition-all hover:scale-105"
               >
-                Kaufen / Bieten
+                Kaufen
               </button>
             )}
             {card.type === "trade" && (

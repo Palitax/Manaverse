@@ -64,6 +64,7 @@ export interface CardListing {
   estimatedTradeValue?: number; // For trade
   lookingForWants?: string; // For trade: what they want in return
   postToDiscord: boolean;
+  showDiscordName?: boolean;
   status: 'active' | 'reserved' | 'completed';
   createdAt: string;
 }

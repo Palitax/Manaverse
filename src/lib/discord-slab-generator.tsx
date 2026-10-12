@@ -147,13 +147,13 @@ export async function generateSlabImageBuffer(
     }
   > = {
     sell: {
-      collectionTag: "SOFORTKAUF",
+      collectionTag: "EINGESTELLT: NEU",
       valueLabel: "KAUFPREIS",
       valueColor: "#34d399",
-      btnText: "Kaufen / Bieten",
+      btnText: "Kaufen",
       btnBg: "#10b981",
       btnTextColor: "#022c22",
-      perkText: "Preisvorschläge (VB) möglich",
+      perkText: "Sofortkauf im Marktplatz",
       perkBg: "rgba(16, 185, 129, 0.12)",
       perkBorder: "rgba(16, 185, 129, 0.28)",
       perkColor: "#34d399",

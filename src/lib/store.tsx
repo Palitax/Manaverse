@@ -134,6 +134,7 @@ function mapDBListingToCardListing(item: any): CardListing {
     lookingForWants: item.looking_for_wants || undefined,
     allowOffers: item.allow_offers ?? true,
     postToDiscord: item.post_to_discord ?? true,
+    showDiscordName: item.show_discord_name ?? true,
     status: item.status || "active",
     createdAt: item.created_at,
     user: {
@@ -934,6 +935,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             looking_for_wants: listingData.lookingForWants || null,
             allow_offers: listingData.allowOffers ?? true,
             post_to_discord: listingData.postToDiscord ?? true,
+            show_discord_name: listingData.showDiscordName ?? true,
             status: "active",
           })
           .select("*, user:profiles(*)")

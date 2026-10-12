@@ -17,10 +17,14 @@ import {
   ExternalLink,
   Zap,
   Info,
+  DollarSign,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
 import { BountyMatchModal } from "./bounty-match-modal";
+import { VerificationShield } from "../profile/verification-shield";
+import { resolveCardTitles } from "@/lib/pokemon-names";
 import { useStore } from "@/lib/store";
 
 interface CollectorSlabCardProps {
@@ -38,6 +42,29 @@ export function CollectorSlabCard({
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const [bountyModalOpen, setBountyModalOpen] = useState(false);
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [offerAmount, setOfferAmount] = useState<string>("");
+  const [offerMessage, setOfferMessage] = useState<string>("");
+  const [isSendingOffer, setIsSendingOffer] = useState(false);
+  const [copiedDiscord, setCopiedDiscord] = useState(false);
+  const [showAltTitle, setShowAltTitle] = useState(false);
+
+  // Resolved titles according to language rules
+  const titles = resolveCardTitles(card.name, card.language);
+  const activeTitle = showAltTitle && titles.secondaryTitle ? titles.secondaryTitle : titles.primaryTitle;
+
+  // Formatted listing date for the slab label
+  const listingDate = card.createdAt
+    ? new Date(card.createdAt).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
 
   // Condition metadata (German & Stars)
   const conditionMeta: Record<
@@ -110,7 +137,7 @@ export function CollectorSlabCard({
       valueLabel: "Kaufpreis",
       valueColor: "text-emerald-400",
       btnBg: "bg-emerald-500 hover:bg-emerald-400 text-black font-black shadow-lg shadow-emerald-500/20",
-      btnText: "Kaufen / Bieten",
+      btnText: "Kaufen",
       icon: Tag,
     },
     trade: {
@@ -154,62 +181,16 @@ export function CollectorSlabCard({
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    const r = slab.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -15).toFixed(1)}deg`);
-    slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 15).toFixed(1)}deg`);
-    slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
-    slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    slab.style.setProperty('--rx', '0deg');
-    slab.style.setProperty('--ry', '0deg');
-    slab.style.setProperty('--px', '50%');
-    slab.style.setProperty('--py', '50%');
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!e.touches[0]) return;
-    const slab = e.currentTarget;
-    const r = slab.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX - r.left;
-    const y = touch.clientY - r.top;
-    if (x >= 0 && x <= r.width && y >= 0 && y <= r.height) {
-      slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -10).toFixed(1)}deg`);
-      slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 10).toFixed(1)}deg`);
-      slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
-      slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    slab.style.setProperty('--rx', '0deg');
-    slab.style.setProperty('--ry', '0deg');
-    slab.style.setProperty('--px', '50%');
-    slab.style.setProperty('--py', '50%');
-  };
-
   return (
     <>
       {/* ==================================================================== */}
-      {/* ULTRA-CLEAN ACRYLIC DISPLAY SLAB COMPONENT                          */}
+      {/* ULTRA-CLEAN ACRYLIC DISPLAY SLAB COMPONENT (STABLE, NO HOVER WOBBLE) */}
       {/* ==================================================================== */}
-      <div className="acrylic-slab-container" style={{ perspective: "1200px" }}>
+      <div className="acrylic-slab-container">
         <div
           onClick={() => setDetailModalOpen(true)}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           className={cn(
-            "acrylic-display-slab group cursor-pointer select-none",
+            "acrylic-display-slab group cursor-pointer select-none transition-shadow duration-300",
             className
           )}
         >
@@ -221,22 +202,44 @@ export function CollectorSlabCard({
           <div className="slab-header-plate">
             <div className="plate-top-row">
               <span className="collection-tag">
-                {card.type === "sell"
-                  ? "SOFORTKAUF"
-                  : card.type === "trade"
-                  ? "1:1 TAUSCH"
-                  : "KOPFGELD"}
+                Eingestellt am {listingDate}
               </span>
               <span className="foil-badge">
                 {cond.label.toUpperCase()} • {languageFlag}
               </span>
             </div>
             <div className="plate-main-row">
-              <div>
-                <h4 className="card-name truncate" title={card.name}>
-                  {card.name} {card.cardNumber ? `#${card.cardNumber}` : ""}
-                </h4>
-                <p className="set-info truncate">
+              <div className="w-full">
+                <div
+                  className={cn(
+                    "flex items-start justify-between gap-1.5",
+                    titles.canToggle && "cursor-pointer group/title"
+                  )}
+                  onClick={(e) => {
+                    if (titles.canToggle) {
+                      e.stopPropagation();
+                      setShowAltTitle((prev) => !prev);
+                    }
+                  }}
+                  title={
+                    titles.canToggle
+                      ? `Klicken für ${showAltTitle ? "Originalnamen" : titles.isGerman ? "englischen Namen" : "deutschen Namen"}`
+                      : undefined
+                  }
+                >
+                  <h4 className="card-name break-words text-[13px] leading-snug font-extrabold text-[#0f172a] flex-1">
+                    {activeTitle} {card.cardNumber ? `#${card.cardNumber}` : ""}
+                  </h4>
+                  {titles.canToggle && (
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 group-hover/title:bg-slate-200 text-slate-600 transition-colors flex-shrink-0 flex items-center gap-0.5 mt-0.5"
+                      title={showAltTitle ? "Zurück zum Original" : "Alternative Sprache anzeigen"}
+                    >
+                      {showAltTitle ? "↩ Original" : titles.isGerman ? "🇬🇧 EN" : "🇩🇪 DE"}
+                    </span>
+                  )}
+                </div>
+                <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
                   {card.set || "Edition / Set"} {card.condition ? `• ${cond.label}` : ""}
                 </p>
               </div>
@@ -305,7 +308,22 @@ export function CollectorSlabCard({
               </button>
             </div>
 
-            {/* Trade Wants / VB note */}
+            {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
+            {card.type === "sell" && card.allowOffers && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
+                  setOfferModalOpen(true);
+                }}
+                className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[34px]"
+              >
+                <span>Angebot machen</span>
+              </button>
+            )}
+
+            {/* Trade Wants note */}
             {card.type === "trade" && card.lookingForWants && (
               <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-[10px] text-purple-200 backdrop-blur-sm">
                 <span className="font-bold text-purple-300 block text-[9px] uppercase">Wants:</span>
@@ -313,36 +331,59 @@ export function CollectorSlabCard({
               </div>
             )}
 
-            {card.type === "sell" && card.allowOffers && (
-              <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[9px] text-emerald-300 font-bold inline-block">
-                ✓ Preisvorschläge (VB) möglich
-              </div>
-            )}
-
-            {/* Seller / Seeker footer */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-neutral-400">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <HoloAvatarFrame
-                  avatarUrl={card.user.avatarUrl}
-                  username={card.user.username}
-                  role={card.user.role}
-                  verified={card.user.verified}
-                  size="sm"
-                />
-                <div className="leading-tight truncate">
-                  <p className="font-bold text-white text-[11px] truncate max-w-[100px]">
-                    {card.user.username}
-                  </p>
-                  <p className="text-[9px] text-neutral-400">
-                    {card.user.dealsCount} Deals
-                  </p>
+            {/* Seller / Seeker footer with generous frame spacing, full username, Trusted shield & deals */}
+            <div className="pt-2.5 mt-2 border-t border-white/10 space-y-2">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 pt-0.5">
+                  <HoloAvatarFrame
+                    avatarUrl={card.user.avatarUrl}
+                    username={card.user.username}
+                    role={card.user.role}
+                    verified={card.user.verified}
+                    size="sm"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-white text-[12px] leading-tight break-words">
+                      {card.user.username}
+                    </span>
+                    <VerificationShield
+                      dealsCount={card.user.dealsCount || 0}
+                      size="sm"
+                      className="inline-flex flex-shrink-0"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-400">
+                    <span className="font-semibold text-neutral-300">
+                      {card.user.dealsCount || 0} {card.user.dealsCount === 1 ? "Deal" : "Deals"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {card.user.discordUsername && (
-                <span className="text-[9px] text-indigo-300 font-mono truncate max-w-[80px]">
-                  @{card.user.discordUsername}
-                </span>
+              {card.showDiscordName !== false && card.user.discordUsername && (
+                <div className="flex items-center justify-end pt-0.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(card.user.discordUsername!);
+                      setCopiedDiscord(true);
+                      setTimeout(() => setCopiedDiscord(false), 2000);
+                    }}
+                    title="Klicken zum Kopieren des Discord-Namen"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/30 text-[#8ea1e1] hover:text-white text-[10px] font-mono transition-all cursor-pointer group/discord active:scale-95"
+                  >
+                    <svg className="w-3 h-3 fill-current flex-shrink-0 text-[#5865F2]" viewBox="0 0 24 24">
+                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.077.077 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.127c-.598.35-1.22.648-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                    </svg>
+                    <span>@{card.user.discordUsername}</span>
+                    <span className="text-[9px] text-indigo-300 font-sans ml-1">
+                      {copiedDiscord ? "✓ Kopiert!" : ""}
+                    </span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -413,7 +454,20 @@ export function CollectorSlabCard({
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">{card.name}</h2>
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words">
+                      {activeTitle}
+                    </h2>
+                    {titles.canToggle && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAltTitle((prev) => !prev)}
+                        className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-300 transition-colors cursor-pointer flex-shrink-0"
+                      >
+                        {showAltTitle ? "↩ Original" : titles.isGerman ? "🇬🇧 EN" : "🇩🇪 DE"}
+                      </button>
+                    )}
+                  </div>
                   {card.set && (
                     <p className="text-xs text-neutral-400">
                       {card.set} {card.cardNumber && `• #${card.cardNumber}`}
@@ -487,23 +541,182 @@ export function CollectorSlabCard({
                       <Target className="w-4 h-4 fill-black" /> Ich habe diese Karte (Angebot senden)
                     </button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!currentUser) {
-                          openAuthModal("register");
-                          return;
-                        }
-                        createDeal(card, currentUser);
-                        alert(`Kaufanfrage an ${card.user.username} gesendet!`);
-                        setDetailModalOpen(false);
-                      }}
-                      className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 min-h-[44px] cursor-pointer"
-                    >
-                      <Zap className="w-4 h-4 fill-black" /> Kaufanfrage an {card.user.username} senden
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentUser) {
+                            openAuthModal("register");
+                            return;
+                          }
+                          createDeal(card, currentUser);
+                          alert(`Kaufanfrage an ${card.user.username} gesendet!`);
+                          setDetailModalOpen(false);
+                        }}
+                        className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 min-h-[44px] cursor-pointer"
+                      >
+                        <Zap className="w-4 h-4 fill-black" /> Kaufanfrage an {card.user.username} senden
+                      </button>
+
+                      {card.allowOffers && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDetailModalOpen(false);
+                            setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
+                            setOfferModalOpen(true);
+                          }}
+                          className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/30 transition-all min-h-[44px] cursor-pointer"
+                        >
+                          <span>Preisvorschlag (Angebot) einreichen</span>
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* OFFER MODAL ("Angebot machen" / Preisvorschlag senden)              */}
+      {/* ==================================================================== */}
+      {offerModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-150"
+          onClick={() => setOfferModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl glass-panel bg-[#0c101c] p-6 sm:p-7 border border-emerald-500/30 shadow-2xl space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                  Preisvorschlag einreichen
+                </span>
+                <h3 className="text-lg font-black text-white">
+                  Angebot für {activeTitle}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOfferModalOpen(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Card Reference */}
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
+                {card.photos[0] && (
+                  <img
+                    src={card.photos[0]}
+                    alt={activeTitle}
+                    className="w-12 h-16 object-contain rounded-lg flex-shrink-0"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">{activeTitle}</p>
+                  <p className="text-[10px] text-neutral-400">
+                    Regulärer Kaufpreis:{" "}
+                    <span className="text-emerald-400 font-bold">
+                      {card.price !== undefined ? `${card.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €` : "VB"}
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-neutral-400">
+                    Verkäufer: <span className="text-white font-medium">{card.user.username}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Offer Amount Input */}
+              <div>
+                <label className="block text-xs font-bold text-neutral-200 mb-1.5">
+                  Dein Preisvorschlag (€) *
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                    placeholder="z. B. 85"
+                    className="w-full bg-[#111624] border border-white/15 focus:border-emerald-500 rounded-xl px-4 py-3 text-white text-base font-bold placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 pr-10"
+                    required
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">
+                    €
+                  </span>
+                </div>
+              </div>
+
+              {/* Optional Message */}
+              <div>
+                <label className="block text-xs font-bold text-neutral-200 mb-1.5">
+                  Nachricht an {card.user.username} (optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={offerMessage}
+                  onChange={(e) => setOfferMessage(e.target.value)}
+                  placeholder="z. B. Schnelle Abwicklung heute möglich..."
+                  className="w-full bg-[#111624] border border-white/15 focus:border-emerald-500 rounded-xl p-3 text-white text-xs placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOfferModalOpen(false)}
+                  className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-300 font-bold text-xs min-h-[44px] cursor-pointer"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  disabled={!offerAmount || Number(offerAmount) <= 0 || isSendingOffer}
+                  onClick={async () => {
+                    if (!currentUser) {
+                      openAuthModal("register");
+                      return;
+                    }
+                    setIsSendingOffer(true);
+                    try {
+                      const amount = Number(offerAmount);
+                      await createDeal(
+                        {
+                          ...card,
+                          price: amount,
+                        },
+                        currentUser
+                      );
+                      alert(
+                        `Dein Preisvorschlag über ${amount.toLocaleString("de-DE", { minimumFractionDigits: 2 })} € wurde erfolgreich an ${card.user.username} übermittelt!`
+                      );
+                      setOfferModalOpen(false);
+                      setOfferMessage("");
+                    } catch (err) {
+                      console.error("Fehler beim Senden des Angebots:", err);
+                      alert("Fehler beim Senden des Preisvorschlags.");
+                    } finally {
+                      setIsSendingOffer(false);
+                    }
+                  }}
+                  className={cn(
+                    "flex-1 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all min-h-[44px] cursor-pointer",
+                    (!offerAmount || Number(offerAmount) <= 0 || isSendingOffer) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSendingOffer ? "Wird gesendet..." : "Angebot verbindlich senden"}</span>
+                </button>
               </div>
             </div>
           </div>

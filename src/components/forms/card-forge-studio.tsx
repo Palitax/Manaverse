@@ -9,6 +9,7 @@ import {
 } from "@/types";
 import { useStore } from "@/lib/store";
 import { PokemonSearchInput } from "./pokemon-search-input";
+import { resolveCardTitles } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Sparkles,
@@ -212,54 +213,13 @@ export function CardForgeStudio({
   const [lookingForWants, setLookingForWants] = useState("");
   const [allowOffers, setAllowOffers] = useState(true);
   const [postToDiscord, setPostToDiscord] = useState(true);
+  const [showDiscordName, setShowDiscordName] = useState(true);
 
   // UX State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mobileStep, setMobileStep] = useState<number>(1);
   const [showManualFields, setShowManualFields] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    const r = slab.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -15).toFixed(1)}deg`);
-    slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 15).toFixed(1)}deg`);
-    slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
-    slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    slab.style.setProperty('--rx', '0deg');
-    slab.style.setProperty('--ry', '0deg');
-    slab.style.setProperty('--px', '50%');
-    slab.style.setProperty('--py', '50%');
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!e.touches[0]) return;
-    const slab = e.currentTarget;
-    const r = slab.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX - r.left;
-    const y = touch.clientY - r.top;
-    if (x >= 0 && x <= r.width && y >= 0 && y <= r.height) {
-      slab.style.setProperty('--rx', `${((y - r.height / 2) / (r.height / 2) * -10).toFixed(1)}deg`);
-      slab.style.setProperty('--ry', `${((x - r.width / 2) / (r.width / 2) * 10).toFixed(1)}deg`);
-      slab.style.setProperty('--px', `${((x / r.width) * 100).toFixed(1)}%`);
-      slab.style.setProperty('--py', `${((y / r.height) * 100).toFixed(1)}%`);
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const slab = e.currentTarget;
-    slab.style.setProperty('--rx', '0deg');
-    slab.style.setProperty('--ry', '0deg');
-    slab.style.setProperty('--px', '50%');
-    slab.style.setProperty('--py', '50%');
-  };
 
   // Sync initial type when changed
   useEffect(() => {
@@ -350,6 +310,7 @@ export function CardForgeStudio({
         lookingForWants: type === "trade" ? lookingForWants.trim() : undefined,
         allowOffers,
         postToDiscord,
+        showDiscordName,
       });
 
       setIsSuccess(true);
@@ -907,7 +868,26 @@ export function CardForgeStudio({
                 type="checkbox"
                 checked={postToDiscord}
                 onChange={(e) => setPostToDiscord(e.target.checked)}
-                className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer"
+                className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
+              />
+            </div>
+
+            {/* Discord Name on Slab Switch */}
+            <div className="p-3.5 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/25 flex items-center justify-between">
+              <div className="pr-2">
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-[#5865F2]" />
+                  Discord-Name auf Inserat anzeigen
+                </p>
+                <p className="text-[10px] text-neutral-300">
+                  Zeigt deinen verknüpften Discord-Tag öffentlich auf der Karte an, damit Interessenten dich direkt finden.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={showDiscordName}
+                onChange={(e) => setShowDiscordName(e.target.checked)}
+                className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
               />
             </div>
           </div>
@@ -973,20 +953,14 @@ export function CardForgeStudio({
           <div className="flex items-center justify-between text-xs font-bold text-neutral-400 px-1">
             <span className="flex items-center gap-1.5 text-white">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              Live 3D-Graded-Slab
+              Live Graded-Slab Vorschau
             </span>
-            <span className="text-[10px] text-neutral-400">Bewegt sich mit der Maus</span>
+            <span className="text-[10px] text-neutral-400">Acryl-Display-Slab</span>
           </div>
 
-          {/* Ultra-Clean Acrylic Display Slab Component Preview */}
-          <div className="acrylic-slab-container" style={{ perspective: "1200px" }}>
-            <div
-              className="acrylic-display-slab select-none"
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
+          {/* Ultra-Clean Acrylic Display Slab Component Preview (Stable, no wobble) */}
+          <div className="acrylic-slab-container">
+            <div className="acrylic-display-slab select-none">
               {/* Chamfered Bevel & Specular Glare */}
               <div className="slab-edge-bevel" />
               <div className="slab-glare-effect" />
@@ -995,22 +969,18 @@ export function CardForgeStudio({
               <div className="slab-header-plate">
                 <div className="plate-top-row">
                   <span className="collection-tag">
-                    {type === "sell"
-                      ? "SOFORTKAUF"
-                      : type === "trade"
-                      ? "1:1 TAUSCH"
-                      : "KOPFGELD"}
+                    Eingestellt am {new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
                   </span>
                   <span className="foil-badge">
                     {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
                   </span>
                 </div>
                 <div className="plate-main-row">
-                  <div>
-                    <h4 className="card-name truncate" title={name || "DEINE POKÉMON KARTE"}>
-                      {name || "DEINE POKÉMON KARTE"} {cardNumber ? `#${cardNumber}` : ""}
+                  <div className="w-full">
+                    <h4 className="card-name break-words text-[13px] leading-snug font-extrabold text-[#0f172a]" title={name || "DEINE POKÉMON KARTE"}>
+                      {resolveCardTitles(name || "DEINE POKÉMON KARTE", language).primaryTitle} {cardNumber ? `#${cardNumber}` : ""}
                     </h4>
-                    <p className="set-info truncate">
+                    <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
                       {setNameText || "Edition / Set"} • {activeCondition.gradeLabel} ({activeCondition.stars})
                     </p>
                   </div>
@@ -1038,26 +1008,35 @@ export function CardForgeStudio({
               </div>
 
               {/* Bottom Slab Footer / Price Tag */}
-              <div className="mt-3.5 p-2.5 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-between text-xs relative z-10 shadow-inner">
-                <div className="min-w-0">
-                  <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
-                    {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
-                  </span>
-                  <span className="text-base font-black text-white truncate block">
-                    {isSell
-                      ? price
-                        ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
-                        : "Preis festlegen"
-                      : isTrade
-                      ? estimatedTradeValue
-                        ? `~${estimatedTradeValue} €`
-                        : "Tauschwert offen"
-                      : priceRange || "VB"}
+              <div className="mt-3.5 space-y-2 relative z-10">
+                <div className="p-2.5 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-between text-xs shadow-inner">
+                  <div className="min-w-0">
+                    <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
+                      {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
+                    </span>
+                    <span className="text-base font-black text-white truncate block">
+                      {isSell
+                        ? price
+                          ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
+                          : "Preis festlegen"
+                        : isTrade
+                        ? estimatedTradeValue
+                          ? `~${estimatedTradeValue} €`
+                          : "Tauschwert offen"
+                        : priceRange || "VB"}
+                    </span>
+                  </div>
+                  <span className={cn("text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border", themeAccentBg)}>
+                    {isSell ? "Kaufen" : isTrade ? "Tausch" : "Gesuch"}
                   </span>
                 </div>
-                <span className={cn("text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border", themeAccentBg)}>
-                  {isSell ? "Verkauf" : isTrade ? "Tausch" : "Gesuch"}
-                </span>
+
+                {/* Slim full-width "Angebot machen" preview button for sell with offers */}
+                {isSell && allowOffers && (
+                  <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
+                    Angebot machen
+                  </div>
+                )}
               </div>
 
               {/* Polished Bottom Acrylic Rim (Clean) */}
@@ -1441,8 +1420,8 @@ export function CardForgeStudio({
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <label className="p-3 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between w-full cursor-pointer">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="p-3 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between cursor-pointer">
                   <span className="text-xs text-white font-bold flex items-center gap-1.5">
                     <Zap className="w-4 h-4 text-[#5865F2]" /> Auf Discord posten
                   </span>
@@ -1450,7 +1429,19 @@ export function CardForgeStudio({
                     type="checkbox"
                     checked={postToDiscord}
                     onChange={(e) => setPostToDiscord(e.target.checked)}
-                    className="w-4 h-4 accent-[#5865F2] rounded cursor-pointer"
+                    className="w-4 h-4 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
+                  />
+                </label>
+
+                <label className="p-3 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between cursor-pointer">
+                  <span className="text-xs text-white font-bold flex items-center gap-1.5">
+                    <Zap className="w-4 h-4 text-[#5865F2]" /> Discord-Name anzeigen
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showDiscordName}
+                    onChange={(e) => setShowDiscordName(e.target.checked)}
+                    className="w-4 h-4 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
                   />
                 </label>
               </div>
