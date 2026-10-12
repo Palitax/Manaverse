@@ -50,7 +50,7 @@ export function BoosterPackCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current || !interactive || isDragging) return;
+    if (!cardRef.current || !interactive || isDragging || enableTearInteraction || disableEffects) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -78,7 +78,7 @@ export function BoosterPackCard({
   };
 
   const handleMouseEnter = () => {
-    if (interactive && !isDragging) {
+    if (interactive && !isDragging && !enableTearInteraction && !disableEffects) {
       setIsHovered(true);
     }
   };
@@ -126,10 +126,13 @@ export function BoosterPackCard({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{
-          transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) ${
-            isHovered ? "scale3d(1.02, 1.02, 1.02)" : "scale3d(1, 1, 1)"
-          }`,
-          transformStyle: "preserve-3d",
+          transform:
+            !enableTearInteraction && !disableEffects
+              ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) ${
+                  isHovered ? "scale3d(1.02, 1.02, 1.02)" : "scale3d(1, 1, 1)"
+                }`
+              : undefined,
+          transformStyle: !enableTearInteraction && !disableEffects ? "preserve-3d" : undefined,
           transition: isHovered
             ? "transform 0.1s ease-out"
             : "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",

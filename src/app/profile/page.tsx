@@ -24,7 +24,6 @@ import {
   ChevronRight,
   Pencil,
 } from "lucide-react";
-import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { BoosterPackCard } from "@/components/booster/booster-pack-card";
 import { AvatarCustomizerModal } from "@/components/profile/avatar-customizer-modal";
@@ -135,20 +134,12 @@ export default function ProfilePage() {
     setTimeout(() => setSavedSuccess(false), 2000);
   };
 
-  const handleTestConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
-  };
-
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 pb-24">
       {/* Header Profile Hero Card */}
       <div className="p-6 sm:p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 relative overflow-hidden shadow-2xl">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          {/* Avatar with Pencil Edit Hover / Tap Trigger */}
+          {/* Avatar with Pencil Edit Hover / Tap Trigger - directly inside the image */}
           <div
             onClick={() => setIsAvatarModalOpen(true)}
             className="relative group cursor-pointer select-none"
@@ -160,26 +151,15 @@ export default function ProfilePage() {
               role={selectedRole}
               verified={currentUser.verified}
               size="xl"
-            />
-
-            {/* Desktop Hover Overlay with Pencil */}
-            <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[2px] pointer-events-none">
-              <Pencil className="w-5 h-5 text-amber-400 drop-shadow" />
-              <span className="text-[10px] font-black uppercase tracking-wider">Ändern</span>
-            </div>
-
-            {/* Always-visible thumb-friendly Edit Badge (Mobile Extralocke & Touch) */}
-            <button
-              type="button"
-              aria-label="Profilbild und Rahmen bearbeiten"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsAvatarModalOpen(true);
-              }}
-              className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 border-2 border-[#0c101c] flex items-center justify-center text-white shadow-lg sm:opacity-90 hover:opacity-100 sm:group-hover:scale-110 active:scale-95 transition-all cursor-pointer min-h-[36px] min-w-[36px]"
             >
-              <Pencil className="w-4 h-4 fill-white" />
-            </button>
+              {/* Edit indicator: ONLY visible on hover, directly IN the avatar image */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[2px] z-20 pointer-events-none">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-md">
+                  <Pencil className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-[10px] font-black tracking-wider text-white uppercase">Ändern</span>
+              </div>
+            </HoloAvatarFrame>
           </div>
 
           <div className="flex-1 text-center sm:text-left space-y-2">
@@ -246,10 +226,6 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-[11px] font-black uppercase text-orange-300 mb-2 tracking-wider">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              <span>Booster Arena</span>
-            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
               <span>Manaforge Booster Arena</span>
               <Flame className="w-6 h-6 text-orange-500 fill-orange-500 animate-pulse" />
@@ -663,21 +639,13 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div className="pt-2 flex items-center justify-between">
+            <div className="pt-2 flex items-center justify-start">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
               >
                 <Save className="w-4 h-4" />
                 {savedSuccess ? "Gespeichert! ✓" : "Profil speichern"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleTestConfetti}
-                className="text-neutral-400 hover:text-white underline text-[11px]"
-              >
-                Konfetti testen
               </button>
             </div>
           </form>

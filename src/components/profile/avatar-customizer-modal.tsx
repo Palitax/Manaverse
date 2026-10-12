@@ -15,8 +15,10 @@ import {
   Lock,
   User,
   Image as ImageIcon,
+  Scissors,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageSelectionModal } from "@/components/profile/image-selection-modal";
 
 interface AvatarCustomizerModalProps {
   isOpen: boolean;
@@ -78,6 +80,8 @@ export function AvatarCustomizerModal({
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole);
   const [customUrlInput, setCustomUrlInput] = useState("");
   const [activeTab, setActiveTab] = useState<"presets" | "upload" | "url">("presets");
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
@@ -86,15 +90,17 @@ export function AvatarCustomizerModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read as Data URL
+    // Read as Data URL and open selection/cropper tool
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
-        setSelectedAvatarUrl(dataUrl);
+        setImageToCrop(dataUrl);
+        setIsCropModalOpen(true);
       }
     };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleApplyUrl = () => {
@@ -295,7 +301,7 @@ export function AvatarCustomizerModal({
 
             {/* Tab 2: Upload File */}
             {activeTab === "upload" && (
-              <div className="p-5 rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.02] flex flex-col items-center justify-center text-center space-y-3">
+              <div className="space-y-3">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -303,25 +309,58 @@ export function AvatarCustomizerModal({
                   accept="image/*"
                   className="hidden"
                 />
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                  <Upload className="w-6 h-6" />
+                <div className="p-5 rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.02] flex flex-col items-center justify-center text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">
+                      Eigenes Profilbild von deinem Gerät hochladen
+                    </p>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">
+                      PNG, JPG oder WEBP • Mit flexibler Bereichsauswahl & Skalierung
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs transition-all active:scale-95 cursor-pointer min-h-[44px] shadow-lg shadow-cyan-500/25 flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Datei auswählen & anpassen</span>
+                  </button>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-white">
-                    Eigenes Profilbild von deinem Gerät hochladen
-                  </p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">
-                    PNG, JPG oder WEBP (wird automatisch angepasst)
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs transition-all active:scale-95 cursor-pointer min-h-[44px] shadow-lg shadow-cyan-500/25 flex items-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Datei auswählen</span>
-                </button>
+
+                {/* Quick Re-Crop / Adjust Area Button */}
+                {selectedAvatarUrl && (
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-cyan-400/50 bg-neutral-900 shrink-0">
+                        <img
+                          src={selectedAvatarUrl}
+                          alt="Aktuelles Bild"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-xs font-bold text-white block">Aktuelles Bild</span>
+                        <span className="text-[10px] text-neutral-400">Ausschnitt oder Größe verändern</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageToCrop(selectedAvatarUrl);
+                        setIsCropModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
+                    >
+                      <Scissors className="w-3.5 h-3.5" />
+                      <span>Ausschnitt anpassen</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -344,6 +383,19 @@ export function AvatarCustomizerModal({
                     Vorschau
                   </button>
                 </div>
+                {customUrlInput.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageToCrop(customUrlInput.trim());
+                      setIsCropModalOpen(true);
+                    }}
+                    className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1.5 pt-1 cursor-pointer"
+                  >
+                    <Scissors className="w-3.5 h-3.5" />
+                    <span>Ausschnitt dieses Bildes auswählen & anpassen</span>
+                  </button>
+                )}
                 <p className="text-[10px] text-neutral-400">
                   Gib einen direkten Bildlink ein, um ihn als Profilbild zu nutzen.
                 </p>
@@ -434,6 +486,19 @@ export function AvatarCustomizerModal({
           </button>
         </div>
       </div>
+
+      {/* Image Selection & Cropping Tool Modal */}
+      {isCropModalOpen && imageToCrop && (
+        <ImageSelectionModal
+          isOpen={isCropModalOpen}
+          imageSrc={imageToCrop}
+          onClose={() => setIsCropModalOpen(false)}
+          onConfirm={(croppedDataUrl) => {
+            setSelectedAvatarUrl(croppedDataUrl);
+            setIsCropModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

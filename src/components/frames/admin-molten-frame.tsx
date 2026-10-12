@@ -10,6 +10,7 @@ interface AdminMoltenFrameProps {
   verified?: boolean;
   showBadges?: boolean;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function AdminMoltenFrame({
@@ -19,6 +20,7 @@ export function AdminMoltenFrame({
   verified = false,
   showBadges = true,
   className,
+  children,
 }: AdminMoltenFrameProps) {
   // Avatar inner size
   const avatarSizeMap = {
@@ -242,6 +244,8 @@ export function AdminMoltenFrame({
 
           {/* Volcanic Ambient Vignette */}
           <div className="absolute inset-0 pointer-events-none bg-radial from-transparent via-orange-950/20 to-black/55 mix-blend-multiply" />
+
+          {children}
         </div>
       </div>
     </div>

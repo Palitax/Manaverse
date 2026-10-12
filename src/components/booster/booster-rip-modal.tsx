@@ -336,16 +336,16 @@ export function BoosterRipModal() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/92 backdrop-blur-2xl animate-in fade-in duration-200 select-none overflow-hidden h-dvh max-h-dvh">
       {/* Dynamic Ambient Background Light Rays */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div
-          className={cn(
-            "absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full blur-[140px] transition-all duration-1000",
-            stage === "revealed"
-              ? reward?.rarity === "mythic"
+        {stage === "revealed" && (
+          <div
+            className={cn(
+              "absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full blur-[140px] transition-all duration-1000",
+              reward?.rarity === "mythic"
                 ? "bg-gradient-to-b from-amber-500/40 via-purple-600/30 to-cyan-500/30"
                 : "bg-gradient-to-b from-cyan-500/30 via-orange-500/20 to-transparent"
-              : "bg-gradient-to-b from-cyan-600/25 via-amber-500/15 to-transparent"
-          )}
-        />
+            )}
+          />
+        )}
         <div className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
       </div>
 
@@ -477,7 +477,8 @@ export function BoosterRipModal() {
                   isRipped={stage === "ripped" || stage === "extracting"}
                   tearProgress={tearProgress}
                   isDragging={isDragging}
-                  interactive={stage === "ready"}
+                  interactive={false}
+                  disableEffects={true}
                   enableTearInteraction={stage === "ready" || stage === "ripping"}
                   tearTrackRef={tearTrackRef}
                   onTearPointerDown={handlePointerDown}
@@ -529,7 +530,7 @@ export function BoosterRipModal() {
                   <button
                     type="button"
                     onClick={triggerRipComplete}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(245,158,11,0.45)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[46px]"
                   >
                     <Zap className="w-4 h-4 fill-white" />
                     <span>Booster sofort aufreißen (1-Klick)</span>

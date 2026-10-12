@@ -12,6 +12,7 @@ interface HoloAvatarFrameProps {
   size?: "sm" | "md" | "lg" | "xl";
   showBadges?: boolean;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function HoloAvatarFrame({
@@ -22,6 +23,7 @@ export function HoloAvatarFrame({
   size = "md",
   showBadges = true,
   className,
+  children,
 }: HoloAvatarFrameProps) {
   // EXCLUSIVE ADMIN MOLTEN FLAME FRAME
   if (role === "admin") {
@@ -33,6 +35,7 @@ export function HoloAvatarFrame({
         verified={verified}
         showBadges={showBadges}
         className={className}
+        children={children}
       />
     );
   }
@@ -93,6 +96,8 @@ export function HoloAvatarFrame({
           {(role === "founder" || role === "beta") && (
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/25 to-transparent pointer-events-none opacity-60 mix-blend-overlay" />
           )}
+
+          {children}
         </div>
       </div>
     </div>
