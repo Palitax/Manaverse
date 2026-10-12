@@ -9,10 +9,15 @@ interface HoloAvatarFrameProps {
   username: string;
   role: UserRole;
   verified: boolean;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
   showBadges?: boolean;
   className?: string;
   children?: React.ReactNode;
+  imageTransform?: {
+    zoom: number;
+    pan: { x: number; y: number };
+    rotation: number;
+  };
 }
 
 export function HoloAvatarFrame({
@@ -24,6 +29,7 @@ export function HoloAvatarFrame({
   showBadges = true,
   className,
   children,
+  imageTransform,
 }: HoloAvatarFrameProps) {
   // EXCLUSIVE ADMIN MOLTEN FLAME FRAME
   if (role === "admin") {
@@ -36,6 +42,7 @@ export function HoloAvatarFrame({
         showBadges={showBadges}
         className={className}
         children={children}
+        imageTransform={imageTransform}
       />
     );
   }
@@ -45,6 +52,7 @@ export function HoloAvatarFrame({
     md: "w-11 h-11 text-sm",
     lg: "w-16 h-16 text-base",
     xl: "w-24 h-24 text-xl",
+    "2xl": "w-32 h-32 text-2xl",
   };
 
   const roleStyles = {
@@ -84,6 +92,20 @@ export function HoloAvatarFrame({
             <img
               src={avatarUrl}
               alt={username}
+              style={
+                imageTransform
+                  ? {
+                      position: "absolute",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transform: `translate(${imageTransform.pan.x}px, ${imageTransform.pan.y}px) rotate(${imageTransform.rotation}deg) scale(${imageTransform.zoom})`,
+                      transformOrigin: "center center",
+                      userSelect: "none",
+                      pointerEvents: "none",
+                    }
+                  : undefined
+              }
               className="w-full h-full object-cover"
             />
           ) : (

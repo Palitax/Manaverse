@@ -11,6 +11,11 @@ interface AdminMoltenFrameProps {
   showBadges?: boolean;
   className?: string;
   children?: React.ReactNode;
+  imageTransform?: {
+    zoom: number;
+    pan: { x: number; y: number };
+    rotation: number;
+  };
 }
 
 export function AdminMoltenFrame({
@@ -21,6 +26,7 @@ export function AdminMoltenFrame({
   showBadges = true,
   className,
   children,
+  imageTransform,
 }: AdminMoltenFrameProps) {
   // Avatar inner size
   const avatarSizeMap = {
@@ -231,7 +237,24 @@ export function AdminMoltenFrame({
             <img
               src={avatarUrl}
               alt={username}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              style={
+                imageTransform
+                  ? {
+                      position: "absolute",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transform: `translate(${imageTransform.pan.x}px, ${imageTransform.pan.y}px) rotate(${imageTransform.rotation}deg) scale(${imageTransform.zoom})`,
+                      transformOrigin: "center center",
+                      userSelect: "none",
+                      pointerEvents: "none",
+                    }
+                  : undefined
+              }
+              className={cn(
+                "w-full h-full object-cover",
+                !imageTransform && "transition-transform duration-500 group-hover:scale-105"
+              )}
             />
           ) : (
             <span className="font-black text-amber-200 tracking-wider">

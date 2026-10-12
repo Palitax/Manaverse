@@ -15,10 +15,13 @@ import {
   Lock,
   User,
   Image as ImageIcon,
-  Scissors,
+  Move,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImageSelectionModal } from "@/components/profile/image-selection-modal";
 
 interface AvatarCustomizerModalProps {
   isOpen: boolean;
@@ -66,6 +69,82 @@ const AVATAR_PRESETS = [
   },
 ];
 
+/**
+ * Renders the adjusted image (pan, zoom, rotation) onto a 512x512 canvas and exports PNG
+ */
+async function generateCroppedAvatarDataUrl(
+  src: string,
+  zoom: number,
+  pan: { x: number; y: number },
+  rotation: number,
+  containerSize: number = 128
+): Promise<string> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || !src) {
+      resolve(src);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = src;
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(src);
+          return;
+        }
+
+        const scaleRatio = 512 / containerSize;
+
+        const natW = img.naturalWidth || 512;
+        const natH = img.naturalHeight || 512;
+        const isFlipped = rotation % 180 !== 0;
+        const effW = isFlipped ? natH : natW;
+        const effH = isFlipped ? natW : natH;
+        const aspect = effW / effH;
+
+        let baseW = containerSize;
+        let baseH = containerSize;
+        if (aspect >= 1) {
+          baseW = containerSize * aspect;
+          baseH = containerSize;
+        } else {
+          baseW = containerSize;
+          baseH = containerSize / aspect;
+        }
+
+        const drawW = (isFlipped ? baseH : baseW) * scaleRatio;
+        const drawH = (isFlipped ? baseW : baseH) * scaleRatio;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
+        // Center on canvas, apply user pan, rotation, and zoom
+        ctx.translate(256 + pan.x * scaleRatio, 256 + pan.y * scaleRatio);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.scale(zoom, zoom);
+
+        const origW = isFlipped ? drawH : drawW;
+        const origH = isFlipped ? drawW : drawH;
+        ctx.drawImage(img, -origW / 2, -origH / 2, origW, origH);
+
+        resolve(canvas.toDataURL("image/png", 0.95));
+      } catch (err) {
+        console.warn("Could not export cropped avatar to canvas, using original src:", err);
+        resolve(src);
+      }
+    };
+
+    img.onerror = () => resolve(src);
+  });
+}
+
 export function AvatarCustomizerModal({
   isOpen,
   onClose,
@@ -80,41 +159,135 @@ export function AvatarCustomizerModal({
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole);
   const [customUrlInput, setCustomUrlInput] = useState("");
   const [activeTab, setActiveTab] = useState<"presets" | "upload" | "url">("presets");
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // In-Frame Image Readjustment State
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ startX: number; startY: number; panX: number; panY: number }>({
+    startX: 0,
+    startY: 0,
+    panX: 0,
+    panY: 0,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
+  // Handle Dragging directly inside the Avatar Frame
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      panX: pan.x,
+      panY: pan.y,
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    e.stopPropagation();
+    const dx = e.clientX - dragStartRef.current.startX;
+    const dy = e.clientY - dragStartRef.current.startY;
+
+    // Pan bounds scaled by current zoom factor
+    const maxPan = 64 * zoom;
+    const newX = Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx));
+    const newY = Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy));
+    setPan({ x: Math.round(newX), y: Math.round(newY) });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const step = e.deltaY < 0 ? 0.08 : -0.08;
+    setZoom((prev) => Math.max(1.0, Math.min(3.0, Math.round((prev + step) * 100) / 100)));
+  };
+
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  const handleCenterPan = () => {
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleResetAdjustment = () => {
+    setZoom(1.0);
+    setPan({ x: 0, y: 0 });
+    setRotation(0);
+  };
+
+  // Upload custom file and directly activate inside preview
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read as Data URL and open selection/cropper tool
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
-        setImageToCrop(dataUrl);
-        setIsCropModalOpen(true);
+        setSelectedAvatarUrl(dataUrl);
+        handleResetAdjustment();
       }
     };
     reader.readAsDataURL(file);
     e.target.value = "";
   };
 
+  const handleSelectPreset = (url: string) => {
+    setSelectedAvatarUrl(url);
+    handleResetAdjustment();
+  };
+
   const handleApplyUrl = () => {
     if (customUrlInput.trim()) {
       setSelectedAvatarUrl(customUrlInput.trim());
+      handleResetAdjustment();
     }
   };
 
-  const handleSave = () => {
-    onSave({
-      avatarUrl: selectedAvatarUrl,
-      role: selectedRole,
-    });
-    onClose();
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      let finalAvatarUrl = selectedAvatarUrl;
+      // If image was adjusted, export exact crop to canvas
+      if (zoom !== 1 || pan.x !== 0 || pan.y !== 0 || rotation !== 0) {
+        finalAvatarUrl = await generateCroppedAvatarDataUrl(
+          selectedAvatarUrl,
+          zoom,
+          pan,
+          rotation,
+          128
+        );
+      }
+
+      onSave({
+        avatarUrl: finalAvatarUrl,
+        role: selectedRole,
+      });
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const frameOptions = [
@@ -162,7 +335,7 @@ export function AvatarCustomizerModal({
                 Profilbild & Rahmen anpassen
               </h2>
               <p className="text-[11px] text-neutral-400">
-                Wähle ein Bild oder lade ein eigenes hoch und wähle deinen Rahmen.
+                Wähle Bild und Rahmen & passe den Ausschnitt direkt in der Vorschau an.
               </p>
             </div>
           </div>
@@ -178,21 +351,137 @@ export function AvatarCustomizerModal({
 
         {/* Modal Body - Scrollable */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
-          {/* Live Preview Area */}
-          <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400">
-              Live-Vorschau
-            </span>
-            <div className="py-2">
+          {/* ========================================================================= */}
+          {/* LIVE PREVIEW AREA WITH IN-FRAME READJUSTMENT OVERLAY                     */}
+          {/* ========================================================================= */}
+          <div className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 space-y-3 relative overflow-hidden shadow-inner">
+            {/* Ambient Background Hint Header */}
+            <div className="flex items-center justify-between w-full text-neutral-400 px-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                <Move className="w-3 h-3 text-cyan-400" />
+                Live-Vorschau & Bildausschnitt
+              </span>
+              {(zoom !== 1 || pan.x !== 0 || pan.y !== 0 || rotation !== 0) && (
+                <button
+                  type="button"
+                  onClick={handleResetAdjustment}
+                  className="text-[10px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer"
+                >
+                  Zurücksetzen
+                </button>
+              )}
+            </div>
+
+            {/* The Avatar Frame with Interactive In-Image Pan & Drag Overlay */}
+            <div className="relative py-2 group/avatar select-none">
               <HoloAvatarFrame
                 avatarUrl={selectedAvatarUrl}
                 username={username}
                 role={selectedRole}
                 verified={verified}
-                size="xl"
-              />
+                size="2xl"
+                imageTransform={{ zoom, pan, rotation }}
+              >
+                {/* Drag / Pan Capture Overlay directly IN the Avatar Circle */}
+                <div
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  onWheel={handleWheel}
+                  className={cn(
+                    "absolute inset-0 z-20 touch-none select-none flex flex-col items-center justify-center transition-all",
+                    isDragging ? "cursor-grabbing" : "cursor-grab"
+                  )}
+                  title="Klicke und ziehe mit Maus oder Finger, um das Bild im Rahmen zu verschieben. Mausrad zum Zoomen."
+                >
+                  {/* Visual In-Image Guidance Overlay (visible on hover or while dragging) */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-full transition-opacity duration-200 flex flex-col items-center justify-center pointer-events-none",
+                      isDragging
+                        ? "bg-black/35 opacity-100"
+                        : "bg-black/25 opacity-0 group-hover/avatar:opacity-100"
+                    )}
+                  >
+                    {/* 3x3 Dashed Composition Grid */}
+                    <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none opacity-20">
+                      <div className="w-full h-full grid grid-cols-3 grid-rows-3 border border-white/40 rounded-full">
+                        <div className="border-r border-b border-white/40" />
+                        <div className="border-r border-b border-white/40" />
+                        <div className="border-b border-white/40" />
+                        <div className="border-r border-b border-white/40" />
+                        <div className="border-r border-b border-white/40" />
+                        <div className="border-b border-white/40" />
+                        <div className="border-r border-b border-white/40" />
+                        <div className="border-r border-b border-white/40" />
+                        <div />
+                      </div>
+                    </div>
+
+                    {/* Centered Move Badge */}
+                    <div className="w-8 h-8 rounded-full bg-black/75 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)] flex items-center justify-center text-cyan-300">
+                      <Move className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-black tracking-wider text-white bg-black/80 px-2 py-0.5 rounded-full mt-1 border border-white/20 shadow uppercase">
+                      Verschieben
+                    </span>
+                  </div>
+                </div>
+              </HoloAvatarFrame>
             </div>
-            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+
+            {/* Readjustment Toolbar Directly Below the Frame */}
+            <div className="w-full max-w-sm pt-1 space-y-2">
+              {/* Zoom Slider */}
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10">
+                <ZoomOut className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <input
+                  type="range"
+                  min="1.0"
+                  max="3.0"
+                  step="0.02"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none"
+                  aria-label="Bild vergrößern oder verkleinern"
+                />
+                <ZoomIn className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <span className="text-[10px] font-mono font-bold text-neutral-300 w-10 text-right">
+                  {Math.round(zoom * 100)}%
+                </span>
+              </div>
+
+              {/* Action Buttons: 90° Rotate & Center */}
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleRotate}
+                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[36px]"
+                  title="Bild um 90° im Uhrzeigersinn drehen"
+                >
+                  <RotateCw className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>90° Drehen</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCenterPan}
+                  className="flex-1 py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[36px]"
+                  title="Bild zentrieren"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Zentrieren</span>
+                </button>
+              </div>
+
+              <p className="text-[10px] text-neutral-400 text-center font-medium">
+                💡 Ziehe das Bild direkt im Rahmen, um den Ausschnitt anzupassen.
+              </p>
+            </div>
+
+            {/* User Badge Info */}
+            <span className="text-xs font-bold text-white flex items-center gap-1.5 pt-1">
               <span>{username}</span>
               {selectedRole === "admin" && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 font-black">
@@ -270,7 +559,7 @@ export function AvatarCustomizerModal({
                     <button
                       key={preset.name}
                       type="button"
-                      onClick={() => setSelectedAvatarUrl(preset.url)}
+                      onClick={() => handleSelectPreset(preset.url)}
                       className={cn(
                         "p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer relative group",
                         isSelected
@@ -318,7 +607,7 @@ export function AvatarCustomizerModal({
                       Eigenes Profilbild von deinem Gerät hochladen
                     </p>
                     <p className="text-[11px] text-neutral-400 mt-0.5">
-                      PNG, JPG oder WEBP • Mit flexibler Bereichsauswahl & Skalierung
+                      PNG, JPG oder WEBP • Wird direkt oben in der Vorschau platziert
                     </p>
                   </div>
                   <button
@@ -327,40 +616,9 @@ export function AvatarCustomizerModal({
                     className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs transition-all active:scale-95 cursor-pointer min-h-[44px] shadow-lg shadow-cyan-500/25 flex items-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
-                    <span>Datei auswählen & anpassen</span>
+                    <span>Datei auswählen & oben anpassen</span>
                   </button>
                 </div>
-
-                {/* Quick Re-Crop / Adjust Area Button */}
-                {selectedAvatarUrl && (
-                  <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-cyan-400/50 bg-neutral-900 shrink-0">
-                        <img
-                          src={selectedAvatarUrl}
-                          alt="Aktuelles Bild"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="text-left">
-                        <span className="text-xs font-bold text-white block">Aktuelles Bild</span>
-                        <span className="text-[10px] text-neutral-400">Ausschnitt oder Größe verändern</span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImageToCrop(selectedAvatarUrl);
-                        setIsCropModalOpen(true);
-                      }}
-                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
-                    >
-                      <Scissors className="w-3.5 h-3.5" />
-                      <span>Ausschnitt anpassen</span>
-                    </button>
-                  </div>
-                )}
               </div>
             )}
 
@@ -383,21 +641,8 @@ export function AvatarCustomizerModal({
                     Vorschau
                   </button>
                 </div>
-                {customUrlInput.trim() && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageToCrop(customUrlInput.trim());
-                      setIsCropModalOpen(true);
-                    }}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1.5 pt-1 cursor-pointer"
-                  >
-                    <Scissors className="w-3.5 h-3.5" />
-                    <span>Ausschnitt dieses Bildes auswählen & anpassen</span>
-                  </button>
-                )}
                 <p className="text-[10px] text-neutral-400">
-                  Gib einen direkten Bildlink ein, um ihn als Profilbild zu nutzen.
+                  Gib einen direkten Bildlink ein, um ihn als Profilbild in der Live-Vorschau zu laden.
                 </p>
               </div>
             )}
@@ -479,26 +724,14 @@ export function AvatarCustomizerModal({
           <button
             type="button"
             onClick={handleSave}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white text-xs font-black shadow-lg shadow-orange-500/30 transition-all active:scale-95 cursor-pointer min-h-[44px] flex items-center gap-2"
+            disabled={isSaving}
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white text-xs font-black shadow-lg shadow-orange-500/30 transition-all active:scale-95 cursor-pointer min-h-[44px] flex items-center gap-2 disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
-            <span>Speichern & Übernehmen</span>
+            <span>{isSaving ? "Wird gespeichert..." : "Speichern & Übernehmen"}</span>
           </button>
         </div>
       </div>
-
-      {/* Image Selection & Cropping Tool Modal */}
-      {isCropModalOpen && imageToCrop && (
-        <ImageSelectionModal
-          isOpen={isCropModalOpen}
-          imageSrc={imageToCrop}
-          onClose={() => setIsCropModalOpen(false)}
-          onConfirm={(croppedDataUrl) => {
-            setSelectedAvatarUrl(croppedDataUrl);
-            setIsCropModalOpen(false);
-          }}
-        />
-      )}
     </div>
   );
 }
