@@ -96,10 +96,10 @@ export default function BuyPage() {
             <Tag className="w-4 h-4" /> Sammler-Vault • Sofortkauf & Inserate
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Karten kaufen & verkaufen
+            Karten kaufen
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Entdecke verifizierte Einzelkarten im Collector-Slab-Format oder verkaufe ganze Sammlungen.
+            Entdecke verifizierte Einzelkarten im Collector-Slab-Format von Sammlern.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function BuyPage() {
               onClick={handleOpenCreate}
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all min-h-[44px]"
             >
-              + Neue Karte verkaufen
+              + Neue Karte anbieten
             </button>
             <button
               onClick={resetFilters}

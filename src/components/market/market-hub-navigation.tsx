@@ -69,7 +69,7 @@ export function MarketHubNavigation({
     {
       id: "sell",
       href: "/buy",
-      label: "Verkaufen",
+      label: "Kaufen",
       sublabel: "Sofortkauf Vault",
       icon: Tag,
       color: "text-emerald-400",
@@ -184,7 +184,7 @@ export function MarketHubNavigation({
             <Plus className="w-4 h-4" />
             <span>
               {activeMode === "sell"
-                ? "Karte verkaufen"
+                ? "Karte anbieten"
                 : activeMode === "trade"
                 ? "Tausch anbieten"
                 : "Gesuch aufgeben"}

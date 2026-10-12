@@ -19,12 +19,13 @@ import {
   Info,
   DollarSign,
   Send,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
 import { BountyMatchModal } from "./bounty-match-modal";
 import { VerificationShield } from "../profile/verification-shield";
-import { resolveCardTitles } from "@/lib/pokemon-names";
+import { resolveCardTitles, formatSlabTitle } from "@/lib/pokemon-names";
 import { useStore } from "@/lib/store";
 
 interface CollectorSlabCardProps {
@@ -38,7 +39,7 @@ export function CollectorSlabCard({
   onTradeClick,
   className,
 }: CollectorSlabCardProps) {
-  const { currentUser, createDeal, openAuthModal } = useStore();
+  const { currentUser, users, createDeal, openAuthModal } = useStore();
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const [bountyModalOpen, setBountyModalOpen] = useState(false);
@@ -47,11 +48,45 @@ export function CollectorSlabCard({
   const [offerMessage, setOfferMessage] = useState<string>("");
   const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [copiedDiscord, setCopiedDiscord] = useState(false);
-  const [showAltTitle, setShowAltTitle] = useState(false);
 
-  // Resolved titles according to language rules
-  const titles = resolveCardTitles(card.name, card.language);
-  const activeTitle = showAltTitle && titles.secondaryTitle ? titles.secondaryTitle : titles.primaryTitle;
+  // Dynamic seller profile synchronization (live updates across app)
+  const seller = React.useMemo(() => {
+    if (
+      currentUser &&
+      (card.userId === currentUser.id ||
+        card.user?.id === currentUser.id ||
+        (currentUser.username && card.user?.username?.toLowerCase() === currentUser.username.toLowerCase()))
+    ) {
+      return {
+        ...card.user,
+        ...currentUser,
+      };
+    }
+    const matched = users?.find(
+      (u) =>
+        u.id === card.userId ||
+        u.id === card.user?.id ||
+        (card.user?.username && u.username.toLowerCase() === card.user.username.toLowerCase())
+    );
+    if (matched) {
+      return {
+        ...card.user,
+        ...matched,
+      };
+    }
+    return card.user;
+  }, [card.user, card.userId, currentUser, users]);
+
+  // Is this card owned by the logged-in user?
+  const isOwnCard = Boolean(
+    currentUser &&
+      (card.userId === currentUser.id ||
+        card.user?.id === currentUser.id ||
+        (currentUser.username && card.user?.username?.toLowerCase() === currentUser.username.toLowerCase()))
+  );
+
+  // Clean, concise slab title strictly showing card name and code (e.g. "Nachtara VMAX #215/203")
+  const slabTitle = formatSlabTitle(card.name, card.language, card.cardNumber);
 
   // Formatted listing date for the slab label
   const listingDate = card.createdAt
@@ -117,15 +152,19 @@ export function CollectorSlabCard({
 
   const cond = conditionMeta[card.condition] || conditionMeta.Egal;
 
-  // Language flag helper
-  const languageFlag =
-    card.language === "DE"
-      ? "🇩🇪 DE"
-      : card.language === "EN"
-      ? "🇬🇧 EN"
-      : card.language === "JP"
-      ? "🇯🇵 JP"
-      : `${card.language}`;
+  // Language flag helper strictly matching card.language
+  const langKey = (card.language || "DE").toUpperCase();
+  const flagMap: Record<string, string> = {
+    DE: "🇩🇪 DE",
+    EN: "🇬🇧 EN",
+    JP: "🇯🇵 JP",
+    FR: "🇫🇷 FR",
+    ES: "🇪🇸 ES",
+    IT: "🇮🇹 IT",
+    CN: "🇨🇳 CN",
+    KR: "🇰🇷 KR",
+  };
+  const languageFlag = flagMap[langKey] || `${langKey}`;
 
   // Mode Theme Accents
   const modeStyles = {
@@ -201,44 +240,38 @@ export function CollectorSlabCard({
           {/* Clean Header Plate */}
           <div className="slab-header-plate">
             <div className="plate-top-row">
-              <span className="collection-tag">
-                Eingestellt am {listingDate}
-              </span>
-              <span className="foil-badge">
+              <div className="flex items-center gap-1.5 min-w-0">
+                {/* Calendar Icon with Hover Tooltip */}
+                <div className="relative group/date inline-flex items-center flex-shrink-0">
+                  <div
+                    className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-help min-h-[28px] min-w-[28px] flex items-center justify-center"
+                    title={`Eingestellt am ${listingDate}`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="absolute left-0 top-full mt-1 hidden group-hover/date:flex items-center px-2 py-1 rounded-md bg-slate-900 text-white text-[10px] font-semibold whitespace-nowrap shadow-xl z-30 pointer-events-none">
+                    Eingestellt am {listingDate}
+                  </div>
+                </div>
+
+                {/* If own card, display distinct badge */}
+                {isOwnCard && (
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9px] font-black uppercase tracking-wider truncate flex-shrink-0">
+                    Deine eigene Karte
+                  </span>
+                )}
+              </div>
+
+              <span className="foil-badge font-bold tracking-wide flex-shrink-0">
                 {cond.label.toUpperCase()} • {languageFlag}
               </span>
             </div>
+
             <div className="plate-main-row">
               <div className="w-full">
-                <div
-                  className={cn(
-                    "flex items-start justify-between gap-1.5",
-                    titles.canToggle && "cursor-pointer group/title"
-                  )}
-                  onClick={(e) => {
-                    if (titles.canToggle) {
-                      e.stopPropagation();
-                      setShowAltTitle((prev) => !prev);
-                    }
-                  }}
-                  title={
-                    titles.canToggle
-                      ? `Klicken für ${showAltTitle ? "Originalnamen" : titles.isGerman ? "englischen Namen" : "deutschen Namen"}`
-                      : undefined
-                  }
-                >
-                  <h4 className="card-name break-words text-[13px] leading-snug font-extrabold text-[#0f172a] flex-1">
-                    {activeTitle} {card.cardNumber ? `#${card.cardNumber}` : ""}
-                  </h4>
-                  {titles.canToggle && (
-                    <span
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 group-hover/title:bg-slate-200 text-slate-600 transition-colors flex-shrink-0 flex items-center gap-0.5 mt-0.5"
-                      title={showAltTitle ? "Zurück zum Original" : "Alternative Sprache anzeigen"}
-                    >
-                      {showAltTitle ? "↩ Original" : titles.isGerman ? "🇬🇧 EN" : "🇩🇪 DE"}
-                    </span>
-                  )}
-                </div>
+                <h4 className="card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate" title={slabTitle.fullLabel}>
+                  {slabTitle.fullLabel}
+                </h4>
                 <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
                   {card.set || "Edition / Set"} {card.condition ? `• ${cond.label}` : ""}
                 </p>
@@ -296,20 +329,30 @@ export function CollectorSlabCard({
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={handleActionClick}
-                className={cn(
-                  "px-3 py-2 rounded-xl text-xs font-black transition-all active:scale-95 flex items-center gap-1 min-h-[44px] cursor-pointer shadow-md flex-shrink-0",
-                  mode.btnBg
-                )}
-              >
-                <span>{mode.btnText}</span>
-              </button>
+              {isOwnCard ? (
+                <div
+                  className="px-3 py-2 rounded-xl text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  title="Dies ist deine eigene angebotene Karte"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Deine Karte</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleActionClick}
+                  className={cn(
+                    "px-3 py-2 rounded-xl text-xs font-black transition-all active:scale-95 flex items-center gap-1 min-h-[44px] cursor-pointer shadow-md flex-shrink-0",
+                    mode.btnBg
+                  )}
+                >
+                  <span>{mode.btnText}</span>
+                </button>
+              )}
             </div>
 
             {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
-            {card.type === "sell" && card.allowOffers && (
+            {card.type === "sell" && card.allowOffers && !isOwnCard && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -336,39 +379,39 @@ export function CollectorSlabCard({
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 pt-0.5">
                   <HoloAvatarFrame
-                    avatarUrl={card.user.avatarUrl}
-                    username={card.user.username}
-                    role={card.user.role}
-                    verified={card.user.verified}
+                    avatarUrl={seller.avatarUrl}
+                    username={seller.username}
+                    role={seller.role}
+                    verified={seller.verified}
                     size="sm"
                   />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-bold text-white text-[12px] leading-tight break-words">
-                      {card.user.username}
+                      {seller.username}
                     </span>
                     <VerificationShield
-                      dealsCount={card.user.dealsCount || 0}
+                      dealsCount={seller.dealsCount || 0}
                       size="sm"
                       className="inline-flex flex-shrink-0"
                     />
                   </div>
                   <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-400">
                     <span className="font-semibold text-neutral-300">
-                      {card.user.dealsCount || 0} {card.user.dealsCount === 1 ? "Deal" : "Deals"}
+                      {seller.dealsCount || 0} {seller.dealsCount === 1 ? "Deal" : "Deals"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {card.showDiscordName !== false && card.user.discordUsername && (
+              {card.showDiscordName !== false && seller.discordUsername && (
                 <div className="flex items-center justify-end pt-0.5">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigator.clipboard.writeText(card.user.discordUsername!);
+                      navigator.clipboard.writeText(seller.discordUsername!);
                       setCopiedDiscord(true);
                       setTimeout(() => setCopiedDiscord(false), 2000);
                     }}
@@ -378,7 +421,7 @@ export function CollectorSlabCard({
                     <svg className="w-3 h-3 fill-current flex-shrink-0 text-[#5865F2]" viewBox="0 0 24 24">
                       <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.077.077 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.127c-.598.35-1.22.648-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                     </svg>
-                    <span>@{card.user.discordUsername}</span>
+                    <span>@{seller.discordUsername}</span>
                     <span className="text-[9px] text-indigo-300 font-sans ml-1">
                       {copiedDiscord ? "✓ Kopiert!" : ""}
                     </span>
@@ -456,21 +499,12 @@ export function CollectorSlabCard({
 
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words">
-                      {activeTitle}
+                      {slabTitle.cleanName} {slabTitle.cleanCode}
                     </h2>
-                    {titles.canToggle && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAltTitle((prev) => !prev)}
-                        className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-300 transition-colors cursor-pointer flex-shrink-0"
-                      >
-                        {showAltTitle ? "↩ Original" : titles.isGerman ? "🇬🇧 EN" : "🇩🇪 DE"}
-                      </button>
-                    )}
                   </div>
                   {card.set && (
                     <p className="text-xs text-neutral-400">
-                      {card.set} {card.cardNumber && `• #${card.cardNumber}`}
+                      {card.set} {slabTitle.cleanCode && `• ${slabTitle.cleanCode}`}
                     </p>
                   )}
 
@@ -491,7 +525,7 @@ export function CollectorSlabCard({
 
                     <div className="text-right">
                       <span className="text-xs text-neutral-400 block font-semibold">Anbieter</span>
-                      <span className="text-sm font-bold text-white">{card.user.username}</span>
+                      <span className="text-sm font-bold text-white">{seller.username}</span>
                     </div>
                   </div>
 
@@ -540,6 +574,16 @@ export function CollectorSlabCard({
                     >
                       <Target className="w-4 h-4 fill-black" /> Ich habe diese Karte (Angebot senden)
                     </button>
+                  ) : isOwnCard ? (
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-black text-emerald-400">
+                        <Sparkles className="w-4 h-4" />
+                        <span>Deine eigene Karte</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-400">
+                        Dieses Inserat ist in deiner Vitrine online und für andere Sammler im Marktplatz gelistet.
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <button
@@ -550,12 +594,12 @@ export function CollectorSlabCard({
                             return;
                           }
                           createDeal(card, currentUser);
-                          alert(`Kaufanfrage an ${card.user.username} gesendet!`);
+                          alert(`Kaufanfrage an ${seller.username} gesendet!`);
                           setDetailModalOpen(false);
                         }}
                         className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 min-h-[44px] cursor-pointer"
                       >
-                        <Zap className="w-4 h-4 fill-black" /> Kaufanfrage an {card.user.username} senden
+                        <Zap className="w-4 h-4 fill-black" /> Kaufanfrage an {seller.username} senden
                       </button>
 
                       {card.allowOffers && (
@@ -574,6 +618,7 @@ export function CollectorSlabCard({
                     </div>
                   )}
                 </div>
+
               </div>
             </div>
           </div>
@@ -598,7 +643,7 @@ export function CollectorSlabCard({
                   Preisvorschlag einreichen
                 </span>
                 <h3 className="text-lg font-black text-white">
-                  Angebot für {activeTitle}
+                  Angebot für {slabTitle.fullLabel}
                 </h3>
               </div>
               <button
@@ -616,12 +661,12 @@ export function CollectorSlabCard({
                 {card.photos[0] && (
                   <img
                     src={card.photos[0]}
-                    alt={activeTitle}
+                    alt={slabTitle.fullLabel}
                     className="w-12 h-16 object-contain rounded-lg flex-shrink-0"
                   />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-white truncate">{activeTitle}</p>
+                  <p className="text-xs font-bold text-white truncate">{slabTitle.fullLabel}</p>
                   <p className="text-[10px] text-neutral-400">
                     Regulärer Kaufpreis:{" "}
                     <span className="text-emerald-400 font-bold">
@@ -629,7 +674,7 @@ export function CollectorSlabCard({
                     </span>
                   </p>
                   <p className="text-[10px] text-neutral-400">
-                    Verkäufer: <span className="text-white font-medium">{card.user.username}</span>
+                    Verkäufer: <span className="text-white font-medium">{seller.username}</span>
                   </p>
                 </div>
               </div>

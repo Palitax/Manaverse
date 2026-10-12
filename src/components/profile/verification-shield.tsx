@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -140,8 +141,50 @@ export function VerificationShield({
   textOnly = false,
 }: VerificationShieldProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tier = getVerificationTier(dealsCount);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Compute fixed floating tooltip coordinates relative to window viewport
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const popoverWidth = Math.min(320, window.innerWidth - 32);
+      const popoverHeight = 240; // estimated popover height
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const placeAbove = spaceBelow < popoverHeight && rect.top > popoverHeight;
+
+      // Center horizontally on the trigger, but clamp to screen edges with 16px margin
+      const desiredLeft = rect.left + rect.width / 2;
+      const halfWidth = popoverWidth / 2;
+      const minLeft = 16 + halfWidth;
+      const maxLeft = window.innerWidth - 16 - halfWidth;
+      const clampedLeft = Math.max(minLeft, Math.min(maxLeft, desiredLeft));
+
+      setCoords({
+        top: placeAbove ? rect.top - 8 : rect.bottom + 8,
+        left: clampedLeft,
+        placeAbove,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, { passive: true });
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen]);
 
   // Close on outside click
   useEffect(() => {
@@ -192,7 +235,10 @@ export function VerificationShield({
       {textOnly ? (
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
           aria-label={`${tier.title} (Klicken für Details)`}
           className="h-9 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95"
         >
@@ -201,7 +247,10 @@ export function VerificationShield({
       ) : (
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
           aria-label={`${tier.title} (Klicken für Details)`}
           className={cn(
             "relative flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px]",
@@ -270,14 +319,30 @@ export function VerificationShield({
         </button>
       )}
 
-      {/* Hover & Tap Popover Tooltip */}
-      {isOpen && (
+      {/* Hover & Tap Popover Tooltip via Portal into document.body (Never clipped by parent overflow) */}
+      {mounted && isOpen && coords && createPortal(
         <div
           role="tooltip"
-          className="absolute z-50 left-1/2 -translate-x-1/2 top-full mt-2 w-72 sm:w-80 p-4 rounded-2xl bg-[#0c101c] border border-white/15 shadow-[0_15px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl text-left pointer-events-auto animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            position: "fixed",
+            top: coords.placeAbove ? undefined : coords.top,
+            bottom: coords.placeAbove ? window.innerHeight - coords.top : undefined,
+            left: coords.left,
+            transform: "translateX(-50%)",
+            width: "min(320px, calc(100vw - 32px))",
+            zIndex: 99999,
+          }}
+          className="p-4 rounded-2xl bg-[#0c101c] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-left pointer-events-auto animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Top Notch Pointer */}
-          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0c101c] border-l border-t border-white/15 rotate-45" />
+          <div
+            className={cn(
+              "absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0c101c] border-white/20 rotate-45",
+              coords.placeAbove
+                ? "-bottom-1.5 border-r border-b"
+                : "-top-1.5 border-l border-t"
+            )}
+          />
 
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -365,8 +430,10 @@ export function VerificationShield({
             <Award className="w-3.5 h-3.5 text-blue-400 shrink-0" />
             <span>{tier.perks}</span>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 }
+

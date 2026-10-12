@@ -755,6 +755,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setSessionUser((prev) => (prev ? { ...prev, ...data } : null));
     }
 
+    // Synchronize all user's listings immediately so avatar & name update across all slabs
+    setListings((prev) => {
+      const updated = prev.map((item) => {
+        if (
+          item.userId === currentUser.id ||
+          item.user?.id === currentUser.id ||
+          (currentUser.username && item.user?.username?.toLowerCase() === currentUser.username.toLowerCase())
+        ) {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              ...data,
+              username: data.username ?? item.user.username,
+              avatarUrl: data.avatarUrl ?? item.user.avatarUrl,
+              bio: data.bio !== undefined ? data.bio : item.user.bio,
+              whatnotUsername: data.whatnotUsername !== undefined ? data.whatnotUsername : item.user.whatnotUsername,
+              discordUsername: data.discordUsername !== undefined ? data.discordUsername : item.user.discordUsername,
+            },
+          };
+        }
+        return item;
+      });
+      try {
+        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to save updated listings to localStorage:", e);
+      }
+      return updated;
+    });
+
     if (isSupabaseConfigured && supabase) {
       try {
         await supabase

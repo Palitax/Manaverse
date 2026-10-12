@@ -24,10 +24,16 @@ export default function SellPage() {
   const { currentUser, listings, openAuthModal } = useStore();
   const [studioOpen, setStudioOpen] = useState(false);
 
-  // User's own active sell listings
+  // User's own active sell listings (strictly only own cards when logged in)
   const mySellListings = useMemo(() => {
     return currentUser
-      ? listings.filter((l) => l.userId === currentUser.id && l.type === "sell")
+      ? listings.filter(
+          (l) =>
+            (l.userId === currentUser.id ||
+              l.user?.id === currentUser.id ||
+              (currentUser.username && l.user?.username?.toLowerCase() === currentUser.username.toLowerCase())) &&
+            l.type === "sell"
+        )
       : [];
   }, [currentUser, listings]);
 
@@ -140,7 +146,42 @@ export default function SellPage() {
       )}
 
       {/* Content */}
-      {mySellListings.length === 0 ? (
+      {!currentUser ? (
+        <div className="my-12 max-w-lg mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-5 shadow-2xl relative overflow-hidden">
+          <BorderBeam size={220} duration={8} colorFrom="#10b981" colorTo="#38bdf8" />
+
+          <div
+            onClick={() => openAuthModal("login")}
+            className="w-18 h-18 rounded-3xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto cursor-pointer transition-all hover:scale-105 shadow-lg shadow-emerald-500/20 group min-h-[64px] min-w-[64px]"
+          >
+            <Tag className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1.5">
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              Melde dich an für deine Vitrine
+            </h2>
+            <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+              Melde dich an, um deine Verkaufskarten zu sehen, deine Inserate zu verwalten und neue Pokémon-Karten einzustellen.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => openAuthModal("login")}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/25 min-h-[44px] cursor-pointer"
+            >
+              Jetzt anmelden
+            </button>
+            <Link
+              href="/buy"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 transition-all min-h-[44px] flex items-center justify-center"
+            >
+              Karten kaufen
+            </Link>
+          </div>
+        </div>
+      ) : mySellListings.length === 0 ? (
         <div className="my-12 max-w-lg mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-5 shadow-2xl relative overflow-hidden">
           <BorderBeam size={220} duration={8} colorFrom="#10b981" colorTo="#f59e0b" />
 
@@ -171,7 +212,7 @@ export default function SellPage() {
               href="/buy"
               className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 transition-all min-h-[44px] flex items-center justify-center"
             >
-              Marktplatz durchstöbern
+              Karten kaufen
             </Link>
           </div>
         </div>

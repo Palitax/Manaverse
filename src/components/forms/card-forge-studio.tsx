@@ -9,7 +9,7 @@ import {
 } from "@/types";
 import { useStore } from "@/lib/store";
 import { PokemonSearchInput } from "./pokemon-search-input";
-import { resolveCardTitles } from "@/lib/pokemon-names";
+import { resolveCardTitles, formatSlabTitle } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Sparkles,
@@ -35,6 +35,7 @@ import {
   Check,
   RefreshCw,
   Search,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -968,17 +969,27 @@ export function CardForgeStudio({
               {/* Clean Header Plate */}
               <div className="slab-header-plate">
                 <div className="plate-top-row">
-                  <span className="collection-tag">
-                    Eingestellt am {new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                  </span>
-                  <span className="foil-badge">
+                  {/* Calendar Icon with Hover Tooltip */}
+                  <div className="relative group/date inline-flex items-center flex-shrink-0">
+                    <div
+                      className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-help min-h-[28px] min-w-[28px] flex items-center justify-center"
+                      title={`Eingestellt am ${new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="absolute left-0 top-full mt-1 hidden group-hover/date:flex items-center px-2 py-1 rounded-md bg-slate-900 text-white text-[10px] font-semibold whitespace-nowrap shadow-xl z-30 pointer-events-none">
+                      Eingestellt am {new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                    </div>
+                  </div>
+
+                  <span className="foil-badge font-bold tracking-wide flex-shrink-0">
                     {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
                   </span>
                 </div>
                 <div className="plate-main-row">
                   <div className="w-full">
-                    <h4 className="card-name break-words text-[13px] leading-snug font-extrabold text-[#0f172a]" title={name || "DEINE POKÉMON KARTE"}>
-                      {resolveCardTitles(name || "DEINE POKÉMON KARTE", language).primaryTitle} {cardNumber ? `#${cardNumber}` : ""}
+                    <h4 className="card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate" title={formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}>
+                      {formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}
                     </h4>
                     <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
                       {setNameText || "Edition / Set"} • {activeCondition.gradeLabel} ({activeCondition.stars})

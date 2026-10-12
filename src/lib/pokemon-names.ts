@@ -528,3 +528,55 @@ export function resolveCardTitles(
     };
   }
 }
+
+/**
+ * Formats a clean, concise card label strictly showing card name and code (e.g. "Nachtara VMAX #215/203"),
+ * stripping bloated subtitles like "(Moonbreon)", "(Alternate Art)", set suffixes, etc.
+ */
+export function formatSlabTitle(
+  fullName: string,
+  cardLanguage?: string,
+  cardNumber?: string
+): { cleanName: string; cleanCode: string; fullLabel: string } {
+  if (!fullName) {
+    const code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
+    return { cleanName: "", cleanCode: code, fullLabel: code };
+  }
+
+  const lang = (cardLanguage || "DE").toUpperCase();
+  const titles = resolveCardTitles(fullName, lang);
+  let baseName = titles.primaryTitle || fullName;
+
+  // 1. Extract embedded card number like #215/203 or #213/342
+  let code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
+  const codeMatch = baseName.match(/#([A-Za-z0-9\/-]+)/);
+  if (codeMatch) {
+    if (!code) {
+      code = `#${codeMatch[1]}`;
+    }
+    baseName = baseName.replace(/#([A-Za-z0-9\/-]+)/, "").trim();
+  }
+
+  // 2. Remove parenthesized text e.g. "(Moonbreon)", "(Alternative Art)", "(Secret Rare)"
+  baseName = baseName.replace(/\s*\([^)]*\)/g, "").trim();
+
+  // 3. Remove trailing dash or set additions e.g. "– Evolving Skies"
+  baseName = baseName.replace(/\s*[-–—]\s*.*$/, "").trim();
+
+  // 4. If name still contains slashes like "Umbreon VMAX / Nachtara VMAX", select language-appropriate side
+  if (baseName.includes("/")) {
+    const parts = baseName.split("/").map((s) => s.trim());
+    baseName = (lang === "DE" ? parts[1] || parts[0] : parts[0]) || baseName;
+  }
+
+  // 5. Clean up any accidental double spaces
+  baseName = baseName.replace(/\s+/g, " ").trim();
+
+  const fullLabel = code ? `${baseName} ${code}` : baseName;
+
+  return {
+    cleanName: baseName,
+    cleanCode: code,
+    fullLabel,
+  };
+}
