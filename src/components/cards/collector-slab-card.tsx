@@ -232,6 +232,19 @@ export function CollectorSlabCard({
             className
           )}
         >
+          {/* Overhanging Top Crest Sigil (Manaforge Sigil / 90° Hover Rotation) */}
+          <div className="slab-top-sigil-wrapper">
+            <div className="slab-top-sigil">
+              <img
+                src="/manaforge-emblem.png"
+                alt="Manaforge Sigil"
+                className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(249,115,22,0.45)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]"
+                loading="eager"
+                draggable={false}
+              />
+            </div>
+          </div>
+
           {/* Chamfered Bevel & Specular Glare */}
           <div className="slab-edge-bevel" />
           <div className="slab-glare-effect" />
