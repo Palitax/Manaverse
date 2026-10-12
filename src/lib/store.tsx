@@ -695,7 +695,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     const nowIso = new Date().toISOString();
-    const newPacks = (currentUser.boosterPacks ?? 0) + 1;
+    // Tägliche Booster können nicht angesammelt werden: maximal 1 Booster verfügbar
+    const newPacks = Math.max(1, (currentUser.boosterPacks ?? 0) > 0 ? currentUser.boosterPacks! : 1);
 
     await updateUserBoosterData(currentUser.id, {
       boosterPacks: newPacks,
@@ -741,6 +742,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!currentUser) return;
+
+    // Benutzernamen immer ohne Leerzeichen (Unterstriche) abspeichern
+    if (data.username) {
+      data.username = data.username.replace(/\s+/g, "_");
+    }
 
     setUsers((prev) =>
       prev.map((u) => (u.id === currentUser.id ? { ...u, ...data } : u))

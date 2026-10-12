@@ -22,10 +22,12 @@ import {
   Flame,
   Timer,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { BoosterPackCard } from "@/components/booster/booster-pack-card";
+import { AvatarCustomizerModal } from "@/components/profile/avatar-customizer-modal";
 
 function DiscordIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -61,6 +63,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentUser?.role || "member");
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -144,16 +147,40 @@ export default function ProfilePage() {
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 pb-24">
       {/* Header Profile Hero Card */}
       <div className="p-6 sm:p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 relative overflow-hidden shadow-2xl">
-        <BorderBeam size={260} duration={10} colorFrom="#6366f1" colorTo="#ec4899" />
-
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <HoloAvatarFrame
-            avatarUrl={avatarUrl}
-            username={username}
-            role={selectedRole}
-            verified={currentUser.verified}
-            size="xl"
-          />
+          {/* Avatar with Pencil Edit Hover / Tap Trigger */}
+          <div
+            onClick={() => setIsAvatarModalOpen(true)}
+            className="relative group cursor-pointer select-none"
+            title="Klicke hier, um Profilbild & Rahmen zu ändern"
+          >
+            <HoloAvatarFrame
+              avatarUrl={avatarUrl}
+              username={username}
+              role={selectedRole}
+              verified={currentUser.verified}
+              size="xl"
+            />
+
+            {/* Desktop Hover Overlay with Pencil */}
+            <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-white backdrop-blur-[2px] pointer-events-none">
+              <Pencil className="w-5 h-5 text-amber-400 drop-shadow" />
+              <span className="text-[10px] font-black uppercase tracking-wider">Ändern</span>
+            </div>
+
+            {/* Always-visible thumb-friendly Edit Badge (Mobile Extralocke & Touch) */}
+            <button
+              type="button"
+              aria-label="Profilbild und Rahmen bearbeiten"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAvatarModalOpen(true);
+              }}
+              className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 border-2 border-[#0c101c] flex items-center justify-center text-white shadow-lg sm:opacity-90 hover:opacity-100 sm:group-hover:scale-110 active:scale-95 transition-all cursor-pointer min-h-[36px] min-w-[36px]"
+            >
+              <Pencil className="w-4 h-4 fill-white" />
+            </button>
+          </div>
 
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
@@ -164,6 +191,15 @@ export default function ProfilePage() {
                 dealsCount={currentUser.dealsCount}
                 size="md"
               />
+
+              {/* Prominent Mana Points Badge in Profile Header */}
+              <div
+                title="Dein aktuelles Mana-Guthaben"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/25 via-orange-500/20 to-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-black shadow-[0_0_14px_rgba(245,158,11,0.25)]"
+              >
+                <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-400 animate-pulse" />
+                <span>{manaPoints.toLocaleString()} Mana</span>
+              </div>
 
               {selectedRole === "admin" && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-black shadow-[0_0_14px_rgba(255,80,0,0.4)]">
@@ -189,6 +225,12 @@ export default function ProfilePage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2 text-xs text-neutral-400">
+              {/* Mana Quick Stat */}
+              <span className="text-amber-400 font-extrabold flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+                <Zap className="w-3.5 h-3.5 fill-amber-400" />
+                {manaPoints.toLocaleString()} Mana Punkte
+              </span>
+
               {whatnotUsername && (
                 <a
                   href={`https://whatnot.com/user/${whatnotUsername}`}
@@ -305,12 +347,15 @@ export default function ProfilePage() {
                   <span>Täglichen Booster abholen & öffnen</span>
                 </button>
               ) : (
-                <div className="text-center p-3 rounded-2xl bg-black/40 border border-white/10">
-                  <p className="text-xs text-neutral-400 font-semibold flex items-center justify-center gap-1.5">
-                    <Timer className="w-4 h-4 text-amber-400" />
-                    <span>Nächster Gratis-Booster in:</span>
+                <div className="text-center p-3 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+                  <p className="text-xs font-bold text-white">
+                    Du hast keine Booster mehr zum Rippen.
                   </p>
-                  <p className="text-sm font-black text-amber-300 mt-0.5">
+                  <p className="text-[11px] text-neutral-400 flex items-center justify-center gap-1.5">
+                    <Timer className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Dein nächster täglicher Gratis-Booster kommt in:</span>
+                  </p>
+                  <p className="text-sm font-black text-amber-300">
                     {dailyBoosterCountdown}
                   </p>
                 </div>
@@ -533,9 +578,13 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value.replace(/\s+/g, "_"))}
+                placeholder="z. B. All_Out_Luffy"
                 className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500"
               />
+              <p className="text-[11px] text-neutral-400 mt-1">
+                Keine Leerzeichen erlaubt – längere Namen mit Unterstrich schreiben (z. B. All_Out_Luffy).
+              </p>
             </div>
 
             {/* Avatar Frame Selector */}
@@ -801,6 +850,29 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Avatar & Frame Customizer Modal */}
+      {currentUser && (
+        <AvatarCustomizerModal
+          isOpen={isAvatarModalOpen}
+          onClose={() => setIsAvatarModalOpen(false)}
+          currentAvatarUrl={avatarUrl}
+          currentRole={selectedRole}
+          username={username}
+          verified={currentUser.verified}
+          userRole={currentUser.role}
+          onSave={({ avatarUrl: newAvatar, role: newRole }) => {
+            setAvatarUrl(newAvatar);
+            setSelectedRole(newRole);
+            updateProfile({
+              avatarUrl: newAvatar,
+              role: newRole,
+            });
+            setSavedSuccess(true);
+            setTimeout(() => setSavedSuccess(false), 2500);
+          }}
+        />
+      )}
     </div>
   );
 }

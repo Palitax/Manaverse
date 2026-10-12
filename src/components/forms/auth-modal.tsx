@@ -259,12 +259,15 @@ export function AuthModal() {
                 <input
                   type="text"
                   required
-                  placeholder="z.B. AshKetchum"
+                  placeholder="z.B. Ash_Ketchum"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value.replace(/\s+/g, "_"))}
                   className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
                 />
               </div>
+              <p className="text-[11px] text-neutral-400 mt-1">
+                Keine Leerzeichen erlaubt – längere Namen mit Unterstrich schreiben (z. B. All_Out_Luffy).
+              </p>
             </div>
           )}
 

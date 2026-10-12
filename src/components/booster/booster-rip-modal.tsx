@@ -146,6 +146,29 @@ export function BoosterRipModal() {
     }
   }, [isBoosterModalOpen]);
 
+  // Handle closing modal with automatic rip if pack was opened/ready
+  const handleCloseModal = useCallback(async () => {
+    if (availableBoosters > 0 && (stage === "ready" || stage === "ripping")) {
+      try {
+        await ripBoosterPack();
+      } catch (err) {
+        console.warn("Auto-rip on close:", err);
+      }
+    }
+    closeBoosterModal();
+  }, [availableBoosters, stage, ripBoosterPack, closeBoosterModal]);
+
+  // Beforeunload listener to ensure booster is automatically ripped if tab/browser is closed
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isBoosterModalOpen && availableBoosters > 0 && (stage === "ready" || stage === "ripping")) {
+        ripBoosterPack().catch(() => {});
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isBoosterModalOpen, availableBoosters, stage, ripBoosterPack]);
+
   // Execute full pack tear sequence once user crosses rip threshold
   const triggerRipComplete = useCallback(async () => {
     if (stage !== "ready" && stage !== "ripping") return;
@@ -330,7 +353,7 @@ export function BoosterRipModal() {
       {/* Close Button */}
       <button
         type="button"
-        onClick={closeBoosterModal}
+        onClick={handleCloseModal}
         className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border border-white/10 active:scale-95 shadow-xl"
         aria-label="Schließen"
       >
@@ -421,21 +444,21 @@ export function BoosterRipModal() {
               lockedCountdown={dailyBoosterCountdown}
               interactive={false}
             />
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-black text-white">Alle Booster geöffnet!</h3>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-white">Du hast keine Booster mehr zum Rippen.</h3>
               <p className="text-xs text-neutral-300 leading-relaxed">
-                Du hast heute alle deine Booster aufgerissen. Alle 24 Stunden steht dir ein neuer kostenloser Booster zur Verfügung!
+                Dein nächster täglicher Gratis-Booster kommt in:
               </p>
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 border border-cyan-500/30 text-cyan-300 text-xs font-black">
-                  <Timer className="w-4 h-4 text-cyan-400" />
-                  <span>Nächster Gratis-Booster in: {dailyBoosterCountdown}</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 border border-amber-500/30 text-amber-300 text-xs font-black shadow-lg">
+                  <Timer className="w-4 h-4 text-amber-400" />
+                  <span>{dailyBoosterCountdown}</span>
                 </div>
               </div>
             </div>
             <button
               type="button"
-              onClick={closeBoosterModal}
+              onClick={handleCloseModal}
               className="w-full py-3 px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm border border-white/10 transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
             >
               Verstanden & Schließen

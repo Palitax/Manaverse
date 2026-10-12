@@ -81,12 +81,12 @@ export function BoosterPackCard({
     }
   };
 
-  // Dimensions based on size, matching the booster aspect ratio (343 x 624)
+  // Dimensions based on size, matching the booster aspect ratio (328 x 622)
   const sizeClasses = {
-    sm: "w-[155px] h-[282px]",
-    md: "w-[210px] h-[382px]",
-    lg: "w-[270px] h-[491px]",
-    hero: "w-[275px] h-[500px] sm:w-[320px] sm:h-[582px] md:w-[350px] md:h-[637px]",
+    sm: "w-[150px] h-[284px]",
+    md: "w-[205px] h-[389px]",
+    lg: "w-[260px] h-[493px]",
+    hero: "w-[260px] h-[493px] sm:w-[305px] sm:h-[578px] md:w-[336px] md:h-[637px]",
   }[size];
 
   // Calculate tear rotation and displacement from tearProgress (peels slightly during drag)
@@ -131,7 +131,7 @@ export function BoosterPackCard({
             : "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
         className={cn(
-          "relative w-full h-full rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.25)] border border-amber-500/35",
+          "relative w-full h-full rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.25)] border border-amber-500/35",
           "bg-gradient-to-b from-[#181d2a] via-[#0d111a] to-[#07090e]"
         )}
       >
@@ -162,11 +162,11 @@ export function BoosterPackCard({
           </div>
         )}
 
-        {/* ================= BOTTOM PACK BODY (Below 15.5% tear line) ================= */}
+        {/* ================= BOTTOM PACK BODY (Below 15.4% tear line) ================= */}
         <div
           className="absolute inset-0 z-10 pointer-events-none"
           style={{
-            clipPath: "polygon(0% 15.5%, 100% 15.5%, 100% 100%, 0% 100%)",
+            clipPath: "polygon(0% 15.4%, 100% 15.4%, 100% 100%, 0% 100%)",
           }}
         >
           <img
@@ -195,7 +195,7 @@ export function BoosterPackCard({
           />
         </div>
 
-        {/* ================= TOP CAP (Above 15.5% tear line - Peels and flies off!) ================= */}
+        {/* ================= TOP CAP (Above 15.4% tear line - Peels and flies off!) ================= */}
         <div
           className={cn(
             "absolute inset-x-0 top-0 z-20 pointer-events-none",
@@ -206,7 +206,7 @@ export function BoosterPackCard({
               : "duration-300 transition-transform"
           )}
           style={{
-            height: "15.5%",
+            height: "15.4%",
             transformOrigin: isRipped ? "center center" : "100% 100%",
             transform: isRipped
               ? undefined // animated via @keyframes booster-cap-flyoff
@@ -220,14 +220,14 @@ export function BoosterPackCard({
               src="/manaforge-booster.png"
               alt="Manaforge Booster Deckel"
               className="absolute top-0 left-0 w-full object-cover object-top pointer-events-none"
-              style={{ height: "645.16%" }}
+              style={{ height: "649.35%" }}
             />
             {/* Top Cap Holo Glare */}
             <div
               className="absolute inset-0 pointer-events-none mix-blend-color-dodge transition-opacity duration-300"
               style={{
                 opacity: isHovered ? 0.75 : 0.4,
-                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y * 6.45}%, rgba(255,255,255,0.95) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
+                background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y * 6.49}%, rgba(255,255,255,0.95) 0%, rgba(249,115,22,0.4) 40%, transparent 75%)`,
               }}
             />
           </div>
@@ -237,7 +237,7 @@ export function BoosterPackCard({
         {isRipped && (
           <div
             className="absolute inset-x-0 z-30 pointer-events-none flex items-center justify-center -translate-y-1/2"
-            style={{ top: "15.5%" }}
+            style={{ top: "15.4%" }}
           >
             <div className="w-[140%] h-4 bg-gradient-to-r from-transparent via-white to-transparent blur-[2px] animate-rip-flash" />
             <div className="absolute w-full h-8 bg-gradient-to-r from-transparent via-amber-400 to-transparent blur-md animate-rip-flash" />
@@ -249,7 +249,7 @@ export function BoosterPackCard({
         {showRipGuide && !isRipped && (
           <div
             className="absolute inset-x-0 z-30 pointer-events-none transition-opacity duration-300"
-            style={{ top: "15.5%" }}
+            style={{ top: "15.4%" }}
           >
             {/* The Perforated Luminous Tear Seam */}
             <div className="relative -translate-y-1/2 flex items-center px-0.5">
@@ -302,7 +302,6 @@ export function BoosterPackCard({
 
                   {/* Floating Hint Badge above Seam */}
                   <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-30 pointer-events-none flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 backdrop-blur-md border border-cyan-400/60 shadow-[0_0_20px_rgba(6,182,212,0.4)] animate-swipe-text">
-                    <Sparkles className="w-3 h-3 text-amber-400 animate-pulse shrink-0" />
                     <span className="text-[10px] font-black uppercase tracking-wider text-white whitespace-nowrap">
                       Hier wischen
                     </span>
@@ -323,7 +322,7 @@ export function BoosterPackCard({
             onPointerUp={onTearPointerUp}
             onPointerCancel={onTearPointerCancel}
             className="absolute inset-x-0 h-20 -translate-y-1/2 z-40 cursor-grab active:cursor-grabbing touch-none select-none"
-            style={{ top: "15.5%" }}
+            style={{ top: "15.4%" }}
             title="Wische hier entlang zum Aufreißen!"
             aria-label="Booster Naht Wischbereich"
             role="slider"
@@ -335,15 +334,7 @@ export function BoosterPackCard({
         )}
 
         {/* Shimmer Border Beam */}
-        <div className="absolute inset-0 rounded-2xl border border-white/20 pointer-events-none" />
-
-        {/* Holo-Glanz Badge */}
-        {interactive && !isRipped && !isLocked && (
-          <div className="absolute bottom-5 right-3 z-30 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-500/40 text-[10px] font-bold text-amber-300 shadow-lg pointer-events-none">
-            <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
-            <span>Holo-Glanz</span>
-          </div>
-        )}
+        <div className="absolute inset-0 rounded-xl border border-white/20 pointer-events-none" />
 
         {/* Locked Cooldown Overlay */}
         {isLocked && (
