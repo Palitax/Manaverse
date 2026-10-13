@@ -9,7 +9,7 @@ import {
 } from "@/types";
 import { useStore } from "@/lib/store";
 import { PokemonSearchInput } from "./pokemon-search-input";
-import { resolveCardTitles, formatSlabTitle } from "@/lib/pokemon-names";
+import { formatSlabTitle } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Tag,
@@ -22,23 +22,18 @@ import {
   X,
   Plus,
   Trash2,
-  ExternalLink,
-  ShieldCheck,
-  Video,
-  Info,
-  DollarSign,
-  Scale,
-  Zap,
-  Layers,
-  Sliders,
-  Check,
-  RefreshCw,
-  Search,
   Calendar,
-  FileText,
   MessageSquare,
   Upload,
   AlertTriangle,
+  Zap,
+  RefreshCw,
+  Search,
+  Sliders,
+  DollarSign,
+  Scale,
+  Key,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlabTopSigil } from "../cards/slab-top-sigil";
@@ -171,15 +166,11 @@ export function CardForgeStudio({
 }: CardForgeStudioProps) {
   const { addListing, currentUser, openAuthModal } = useStore();
 
+  // Wizard Step: 1 = Foto & KI-Scan, 2 = Details & Identität, 3 = Preis & Konditionen, 4 = Vorschau & Veröffentlichen
+  const [step, setStep] = useState<number>(initialName || initialPhoto ? 2 : 1);
+
   // Form State
   const [type, setType] = useState<ListingType>(initialType);
-
-  useEffect(() => {
-    if (initialType) {
-      setType(initialType);
-    }
-  }, [initialType]);
-
   const [name, setName] = useState(initialName);
   const [setNameText, setSetNameText] = useState(initialSet);
   const [cardNumber, setCardNumber] = useState(initialNumber);
@@ -196,20 +187,104 @@ export function CardForgeStudio({
   const [postToDiscord, setPostToDiscord] = useState(true);
   const [showDiscordName, setShowDiscordName] = useState(true);
 
-  // Preview Image Upload & Drag-and-Drop Ref
-  const previewFileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isDraggingPreview, setIsDraggingPreview] = useState(false);
+  // AI Scanner State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [detectedSummary, setDetectedSummary] = useState<string | null>(null);
+  const [showApiKeySetting, setShowApiKeySetting] = useState(false);
+  const [userApiKey, setUserApiKey] = useState("");
 
-  const handlePreviewFile = (file: File) => {
+  // Preview Image Upload & Drag-and-Drop Ref
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Load custom Gemini API key from localStorage if present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("manaverse_gemini_api_key");
+      if (stored) setUserApiKey(stored);
+    }
+  }, []);
+
+  const saveApiKey = (val: string) => {
+    setUserApiKey(val);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("manaverse_gemini_api_key", val.trim());
+    }
+  };
+
+  // Sync initial type when changed
+  useEffect(() => {
+    if (initialType) setType(initialType);
+  }, [initialType]);
+
+  // Escape key listener to close modal/studio
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onCancel) {
+        onCancel();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
+
+  // Core File Upload & AI Vision Scan Handler
+  const handlePhotoUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       alert("Bitte lade eine Bilddatei (PNG, JPG, WEBP) hoch.");
       return;
     }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      if (result) {
-        setPhotos((prev) => [result, ...prev.filter((p, i) => i !== 0 && Boolean(p))]);
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      if (!dataUrl) return;
+
+      // Immediately display image in slab
+      setPhotos([dataUrl]);
+      setIsScanning(true);
+      setScanMessage("KI-Kartenanalyse läuft... Lese Pokémon, Set-Kürzel & Nummer...");
+      setDetectedSummary(null);
+
+      try {
+        const storedKey = typeof window !== "undefined" ? localStorage.getItem("manaverse_gemini_api_key") || "" : "";
+        const res = await fetch("/api/ai/scan-card", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: dataUrl,
+            apiKey: storedKey,
+            filename: file.name,
+          }),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            const d = json.data;
+            if (d.name) setName(d.name);
+            if (d.setCode) setSetNameText(d.setCode);
+            if (d.cardNumber) setCardNumber(d.cardNumber);
+            if (d.language) setLanguage(d.language);
+            if (d.condition) setCondition(d.condition);
+
+            if (json.isAiDetected) {
+              const summary = `${d.name} (${d.setCode || "Set"} • #${d.cardNumber || "—"} • ${d.language || "DE"})`;
+              setDetectedSummary(summary);
+              setScanMessage(`✓ Karte erfolgreich per KI erkannt!`);
+            } else {
+              setScanMessage("Foto geladen! Du kannst die Details in Schritt 2 kurz prüfen.");
+            }
+          }
+        } else {
+          setScanMessage("Foto geladen! Bitte passe den Kartennamen kurz in Schritt 2 an.");
+        }
+      } catch (err) {
+        console.warn("AI card scan error:", err);
+        setScanMessage("Foto geladen! Bitte wähle den Kartennamen kurz im TCG-Index.");
+      } finally {
+        setIsScanning(false);
       }
     };
     reader.readAsDataURL(file);
@@ -219,13 +294,6 @@ export function CardForgeStudio({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDraftSaved, setIsDraftSaved] = useState(false);
-  const [mobileStep, setMobileStep] = useState<number>(1);
-  const [showManualFields, setShowManualFields] = useState(false);
-
-  // Sync initial type when changed
-  useEffect(() => {
-    setType(initialType);
-  }, [initialType]);
 
   const activeCondition =
     CONDITIONS.find((c) => c.value === condition) || CONDITIONS[0];
@@ -253,10 +321,10 @@ export function CardForgeStudio({
 
   const handleSelectApiCard = (card: PokemonApiCard) => {
     setName(card.name);
-    if (card.set?.name) {
-      setSetNameText(card.set.name);
-    } else if (card.set?.id) {
+    if (card.set?.id) {
       setSetNameText(card.set.id);
+    } else if (card.set?.name) {
+      setSetNameText(card.set.name);
     }
     if (card.number) setCardNumber(card.number);
     if (card.language) {
@@ -265,10 +333,13 @@ export function CardForgeStudio({
       const detected = detectSetLanguage(card.set?.id || card.set?.name || "");
       if (detected) setLanguage(detected);
     }
-    if (card.images?.large) {
-      setPhotos([card.images.large]);
-    } else if (card.images?.small) {
-      setPhotos([card.images.small]);
+    // Only replace photo if no custom photo uploaded yet
+    if (!photos[0] || photos[0].startsWith("http")) {
+      if (card.images?.large) {
+        setPhotos([card.images.large]);
+      } else if (card.images?.small) {
+        setPhotos([card.images.small]);
+      }
     }
   };
 
@@ -294,7 +365,10 @@ export function CardForgeStudio({
 
   const handleSubmit = async (e?: React.FormEvent, isDraft: boolean = false) => {
     if (e) e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setStep(2);
+      return;
+    }
 
     if (!currentUser) {
       openAuthModal("register");
@@ -404,11 +478,11 @@ export function CardForgeStudio({
               setPrice("");
               setEstimatedTradeValue("");
               setPriceRange("");
-              setMobileStep(1);
+              setStep(1);
             }}
             className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/20 min-h-[44px] cursor-pointer"
           >
-            + Weiteres Inserat / Entwurf erstellen
+            + Weiteres Inserat erstellen
           </button>
           {onCancel && (
             <button
@@ -422,6 +496,187 @@ export function CardForgeStudio({
       </div>
     );
   }
+
+  // Common Slab Component Function to ensure 100% visual consistency
+  const renderSlab = (interactiveUpload = false) => {
+    return (
+      <div className="acrylic-slab-container w-full max-w-[340px] sm:max-w-[360px] mx-auto">
+        <div className="acrylic-display-slab select-none relative">
+          {/* Chamfered Bevel & Specular Glare */}
+          <div className="slab-edge-bevel" />
+          <div className="slab-glare-effect" />
+
+          {/* Clean Header Plate */}
+          <div className="slab-header-plate">
+            <div className="plate-top-row">
+              <div className="relative group/date inline-flex items-center flex-shrink-0">
+                <div
+                  className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-help min-h-[28px] min-w-[28px] flex items-center justify-center"
+                  title={`Eingestellt am ${new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+              </div>
+
+              <span className="foil-badge font-bold tracking-wide flex-shrink-0">
+                {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
+              </span>
+            </div>
+            <div className="plate-main-row">
+              <div className="w-full">
+                <h4
+                  className="card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate"
+                  title={formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}
+                >
+                  {formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}
+                </h4>
+                <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
+                  {setNameText || "Edition / Set"} • {activeCondition.gradeLabel} ({activeCondition.stars})
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handlePhotoUpload(f);
+            }}
+            className="hidden"
+          />
+
+          {/* Recessed Card Well with Click & Drag-and-Drop Image Upload */}
+          <div
+            onClick={() => {
+              if (interactiveUpload) fileInputRef.current?.click();
+            }}
+            onDragOver={(e) => {
+              if (interactiveUpload) {
+                e.preventDefault();
+                setIsDragging(true);
+              }
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              if (interactiveUpload) {
+                e.preventDefault();
+                setIsDragging(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) handlePhotoUpload(f);
+              }
+            }}
+            className={cn(
+              "slab-card-window relative overflow-hidden transition-all",
+              interactiveUpload && "cursor-pointer",
+              isDragging && "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black scale-[1.01]"
+            )}
+            title={interactiveUpload ? "Klicken oder Bild hier ablegen zum Hochladen & Scannen" : undefined}
+          >
+            {/* AI Scanning Visual Laser & Grid Overlay */}
+            {isScanning && (
+              <>
+                <div className="ai-scan-laser-beam" />
+                <div className="ai-scan-grid-overlay" />
+                <div className="absolute inset-0 bg-cyan-950/40 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center p-4 text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 animate-pulse">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-black text-white">KI-Scan läuft...</p>
+                  <p className="text-[10px] text-cyan-200/90 leading-tight">
+                    Pokémon, Set-Kürzel & Nummer werden analysiert
+                  </p>
+                </div>
+              </>
+            )}
+
+            {photos[0] ? (
+              <img
+                src={photos[0]}
+                alt={name || "Kartenvorschau"}
+                className="card-img aspect-[2.5/3.5] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
+              />
+            ) : (
+              <div className="aspect-[2.5/3.5] flex flex-col items-center justify-center text-neutral-400 gap-3 bg-black/60 rounded-lg p-4 text-center border-2 border-dashed border-white/20 hover:border-cyan-400/50 transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-white block">Foto hier ablegen</span>
+                  <span className="text-[10px] text-neutral-400 block mt-0.5">oder klicken zum Auswählen</span>
+                </div>
+                <span className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] transition-all">
+                  Bild wählen
+                </span>
+              </div>
+            )}
+            <div className="holo-foil-layer pointer-events-none" />
+          </div>
+
+          {/* Bottom Slab Footer / Price Tag */}
+          <div className="mt-3.5 space-y-2 relative z-10">
+            <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between text-xs shadow-inner">
+              <div className="min-w-0">
+                {!isSell && (
+                  <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
+                    {isTrade ? "Tauschwert (ETV)" : "Gesuch-Budget"}
+                  </span>
+                )}
+                <span className="text-base font-black text-white truncate block">
+                  {isSell
+                    ? price
+                      ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
+                      : "Preis festlegen"
+                    : isTrade
+                    ? estimatedTradeValue
+                      ? `~${estimatedTradeValue} €`
+                      : "Tauschwert offen"
+                    : priceRange || "VB"}
+                </span>
+              </div>
+              <button
+                type="button"
+                className={cn(
+                  "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border cursor-pointer active:scale-95 transition-all shadow-sm",
+                  isSell ? "bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-400" : themeAccentBg
+                )}
+              >
+                {isSell ? "Kaufen" : isTrade ? "Tausch" : "Gesuch"}
+              </button>
+            </div>
+
+            {/* Quick Action Preview Buttons for sell cards */}
+            {isSell && (
+              <div className="space-y-1.5 pt-0.5">
+                {allowOffers && (
+                  <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
+                    Angebot machen
+                  </div>
+                )}
+                <div className="w-full py-1.5 px-3 rounded-xl bg-white/5 border border-white/15 text-neutral-300 font-bold text-[11px] text-center shadow-sm flex items-center justify-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Verkäufer kontaktieren</span>
+                </div>
+              </div>
+            )}
+
+            {/* Centered Animated Manaforge Sigil Trigger Preview */}
+            <div className="flex flex-col items-center justify-center pt-2 pb-0.5">
+              <SlabTopSigil interactive isExpanded={false} />
+            </div>
+          </div>
+
+          {/* Polished Bottom Acrylic Rim */}
+          <div className="slab-bottom-rim">
+            <div className="rim-reflection" />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -447,7 +702,7 @@ export function CardForgeStudio({
       />
 
       {/* Top Header Bar */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10 mb-6">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10 mb-6">
         <div className="flex items-center gap-3">
           <div className={cn("p-3 rounded-2xl border shadow-lg flex-shrink-0", themeAccentBg)}>
             {isSell ? (
@@ -466,10 +721,13 @@ export function CardForgeStudio({
                 ? "Karte zum Tausch anbieten"
                 : "Gesuch aufgeben"}
             </h2>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Geführter 4-Schritte-Assistent mit automatischer KI-Kartenerkennung
+            </p>
           </div>
         </div>
 
-        {/* Action Controls / Close button for inline mode */}
+        {/* Action Controls / Close button */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {onCancel && (
             <button
@@ -484,70 +742,211 @@ export function CardForgeStudio({
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* 📱 MOBILE VIEW: DEDIZIERTER 4-SCHRITTE-FLOW ( < md )     */}
-      {/* ======================================================== */}
-      <div className="md:hidden relative z-10 space-y-4">
-        {/* Step Progress & Indicator */}
-        <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-extrabold text-white">
-              Schritt {mobileStep} von 4:{" "}
-              {mobileStep === 1 && "Pokémon-Auswahl"}
-              {mobileStep === 2 && "Zustand & Sprache"}
-              {mobileStep === 3 && (isSell ? "Verkaufspreis" : isTrade ? "Tauschwert & Wants" : "Dein Budget")}
-              {mobileStep === 4 && "Medien & Veröffentlichung"}
-            </span>
-            <span className="text-[11px] text-neutral-400 font-mono">
-              {Math.round((mobileStep / 4) * 100)}%
+      {/* Step Progress Indicator Bar (Steps 1 to 4) */}
+      <div className="relative z-10 mb-6 p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+        <div className="flex items-center justify-between gap-2 text-xs mb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-white">Schritt {step} von 4:</span>
+            <span className="text-neutral-300 font-semibold truncate">
+              {step === 1 && "📸 Foto-Upload & KI-Scan"}
+              {step === 2 && "🔍 Kartendetails & Identität"}
+              {step === 3 && (isSell ? "💰 Verkaufspreis" : isTrade ? "🔄 Tauschwert & Wünsche" : "🎯 Dein Budget")}
+              {step === 4 && "✨ Vorschau & Veröffentlichen"}
             </span>
           </div>
-          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden flex">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all duration-300",
-                isSell
-                  ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                  : isTrade
-                  ? "bg-gradient-to-r from-purple-500 to-indigo-400"
-                  : "bg-gradient-to-r from-cyan-500 to-sky-400"
-              )}
-              style={{ width: `${(mobileStep / 4) * 100}%` }}
-            />
-          </div>
+          <span className="text-xs font-mono font-bold text-neutral-400">
+            {Math.round((step / 4) * 100)}%
+          </span>
         </div>
 
-        {/* Mini Preview Slab for Mobile (Keeps card visible at top) */}
-        {name && (
-          <div className="p-3 rounded-2xl bg-[#0f1422] border border-white/15 flex items-center gap-3 shadow-lg">
-            <div className="w-12 h-16 bg-black/60 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 flex items-center justify-center">
-              {photos[0] ? (
-                <img src={photos[0]} alt={name} className="w-full h-full object-contain p-0.5" />
+        {/* Stepper Progress Bar */}
+        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden flex">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300",
+              isSell
+                ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                : isTrade
+                ? "bg-gradient-to-r from-purple-500 to-indigo-400"
+                : "bg-gradient-to-r from-cyan-500 to-sky-400"
+            )}
+            style={{ width: `${(step / 4) * 100}%` }}
+          />
+        </div>
+
+        {/* Interactive Step Chips */}
+        <div className="grid grid-cols-4 gap-2 pt-3 text-[11px]">
+          {[
+            { num: 1, label: "1. Foto & KI" },
+            { num: 2, label: "2. Details" },
+            { num: 3, label: isSell ? "3. Preis" : isTrade ? "3. Tausch" : "3. Budget" },
+            { num: 4, label: "4. Abschluss" },
+          ].map((s) => (
+            <button
+              key={s.num}
+              type="button"
+              disabled={s.num > step && !name.trim() && !photos[0]}
+              onClick={() => setStep(s.num)}
+              className={cn(
+                "py-1.5 px-2 rounded-lg font-bold text-center transition-all min-h-[36px] flex items-center justify-center truncate cursor-pointer",
+                step === s.num
+                  ? "bg-white/15 text-white shadow-sm border border-white/20"
+                  : step > s.num
+                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                  : "bg-white/5 text-neutral-500 border border-transparent"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 📸 SCHRITT 1: FOTO-UPLOAD & KI-SCAN (FOKUS AUF DIE SLAB) */}
+      {/* ======================================================== */}
+      {step === 1 && (
+        <div className="relative z-10 max-w-xl mx-auto space-y-6 py-2 text-center animate-in fade-in duration-300">
+          <div className="space-y-1.5">
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              {isSell
+                ? "Bitte lade ein Foto deiner Karte hoch"
+                : isTrade
+                ? "Lade ein Foto deiner Tauschkarte hoch"
+                : "Lade ein Referenzfoto der gesuchten Karte hoch"}
+            </h3>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-md mx-auto">
+              Unsere KI erkennt Pokémon-Name, Set-Kürzel, Sprache und Kartennummer automatisch – auch auf Japanisch & Chinesisch.
+            </p>
+          </div>
+
+          {/* The Slab Display (Prominently Centered with Interactive Upload) */}
+          <div className="pt-2">
+            {renderSlab(true)}
+          </div>
+
+          {/* Scan Status & Confirmation Message */}
+          {scanMessage && (
+            <div
+              className={cn(
+                "p-3 rounded-2xl text-xs max-w-md mx-auto border transition-all animate-in fade-in flex items-center justify-center gap-2",
+                isScanning
+                  ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                  : detectedSummary
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-bold"
+                  : "bg-white/10 border-white/15 text-white"
+              )}
+            >
+              {isScanning ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-cyan-400 flex-shrink-0" />
+              ) : detectedSummary ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               ) : (
-                <ImageIcon className="w-5 h-5 text-neutral-500" />
+                <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              )}
+              <span>{scanMessage}</span>
+            </div>
+          )}
+
+          {/* Step 1 Control Buttons */}
+          <div className="space-y-3 pt-2 max-w-md mx-auto">
+            {photos[0] ? (
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className={cn(
+                  "w-full min-h-[48px] rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                  themePrimaryButton
+                )}
+              >
+                <span>Weiter zu Schritt 2: Details prüfen</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "w-full min-h-[48px] rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                  themePrimaryButton
+                )}
+              >
+                <Upload className="w-4 h-4" />
+                <span>Foto von Festplatte wählen</span>
+              </button>
+            )}
+
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="text-xs text-neutral-400 hover:text-white font-semibold underline transition-colors cursor-pointer py-1"
+              >
+                Ohne Foto fortfahren (manuell eingeben) →
+              </button>
+            </div>
+
+            {/* Optional Free-tier Gemini API Key Expander */}
+            <div className="pt-3">
+              <button
+                type="button"
+                onClick={() => setShowApiKeySetting(!showApiKeySetting)}
+                className="text-[11px] text-neutral-400 hover:text-neutral-300 flex items-center justify-center gap-1.5 mx-auto py-1"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Eigener Gemini API-Key (Optional für kostenlose KI-Scans)</span>
+              </button>
+
+              {showApiKeySetting && (
+                <div className="mt-2.5 p-3 rounded-2xl bg-black/40 border border-white/10 text-left space-y-2 animate-in fade-in">
+                  <label className="block text-[11px] font-bold text-neutral-300">
+                    Google AI Studio Key (100% kostenlos unter ai.studio/projects)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={userApiKey}
+                      onChange={(e) => saveApiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="flex-1 bg-[#111624] border border-white/15 rounded-xl px-3 py-2 text-white text-xs font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => alert("API-Key erfolgreich im Browser gespeichert!")}
+                      className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs"
+                    >
+                      Gespeichert
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-neutral-400">
+                    Der Key wird nur sicher in deinem lokalen Browser gespeichert und für Kartenscans genutzt.
+                  </p>
+                </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-black text-white truncate">{name}</p>
-              <p className="text-[11px] text-neutral-400 truncate">
-                {setNameText || "Set offen"} {cardNumber ? `• #${cardNumber}` : ""}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-white font-mono">
-                  {activeCondition.label} ({activeCondition.stars})
-                </span>
-                <span className="text-[10px] font-bold text-neutral-300">{activeLanguage.flag}</span>
-              </div>
-            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* STEP 1: Karte wählen & Autocomplete */}
-        {mobileStep === 1 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                Pokémon-Kartenname suchen *
+      {/* ======================================================== */}
+      {/* 🔍 SCHRITT 2: KARTENDETAILS & IDENTITÄT                  */}
+      {/* ======================================================== */}
+      {step === 2 && (
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
+          {/* Left Column: Live Slab Preview */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            {renderSlab(true)}
+            <p className="text-[11px] text-neutral-400 mt-3 text-center">
+              Klicke auf das Bild, um ein anderes Foto hochzuladen.
+            </p>
+          </div>
+
+          {/* Right Column: Card Details Inputs */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* Pokémon Card Name Search */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2">
+              <label className="block text-xs font-bold text-white">
+                Pokémon-Kartenname *
               </label>
               <PokemonSearchInput
                 value={name}
@@ -556,249 +955,281 @@ export function CardForgeStudio({
                 language={language}
                 placeholder="z.B. Glurak, Charizard VMAX, Moonbreon..."
               />
-              <p className="text-[11px] text-neutral-400 mt-1">
-                Tippe für Live-Vorschläge aus dem offiziellen mehrsprachigen TCG-Index.
+              <p className="text-[11px] text-neutral-400">
+                Tippe für Vorschläge aus dem offiziellen mehrsprachigen TCG-Index.
               </p>
             </div>
 
-            {/* Set Validation Notice if mismatch */}
-            {setValidation.warningMessage && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                  <span>Set- & Sprachprüfung</span>
+            {/* Set & Number Identification */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-300 mb-1">
+                    Set-Kürzel / Edition
+                  </label>
+                  <input
+                    type="text"
+                    value={setNameText}
+                    onChange={(e) => handleSetChange(e.target.value)}
+                    placeholder="z.B. SV2a, JTG, MEW, 151"
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors"
+                  />
                 </div>
-                <p className="text-[11px] text-amber-200/90">{setValidation.warningMessage}</p>
-                {setValidation.detectedLang && (
-                  <button
-                    type="button"
-                    onClick={() => setLanguage(setValidation.detectedLang!)}
-                    className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
-                  >
-                    Karte auf {setValidation.detectedLang} setzen
-                  </button>
-                )}
-              </div>
-            )}
 
-            {/* Collapsible manual fields */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => setShowManualFields(!showManualFields)}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline flex items-center gap-1"
-              >
-                {showManualFields ? "Manuelle Details verbergen" : "Set & Kartennummer manuell bearbeiten"}
-              </button>
-              {showManualFields && (
-                <div className="mt-2.5 space-y-3 p-3 rounded-2xl bg-black/40 border border-white/10">
-                  <div>
-                    <label className="block text-[11px] text-neutral-400 mb-1">Set-Kürzel / Name (z.B. JTG, SV2a, MEW)</label>
-                    <input
-                      type="text"
-                      value={setNameText}
-                      onChange={(e) => handleSetChange(e.target.value)}
-                      placeholder="z.B. JTG, SV2a, MEW, 151..."
-                      className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
-                    />
+                <div>
+                  <label className="block text-xs font-bold text-neutral-300 mb-1">
+                    Kartennummer
+                  </label>
+                  <input
+                    type="text"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    placeholder="z.B. 201/165 oder 103/078"
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Set Validation Notice */}
+              {setValidation.warningMessage && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                    <span>Set- & Sprachprüfung</span>
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-neutral-400 mb-1">Kartennummer</label>
-                    <input
-                      type="text"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      placeholder="z.B. 199/165"
-                      className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
-                    />
-                  </div>
+                  <p className="text-[11px] text-amber-200/90">{setValidation.warningMessage}</p>
+                  {setValidation.detectedLang && (
+                    <button
+                      type="button"
+                      onClick={() => setLanguage(setValidation.detectedLang!)}
+                      className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
+                    >
+                      Karte auf {setValidation.detectedLang} setzen
+                    </button>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-        )}
 
-        {/* STEP 2: Zustand & Sprache */}
-        {mobileStep === 2 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-2">
-                Kartenzustand wählen *
+            {/* Language Selector */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2.5">
+              <label className="block text-xs font-bold text-white">
+                Kartensprache
               </label>
-              <div className="space-y-1.5">
-                {CONDITIONS.map((c) => {
-                  const isSelected = condition === c.value;
-                  return (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => setCondition(c.value)}
-                      className={cn(
-                        "w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all min-h-[48px]",
-                        isSelected
-                          ? "bg-white/15 border-white/40 shadow-lg text-white"
-                          : "bg-white/5 border-white/10 text-neutral-300"
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs font-bold">{c.gradeLabel}</span>
-                        <div>
-                          <p className="text-xs font-bold leading-tight">{c.label}</p>
-                          <p className="text-[10px] text-neutral-400">{c.desc}</p>
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-amber-400 text-xs tracking-tighter">{c.stars}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-2">
-                Kartensprache *
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {LANGUAGES.map((lang) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {LANGUAGES.map((l) => (
                   <button
-                    key={lang.value}
+                    key={l.value}
                     type="button"
-                    onClick={() => setLanguage(lang.value)}
+                    onClick={() => setLanguage(l.value)}
                     className={cn(
-                      "p-3 rounded-xl border text-left flex items-center gap-2 min-h-[48px] transition-all",
-                      language === lang.value
-                        ? "bg-white/15 border-white/40 text-white font-bold"
-                        : "bg-white/5 border-white/10 text-neutral-300"
+                      "py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-between border transition-all cursor-pointer min-h-[44px]",
+                      language === l.value
+                        ? "bg-white/20 border-cyan-400 text-white shadow-sm"
+                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
                     )}
                   >
-                    <span className="text-lg">{lang.flag}</span>
-                    <span className="text-xs">{lang.label}</span>
+                    <span>{l.label}</span>
+                    <span className="text-base">{l.flag}</span>
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* STEP 3: Wert & Konditionen */}
-        {mobileStep === 3 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
+            {/* Condition Selector */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2.5">
+              <label className="block text-xs font-bold text-white">
+                Zustand der Karte
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {CONDITIONS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setCondition(c.value)}
+                    className={cn(
+                      "p-2.5 rounded-xl border text-left transition-all cursor-pointer min-h-[50px] flex flex-col justify-center",
+                      condition === c.value
+                        ? "bg-white/20 border-cyan-400 text-white shadow-sm"
+                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    )}
+                  >
+                    <span className="text-xs font-black block truncate">{c.label}</span>
+                    <span className="text-[10px] text-amber-400 block">{c.stars}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation Footer for Step 2 */}
+            <div className="flex items-center gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="min-h-[48px] px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Zurück zum Foto</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={!name.trim()}
+                onClick={() => setStep(3)}
+                className={cn(
+                  "flex-1 min-h-[48px] rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                  !name.trim() ? "bg-white/10 text-neutral-500 cursor-not-allowed" : themePrimaryButton
+                )}
+              >
+                <span>Weiter zu Schritt 3: {isSell ? "Preis festlegen" : isTrade ? "Tauschwert" : "Budget"}</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 💰 SCHRITT 3: PREIS & TAUSCHKONDITIONEN                  */}
+      {/* ======================================================== */}
+      {step === 3 && (
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
+          {/* Left Column: Live Slab Preview */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            {renderSlab(false)}
+          </div>
+
+          {/* Right Column: Pricing & Trade Controls */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* If Sell: Price Controls */}
             {isSell && (
-              <div className="space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-400" /> Kaufpreis festlegen
+                </h4>
+
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                    Verkaufspreis in € *
+                    Verkaufspreis (€) *
                   </label>
                   <div className="relative">
                     <input
                       type="number"
                       step="0.5"
-                      min="1"
+                      min="0"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      placeholder="z.B. 45"
-                      className="w-full bg-[#111624] border border-emerald-500/40 rounded-xl px-4 py-3 pl-9 text-white font-black text-lg focus:outline-none"
+                      placeholder="0.00"
+                      className="w-full bg-[#111624] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black focus:border-emerald-400 outline-none"
                     />
-                    <DollarSign className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">
+                      €
+                    </span>
                   </div>
                 </div>
 
-                {/* Quick Price Buttons */}
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_BUDGETS.slice(0, 5).map((q) => (
-                    <button
-                      key={q}
-                      type="button"
-                      onClick={() => setPrice(Number(q.replace(" €", "")))}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 min-h-[36px]"
-                    >
-                      {q}
-                    </button>
-                  ))}
+                {/* Quick Budget Chips */}
+                <div>
+                  <span className="block text-[11px] text-neutral-400 mb-2">Schnellwahl:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_BUDGETS.slice(0, 5).map((q) => (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => setPrice(q.replace(/[^0-9]/g, ""))}
+                        className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs cursor-pointer min-h-[36px]"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between min-h-[48px]">
-                  <span className="text-xs text-neutral-300 font-semibold">
-                    Preisvorschläge erlauben
-                  </span>
+                {/* Allow Offers Toggle */}
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-white">Gegengebote zulassen</p>
+                    <p className="text-[10px] text-neutral-400">
+                      Käufer können dir faire Gegenangebote vorschlagen.
+                    </p>
+                  </div>
                   <input
                     type="checkbox"
                     checked={allowOffers}
                     onChange={(e) => setAllowOffers(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
+                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer min-h-[44px] min-w-[24px]"
                   />
                 </div>
               </div>
             )}
 
+            {/* If Trade: Trade Value & Wants */}
             {isTrade && (
-              <div className="space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-purple-400" /> Tauschwert & Wünsche
+                </h4>
+
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                    Geschätzter Tauschwert (ETV in €) *
+                    Geschätzter Tauschwert (€)
                   </label>
                   <div className="relative">
                     <input
                       type="number"
+                      step="1"
+                      min="0"
                       value={estimatedTradeValue}
                       onChange={(e) => setEstimatedTradeValue(e.target.value)}
                       placeholder="z.B. 120"
-                      className="w-full bg-[#111624] border border-purple-500/40 rounded-xl px-4 py-3 pl-9 text-white font-black text-lg focus:outline-none"
+                      className="w-full bg-[#111624] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black focus:border-purple-400 outline-none"
                     />
-                    <Scale className="w-5 h-5 text-purple-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">
+                      €
+                    </span>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                    Was suchst du im Gegenzug? (Wants)
+                    Was suchst du dafür? (Suchwünsche / Wants)
                   </label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={lookingForWants}
                     onChange={(e) => setLookingForWants(e.target.value)}
-                    placeholder="z.B. Suche Vintage Gluraks, Gengar VMAX oder Sealed Displays..."
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none"
+                    placeholder="z.B. Glurak VMAX, Vintage Holos, Evoli-Entwicklungen..."
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:border-purple-400 outline-none"
                   />
                 </div>
               </div>
             )}
 
+            {/* If Looking For: Budget */}
             {isLookingFor && (
-              <div className="space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Target className="w-4 h-4 text-cyan-400" /> Dein Wunschbudget
+                </h4>
+
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                    Dein Preisrahmen / Maximalbudget *
+                    Maximales Budget oder Preisvorstellung
                   </label>
                   <input
                     type="text"
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
-                    placeholder="z.B. 50 - 80 € oder Marktwert"
-                    className="w-full bg-[#111624] border border-cyan-500/40 rounded-xl px-4 py-3 text-white font-bold text-base focus:outline-none"
+                    placeholder="z.B. 45 €, bis 100 €, VB"
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-bold focus:border-cyan-400 outline-none"
                   />
-                </div>
-
-                {/* Quick Budget Chips */}
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_BUDGETS.map((q) => (
-                    <button
-                      key={q}
-                      type="button"
-                      onClick={() => setPriceRange(q)}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 min-h-[36px]"
-                    >
-                      {q}
-                    </button>
-                  ))}
                 </div>
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+            {/* Optional Description */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2">
+              <label className="block text-xs font-bold text-white">
                 Optionale Beschreibung / Besonderheiten
               </label>
               <textarea
@@ -806,18 +1237,53 @@ export function CardForgeStudio({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="z.B. First Edition, im Toploader gelagert, tierfreier Nichtraucherhaushalt..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs"
+                className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:border-cyan-400 outline-none"
               />
             </div>
-          </div>
-        )}
 
-        {/* STEP 4: Medien & Veröffentlichung */}
-        {mobileStep === 4 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                Karten-Fotos (Bild-URLs)
+            {/* Navigation Footer for Step 3 */}
+            <div className="flex items-center gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="min-h-[48px] px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Zurück zu Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className={cn(
+                  "flex-1 min-h-[48px] rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                  themePrimaryButton
+                )}
+              >
+                <span>Weiter zu Schritt 4: Vorschau & Veröffentlichen</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 🚀 SCHRITT 4: VORSCHAU & VERÖFFENTLICHEN                */}
+      {/* ======================================================== */}
+      {step === 4 && (
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
+          {/* Left Column: Full Live Slab Preview */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            {renderSlab(false)}
+          </div>
+
+          {/* Right Column: Final Settings & Publication */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* Additional Media (Photos / Video) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-3">
+              <label className="block text-xs font-bold text-white">
+                Weitere Detail-Fotos (optional)
               </label>
               {photos.map((p, idx) => (
                 <div key={idx} className="flex gap-2 mb-2">
@@ -825,8 +1291,8 @@ export function CardForgeStudio({
                     type="url"
                     value={p}
                     onChange={(e) => handleUpdatePhoto(idx, e.target.value)}
-                    placeholder={`Bild-URL ${idx + 1} (z.B. Imgur)`}
-                    className="flex-1 bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs"
+                    placeholder={`Bild-URL ${idx + 1}`}
+                    className="flex-1 bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs truncate"
                   />
                   {photos.length > 1 && (
                     <button
@@ -843,35 +1309,35 @@ export function CardForgeStudio({
                 <button
                   type="button"
                   onClick={handleAddPhotoSlot}
-                  className="text-xs text-indigo-400 font-semibold flex items-center gap-1"
+                  className="text-xs text-cyan-400 font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Weiteres Bild hinzufügen
                 </button>
               )}
+
+              <div className="pt-2">
+                <label className="block text-xs font-bold text-neutral-300 mb-1">
+                  Video-Proof (optional)
+                </label>
+                <input
+                  type="url"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="TikTok, Instagram Reels oder YouTube Shorts URL"
+                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1">
-                Video-Proof (optional)
-              </label>
-              <input
-                type="url"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="TikTok, Instagram Reels oder YouTube Shorts URL"
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
-              />
-            </div>
-
-            {/* Discord Webhook Switch */}
-            <div className="p-3.5 rounded-2xl bg-[#5865F2]/15 border border-[#5865F2]/30 flex items-center justify-between">
+            {/* Discord Alert Switch */}
+            <div className="p-4 rounded-2xl bg-[#5865F2]/15 border border-[#5865F2]/30 flex items-center justify-between">
               <div className="pr-2">
                 <p className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Zap className="w-4 h-4 text-[#5865F2]" />
                   Discord Bot-Alert aktivieren
                 </p>
                 <p className="text-[10px] text-neutral-300">
-                  Sendet sofort eine Vorab-Meldung in den offiziellen Discord #marktplatz.
+                  Sendet sofort eine Inserat-Meldung in den offiziellen Discord #marktplatz.
                 </p>
               </div>
               <input
@@ -882,15 +1348,15 @@ export function CardForgeStudio({
               />
             </div>
 
-            {/* Discord Name on Slab Switch */}
-            <div className="p-3.5 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/25 flex items-center justify-between">
+            {/* Discord Name Switch */}
+            <div className="p-4 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/25 flex items-center justify-between">
               <div className="pr-2">
                 <p className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Zap className="w-4 h-4 text-[#5865F2]" />
                   Discord-Name auf Inserat anzeigen
                 </p>
                 <p className="text-[10px] text-neutral-300">
-                  Zeigt deinen verknüpften Discord-Tag öffentlich auf der Karte an, damit Interessenten dich direkt finden.
+                  Zeigt deinen verknüpften Discord-Tag auf der Karte an, damit Interessenten dich direkt finden.
                 </p>
               </div>
               <input
@@ -900,685 +1366,56 @@ export function CardForgeStudio({
                 className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
               />
             </div>
-          </div>
-        )}
 
-        {/* 📱 STICKY BOTTOM BAR FOR MOBILE WIZARD */}
-        <div className="pt-2 sticky bottom-0 bg-[#090d16]/95 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-white/10 -mx-4 px-4 pt-3 flex items-center gap-2">
-          {mobileStep > 1 && (
-            <button
-              type="button"
-              onClick={() => setMobileStep((s) => Math.max(1, s - 1))}
-              className="min-h-[48px] px-4 rounded-xl bg-white/10 text-white font-bold text-xs flex items-center justify-center gap-1"
-            >
-              <ChevronLeft className="w-4 h-4" /> Zurück
-            </button>
-          )}
-
-          {mobileStep < 4 ? (
-            <button
-              type="button"
-              disabled={mobileStep === 1 && !name.trim()}
-              onClick={() => setMobileStep((s) => Math.min(4, s + 1))}
-              className={cn(
-                "flex-1 min-h-[48px] rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all",
-                mobileStep === 1 && !name.trim()
-                  ? "bg-white/10 text-neutral-500 cursor-not-allowed"
-                  : themePrimaryButton
-              )}
-            >
-              <span>Weiter zu Schritt {mobileStep + 1}</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <div className="flex-1 flex flex-col gap-2">
-              <button
-                type="button"
-                disabled={isSubmitting || !name.trim()}
-                onClick={() => handleSubmit(undefined, true)}
-                className="w-full min-h-[44px] rounded-xl font-bold text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              >
-                <Tag className="w-4 h-4" /> Als Entwurf speichern
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting || !name.trim()}
-                onClick={() => handleSubmit(undefined, false)}
-                className={cn(
-                  "w-full min-h-[48px] rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
-                  isSubmitting ? "opacity-75 cursor-wait" : themePrimaryButton
-                )}
-              >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Inserat wird veröffentlicht...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" /> Jetzt veröffentlichen
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 🖥️ DESKTOP VIEW: 2-SPALTEN HIGH-END STUDIO ( >= md )     */}
-      {/* ======================================================== */}
-      <form onSubmit={handleSubmit} className="hidden md:grid grid-cols-12 gap-8 relative z-10">
-        {/* Left Column: 3D Holographic Graded Slab Preview (5 Cols) */}
-        <div className="col-span-12 lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between text-xs font-bold text-neutral-400 px-1">
-            <span className="flex items-center gap-1.5 text-white">
-              <Layers className="w-4 h-4 text-amber-400" />
-              Vorschau
-            </span>
-          </div>
-
-          {/* Ultra-Clean Acrylic Display Slab Component Preview (Stable, no wobble) */}
-          <div className="acrylic-slab-container">
-            <div className="acrylic-display-slab select-none">
-              {/* Chamfered Bevel & Specular Glare */}
-              <div className="slab-edge-bevel" />
-              <div className="slab-glare-effect" />
-
-              {/* Clean Header Plate */}
-              <div className="slab-header-plate">
-                <div className="plate-top-row">
-                  {/* Calendar Icon with Hover Tooltip */}
-                  <div className="relative group/date inline-flex items-center flex-shrink-0">
-                    <div
-                      className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-help min-h-[28px] min-w-[28px] flex items-center justify-center"
-                      title={`Eingestellt am ${new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}`}
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="absolute left-0 top-full mt-1 hidden group-hover/date:flex items-center px-2 py-1 rounded-md bg-slate-900 text-white text-[10px] font-semibold whitespace-nowrap shadow-xl z-30 pointer-events-none">
-                      Eingestellt am {new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                    </div>
-                  </div>
-
-                  <span className="foil-badge font-bold tracking-wide flex-shrink-0">
-                    {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
-                  </span>
-                </div>
-                <div className="plate-main-row">
-                  <div className="w-full">
-                    <h4 className="card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate" title={formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}>
-                      {formatSlabTitle(name || "DEINE POKÉMON KARTE", language, cardNumber).fullLabel}
-                    </h4>
-                    <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
-                      {setNameText || "Edition / Set"} • {activeCondition.gradeLabel} ({activeCondition.stars})
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recessed Card Well with Click & Drag-and-Drop Image Upload */}
-              <input
-                ref={previewFileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handlePreviewFile(f);
-                }}
-                className="hidden"
-              />
-              <div
-                onClick={() => previewFileInputRef.current?.click()}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDraggingPreview(true);
-                }}
-                onDragLeave={() => setIsDraggingPreview(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDraggingPreview(false);
-                  const f = e.dataTransfer.files?.[0];
-                  if (f) handlePreviewFile(f);
-                }}
-                className={cn(
-                  "slab-card-window cursor-pointer transition-all",
-                  isDraggingPreview && "ring-2 ring-amber-400 ring-offset-2 ring-offset-black"
-                )}
-                title="Klicken oder Bild hier ablegen zum Hochladen"
-              >
-                {photos[0] ? (
-                  <img
-                    src={photos[0]}
-                    alt={name || "Kartenvorschau"}
-                    className="card-img aspect-[2.5/3.5] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
-                  />
-                ) : (
-                  <div className="aspect-[2.5/3.5] flex flex-col items-center justify-center text-neutral-400 gap-2 bg-black/60 rounded-lg">
-                    <ImageIcon className="w-8 h-8 opacity-40 text-neutral-400" />
-                    <span className="text-xs font-semibold text-neutral-300">Noch kein Bild gewählt</span>
-                    <span className="text-[10px] text-neutral-500 text-center px-4">
-                      Klicken oder Bild hier ablegen zum Hochladen
-                    </span>
-                  </div>
-                )}
-                <div className="holo-foil-layer pointer-events-none" />
-              </div>
-
-              {/* Bottom Slab Footer / Price Tag */}
-              <div className="mt-3.5 space-y-2 relative z-10">
-                <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between text-xs shadow-inner">
-                  <div className="min-w-0">
-                    {!isSell && (
-                      <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
-                        {isTrade ? "Tauschwert (ETV)" : "Gesuch-Budget"}
-                      </span>
-                    )}
-                    <span className="text-base font-black text-white truncate block">
-                      {isSell
-                        ? price
-                          ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
-                          : "Preis festlegen"
-                        : isTrade
-                        ? estimatedTradeValue
-                          ? `~${estimatedTradeValue} €`
-                          : "Tauschwert offen"
-                        : priceRange || "VB"}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className={cn(
-                      "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border cursor-pointer active:scale-95 transition-all shadow-sm",
-                      isSell ? "bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-400" : themeAccentBg
-                    )}
-                  >
-                    {isSell ? "Kaufen" : isTrade ? "Tausch" : "Gesuch"}
-                  </button>
-                </div>
-
-                {/* Quick Action Preview Buttons for sell cards */}
-                {isSell && (
-                  <div className="space-y-1.5 pt-0.5">
-                    {allowOffers && (
-                      <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
-                        Angebot machen
-                      </div>
-                    )}
-                    <div className="w-full py-1.5 px-3 rounded-xl bg-white/5 border border-white/15 text-neutral-300 font-bold text-[11px] text-center shadow-sm flex items-center justify-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Verkäufer kontaktieren</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Centered Animated Manaforge Sigil Trigger Preview */}
-                <div className="flex flex-col items-center justify-center pt-2 pb-0.5">
-                  <SlabTopSigil interactive isExpanded={false} />
-                </div>
-              </div>
-
-              {/* Polished Bottom Acrylic Rim (Clean) */}
-              <div className="slab-bottom-rim">
-                <div className="rim-reflection" />
-              </div>
-            </div>
-          </div>
-
-          {/* Discord Webhook Preview Badge */}
-          {postToDiscord && (
-            <div className="p-3.5 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/20 flex items-center gap-3 text-xs text-neutral-300">
-              <Zap className="w-5 h-5 text-[#5865F2] flex-shrink-0" />
-              <span>
-                <strong className="text-white">Discord-Alert aktiv:</strong> Nach Veröffentlichung wird ein Benachrichtigungs-Embed im Channel <code className="text-[#5865F2]">#marktplatz</code> gepostet.
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Form Fields & Customization (7 Cols) */}
-        <div className="col-span-12 lg:col-span-7 space-y-6">
-          {/* Card Search & Identity */}
-          <div className="space-y-4 p-5 rounded-2xl bg-[#0f1422] border border-white/10">
-            <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <Search className="w-4 h-4 text-indigo-400" /> 1. Kartendetails & Artwork
-            </h4>
-
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                Karten-Name *
-              </label>
-              <PokemonSearchInput
-                value={name}
-                onChange={setName}
-                onSelectCard={handleSelectApiCard}
-                language={language}
-                placeholder="z.B. Glurak, Charizard VMAX, Moonbreon..."
-              />
-              <p className="text-[11px] text-neutral-400 mt-1">
-                Tippe mindestens 2 Buchstaben für Live-Vorschläge aus dem offiziellen TCG-Index.
-              </p>
-            </div>
-
-            {/* Set Validation Notice if mismatch */}
-            {setValidation.warningMessage && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                  <span>Set- & Sprachprüfung</span>
-                </div>
-                <p className="text-[11px] text-amber-200/90">{setValidation.warningMessage}</p>
-                {setValidation.detectedLang && (
-                  <button
-                    type="button"
-                    onClick={() => setLanguage(setValidation.detectedLang!)}
-                    className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
-                  >
-                    Karte auf {setValidation.detectedLang} umstellen
-                  </button>
-                )}
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-neutral-300 mb-1">
-                  Edition / Set-Kürzel
-                </label>
-                <input
-                  type="text"
-                  value={setNameText}
-                  onChange={(e) => handleSetChange(e.target.value)}
-                  placeholder="z.B. JTG, SV2a, MEW, 151"
-                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-indigo-500"
-                />
-                <p className="text-[10px] text-neutral-400 mt-1">
-                  Kürzel eingeben (z.B. JTG, SV2a) passt Sprache automatisch an.
-                </p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-neutral-300 mb-1">
-                  Kartennummer
-                </label>
-                <input
-                  type="text"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  placeholder="z.B. 199/165"
-                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Condition Grading Selector */}
-          <div className="space-y-3 p-5 rounded-2xl bg-[#0f1422] border border-white/10">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" /> 2. Zustand & Sprache
-              </h4>
-              <span className="text-xs text-amber-400 font-mono font-bold">
-                {activeCondition.label} ({activeCondition.stars})
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {CONDITIONS.slice(0, 4).map((c) => {
-                const isSelected = condition === c.value;
-                return (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setCondition(c.value)}
-                    className={cn(
-                      "p-3 rounded-xl border text-left transition-all cursor-pointer min-h-[58px]",
-                      isSelected
-                        ? "bg-white/15 border-white/50 text-white shadow-lg scale-[1.02]"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
-                    )}
-                  >
-                    <p className="text-xs font-bold truncate">{c.label}</p>
-                    <p className="text-[10px] text-amber-400">{c.stars}</p>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {CONDITIONS.slice(4).map((c) => {
-                const isSelected = condition === c.value;
-                return (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setCondition(c.value)}
-                    className={cn(
-                      "p-2.5 rounded-xl border text-left transition-all cursor-pointer min-h-[50px]",
-                      isSelected
-                        ? "bg-white/15 border-white/50 text-white shadow-lg scale-[1.02]"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
-                    )}
-                  >
-                    <p className="text-xs font-bold truncate">{c.label}</p>
-                    <p className="text-[10px] text-neutral-400 truncate">{c.desc}</p>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Language Selector */}
-            <div className="pt-2">
-              <label className="block text-xs font-bold text-neutral-300 mb-2">
-                Sprache der Karte
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.value}
-                    type="button"
-                    onClick={() => setLanguage(lang.value)}
-                    className={cn(
-                      "px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer min-h-[38px]",
-                      language === lang.value
-                        ? "bg-white/20 border-white/40 text-white shadow"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
-                    )}
-                  >
-                    <span>{lang.flag}</span>
-                    <span>{lang.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Pricing / Value / Mode Details */}
-          <div className="space-y-4 p-5 rounded-2xl bg-[#0f1422] border border-white/10">
-            <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-amber-400" />
-              {isSell ? "3. Preisgestaltung" : isTrade ? "3. Tauschkonditionen" : "3. Dein Suchbudget"}
-            </h4>
-
-            {isSell && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-neutral-300 mb-1">
-                      Verkaufspreis in € *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="1"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        placeholder="z.B. 45"
-                        required
-                        className="w-full bg-[#111624] border border-emerald-500/40 rounded-xl px-4 py-3 pl-9 text-white font-black text-lg focus:outline-none"
-                      />
-                      <DollarSign className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col justify-end">
-                    <label className="block text-xs font-bold text-neutral-300 mb-1">
-                      Schnellwahl
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {QUICK_BUDGETS.slice(0, 5).map((q) => (
-                        <button
-                          key={q}
-                          type="button"
-                          onClick={() => setPrice(Number(q.replace(" €", "")))}
-                          className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 cursor-pointer min-h-[36px]"
-                        >
-                          {q}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-                  <span className="text-xs text-neutral-300 font-semibold">
-                    Preisvorschläge und Gegenangebote von Käufern erlauben
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={allowOffers}
-                    onChange={(e) => setAllowOffers(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-
-            {isTrade && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-neutral-300 mb-1">
-                      Geschätzter Tauschwert (ETV in €) *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={estimatedTradeValue}
-                        onChange={(e) => setEstimatedTradeValue(e.target.value)}
-                        placeholder="z.B. 120"
-                        required
-                        className="w-full bg-[#111624] border border-purple-500/40 rounded-xl px-4 py-3 pl-9 text-white font-black text-lg focus:outline-none"
-                      />
-                      <Scale className="w-5 h-5 text-purple-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    </div>
-                  </div>
-                  <div className="flex flex-col justify-end">
-                    <p className="text-[11px] text-neutral-400">
-                      Der ETV hilft Sammlern faire Tauschangebote mit gleichem Marktwert zusammenzustellen.
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-neutral-300 mb-1">
-                    Gesuchte Tauschkarten (Deine Wants)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={lookingForWants}
-                    onChange={(e) => setLookingForWants(e.target.value)}
-                    placeholder="z.B. Suche Vintage Glurak, Gengar VMAX, Sealed 151 Displays..."
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-            )}
-
-            {isLookingFor && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-300 mb-1">
-                    Dein Preisrahmen / Maximalbudget *
-                  </label>
-                  <input
-                    type="text"
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(e.target.value)}
-                    placeholder="z.B. 50 - 80 € oder VB"
-                    className="w-full bg-[#111624] border border-cyan-500/40 rounded-xl px-4 py-3 text-white font-bold text-base focus:outline-none"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_BUDGETS.map((q) => (
-                    <button
-                      key={q}
-                      type="button"
-                      onClick={() => setPriceRange(q)}
-                      className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 cursor-pointer min-h-[36px]"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1">
-                Zusatzinfos & Beschreibung (optional)
-              </label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="z.B. Nur versicherter Versand, Karte stets im Toploader aufbewahrt..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Media & Community Links */}
-          <div className="space-y-4 p-5 rounded-2xl bg-[#0f1422] border border-white/10">
-            <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-cyan-400" /> 4. Fotos, Video & Community
-            </h4>
-
-            <div>
-              <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                Karten-Fotos (Bild-URLs)
-              </label>
-              {photos.map((p, idx) => (
-                <div key={idx} className="flex gap-2 mb-2">
-                  <input
-                    type="url"
-                    value={p}
-                    onChange={(e) => handleUpdatePhoto(idx, e.target.value)}
-                    placeholder={`Bild-URL ${idx + 1} (z.B. Imgur oder Direct Image Link)`}
-                    className="flex-1 bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none"
-                  />
-                  {photos.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhoto(idx)}
-                      className="p-2 text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500/30 rounded-xl cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {photos.length < 4 && (
+            {/* Final Action Buttons */}
+            <div className="space-y-3 pt-4 border-t border-white/10">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
-                  onClick={handleAddPhotoSlot}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
+                  disabled={isSubmitting || !name.trim()}
+                  onClick={() => handleSubmit(undefined, true)}
+                  className="sm:w-1/3 min-h-[48px] rounded-xl font-bold text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Weiteres Bild hinzufügen
+                  <Tag className="w-4 h-4" />
+                  <span>Als Entwurf</span>
                 </button>
-              )}
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-neutral-300 mb-1">
-                  Video-Proof (optional)
-                </label>
-                <div className="relative">
-                  <input
-                    type="url"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="TikTok, Reels, Shorts oder Imgur Video"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 pl-8 text-white text-xs focus:outline-none"
-                  />
-                  <Video className="w-4 h-4 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                </div>
+                <button
+                  type="button"
+                  disabled={isSubmitting || !name.trim()}
+                  onClick={() => handleSubmit(undefined, false)}
+                  className={cn(
+                    "flex-1 min-h-[48px] rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                    isSubmitting ? "opacity-75 cursor-wait" : themePrimaryButton
+                  )}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Inserat wird veröffentlicht...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Jetzt veröffentlichen</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="p-3 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between cursor-pointer">
-                  <span className="text-xs text-white font-bold flex items-center gap-1.5">
-                    <Zap className="w-4 h-4 text-[#5865F2]" /> Auf Discord posten
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={postToDiscord}
-                    onChange={(e) => setPostToDiscord(e.target.checked)}
-                    className="w-4 h-4 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
-                  />
-                </label>
-
-                <label className="p-3 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between cursor-pointer">
-                  <span className="text-xs text-white font-bold flex items-center gap-1.5">
-                    <Zap className="w-4 h-4 text-[#5865F2]" /> Discord-Name anzeigen
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={showDiscordName}
-                    onChange={(e) => setShowDiscordName(e.target.checked)}
-                    className="w-4 h-4 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
-                  />
-                </label>
+              <div className="flex items-center justify-start">
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="text-xs text-neutral-400 hover:text-white font-semibold flex items-center gap-1 cursor-pointer py-1"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" /> Zurück zu Schritt 3
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Submit Action Bar */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <button
-              type="button"
-              disabled={isSubmitting || !name.trim()}
-              onClick={() => handleSubmit(undefined, true)}
-              className={cn(
-                "min-h-[52px] px-5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer",
-                isSubmitting || !name.trim()
-                  ? "bg-white/5 text-neutral-600 border-white/5 cursor-not-allowed"
-                  : "bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border-white/10 hover:border-white/20 active:scale-98"
-              )}
-            >
-              <FileText className="w-4 h-4 text-neutral-400" />
-              Als Entwurf speichern
-            </button>
-
-            <button
-              type="submit"
-              disabled={isSubmitting || !name.trim()}
-              className={cn(
-                "flex-1 min-h-[52px] rounded-2xl font-black text-sm flex items-center justify-center gap-2.5 shadow-2xl transition-all cursor-pointer active:scale-98",
-                isSubmitting || !name.trim()
-                  ? "bg-white/10 text-neutral-500 cursor-not-allowed"
-                  : themePrimaryButton
-              )}
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Inserat wird veröffentlicht...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  {isSell
-                    ? "Karte jetzt im Marktplatz zum Verkauf listen"
-                    : isTrade
-                    ? "Tausch-Inserat live schalten"
-                    : "Gesuch jetzt veröffentlichen"}
-                </>
-              )}
-            </button>
-
-            {onCancel && (
-              <button
-                type="button"
-                onClick={onCancel}
-                className="min-h-[52px] px-6 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white font-bold text-xs border border-white/10 transition-all cursor-pointer"
-              >
-                Abbrechen
-              </button>
-            )}
           </div>
         </div>
-      </form>
+      )}
     </div>
   );
 }

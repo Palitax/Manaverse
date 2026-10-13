@@ -1414,3 +1414,44 @@ body {
   animation: card-emerge-center 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ========================================================
+   AI Card Scanner Laser & Grid Overlay Animation
+   ======================================================== */
+@keyframes aiScanLaser {
+  0% {
+    top: 4%;
+    opacity: 0.85;
+  }
+  50% {
+    top: 94%;
+    opacity: 1;
+  }
+  100% {
+    top: 4%;
+    opacity: 0.85;
+  }
+}
+
+.ai-scan-laser-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #38bdf8, transparent);
+  box-shadow: 0 0 16px 4px rgba(56, 189, 248, 0.85), 0 0 32px 8px rgba(129, 140, 248, 0.5);
+  animation: aiScanLaser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.ai-scan-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 25;
+}
+
+
