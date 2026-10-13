@@ -13,6 +13,7 @@ import {
   Zap,
   Flame,
   Gift,
+  Database,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ export function Navbar() {
     { label: "Kaufen", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
     { label: "Tauschen", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
     { label: "Gesucht", href: "/looking-for", icon: <Search className="w-4 h-4" /> },
+    { label: "TCG-Index", href: "/tcg-index", icon: <Database className="w-4 h-4" /> },
   ];
 
   return (

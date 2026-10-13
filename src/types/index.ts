@@ -2,7 +2,7 @@ export type UserRole = 'founder' | 'beta' | 'member' | 'admin';
 
 export type CardCondition = 'NM' | 'EX' | 'GD' | 'LP' | 'PL' | 'PO' | 'Egal';
 
-export type CardLanguage = 'DE' | 'EN' | 'JP' | 'OTHER' | 'Egal';
+export type CardLanguage = 'DE' | 'EN' | 'JP' | 'KR' | 'CN' | 'OTHER' | 'Egal';
 
 export type ListingType = 'sell' | 'trade' | 'looking_for';
 
@@ -125,6 +125,10 @@ export interface DealConfirmation {
 export interface PokemonApiCard {
   id: string;
   name: string;
+  nameOriginal?: string;
+  nameEn?: string;
+  nameDe?: string;
+  language?: CardLanguage;
   supertype?: string;
   subtypes?: string[];
   number?: string;

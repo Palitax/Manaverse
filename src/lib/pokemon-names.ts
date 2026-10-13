@@ -408,22 +408,128 @@ for (const [en, de] of Object.entries(EN_TO_DE_POKEMON)) {
   DE_TO_EN_POKEMON[de] = en;
 }
 
+// Japanese Pokémon Names (Katakana / Kanji)
+export const EN_TO_JA_POKEMON: Record<string, string> = {
+  Charizard: "リザードン",
+  Pikachu: "ピカチュウ",
+  Umbreon: "ブラッキー",
+  Mewtwo: "ミュウツー",
+  Mew: "ミュウ",
+  Rayquaza: "レックウザ",
+  Gengar: "ゲンガー",
+  Greninja: "ゲッコウガ",
+  Lugia: "ルギア",
+  Venusaur: "フシギバナ",
+  Blastoise: "カメックス",
+  Eevee: "イーブイ",
+  Sylveon: "ニンフィア",
+  Giratina: "ギラティナ",
+  Dialga: "ディアルガ",
+  Palkia: "パルキア",
+  Arceus: "アルセウス",
+  Lucario: "ルカリオ",
+  Gardevoir: "サーナイト",
+  Dragonite: "カイリュー",
+  Snorlax: "カビゴン",
+  Zapdos: "サンダー",
+  Articuno: "フリーザー",
+  Moltres: "ファイヤー",
+  Garchomp: "ガブリアス",
+  Tyranitar: "バンギラス",
+  Latios: "ラティオス",
+  Latias: "ラティアス",
+  Mimikyu: "ミミッキュ",
+  Terapagos: "テラパゴス",
+  Koraidon: "コライドン",
+  Miraidon: "ミライドン",
+  "Roaring Moon": "トドロクツキ",
+  "Iron Valiant": "テツノブジン",
+  Bulbasaur: "フシギダネ",
+  Charmander: "ヒトカゲ",
+  Squirtle: "ゼニガメ",
+};
+
+// Korean Pokémon Names (Hangul)
+export const EN_TO_KO_POKEMON: Record<string, string> = {
+  Charizard: "리자몽",
+  Pikachu: "피카츄",
+  Umbreon: "블래키",
+  Mewtwo: "뮤츠",
+  Mew: "뮤",
+  Rayquaza: "레쿠쟈",
+  Gengar: "팬텀",
+  Greninja: "개굴닌자",
+  Lugia: "루기아",
+  Venusaur: "이상해꽃",
+  Blastoise: "거북왕",
+  Eevee: "이브이",
+  Sylveon: "님피아",
+  Giratina: "기라티나",
+  Dialga: "디아루가",
+  Palkia: "펄기아",
+  Arceus: "아르세우스",
+  Lucario: "루카리오",
+  Gardevoir: "가디안",
+  Dragonite: "망나뇽",
+  Snorlax: "잠만보",
+  Zapdos: "썬더",
+  Articuno: "프리져",
+  Moltres: "파이어",
+  Garchomp: "한카리아스",
+  Tyranitar: "마기라스",
+  Bulbasaur: "이상해씨",
+  Charmander: "파이리",
+  Squirtle: "꼬부기",
+};
+
+// Chinese Pokémon Names (Simplified / Traditional)
+export const EN_TO_ZH_POKEMON: Record<string, string> = {
+  Charizard: "喷火龙",
+  Pikachu: "皮卡丘",
+  Umbreon: "月亮伊布",
+  Mewtwo: "超梦",
+  Mew: "梦幻",
+  Rayquaza: "烈空坐",
+  Gengar: "耿鬼",
+  Greninja: "甲贺忍蛙",
+  Lugia: "洛奇亚",
+  Venusaur: "妙蛙花",
+  Blastoise: "水箭龟",
+  Eevee: "伊布",
+  Sylveon: "仙子伊布",
+  Giratina: "骑拉帝纳",
+  Dialga: "帝牙卢卡",
+  Palkia: "帕路奇亚",
+  Arceus: "阿尔宙斯",
+  Lucario: "路卡利欧",
+  Gardevoir: "沙奈朵",
+  Dragonite: "快龙",
+  Snorlax: "卡比兽",
+  Zapdos: "闪电鸟",
+  Articuno: "急冻鸟",
+  Moltres: "火焰鸟",
+  Garchomp: "烈咬陆鲨",
+  Tyranitar: "班基拉斯",
+  Bulbasaur: "妙蛙种子",
+  Charmander: "小火龙",
+  Squirtle: "杰尼龟",
+};
+
 export interface ResolvedCardTitles {
-  primaryTitle: string;
-  secondaryTitle?: string;
+  primaryTitle: string; // German (if DE) or English (if EN/JP/KR/CN)
+  secondaryTitle?: string; // Original title: Japanese, Korean, Chinese or German/English
+  originalScriptTitle?: string; // Original script (Kanji/Kana, Hangul, Hanzi)
   isGerman: boolean;
   canToggle: boolean;
 }
 
 /**
- * Resolves the primary and optional alternative (German/English) titles for a card listing.
+ * Resolves the primary and optional alternative titles for a card listing.
  *
- * Rules:
+ * Rules per User Specification:
  * - If card is listed as DE: show German name as primary. Clickable to toggle English name.
  * - If card is listed as EN: show English name as primary. Clickable to toggle German name.
- * - If card is JP, CN, KR or any other non-EN/DE language:
- *   Always show English name as primary! Clickable to toggle German name.
- * - Slashed names (e.g. "Umbreon VMAX / Nachtara VMAX (Moonbreon)") are parsed into their respective single-language representations.
+ * - If card is JP, KR, CN: show English name as primary + country flag. Clickable to toggle the original script (Japanese / Korean / Chinese)!
  */
 export function resolveCardTitles(
   fullName: string,
@@ -433,11 +539,35 @@ export function resolveCardTitles(
     return { primaryTitle: "", isGerman: false, canToggle: false };
   }
 
-  const lang = (cardLanguage || "EN").toUpperCase();
+  const lang = (cardLanguage || "DE").toUpperCase();
   const isGermanListing = lang === "DE";
+  const isJapaneseListing = lang === "JP";
+  const isKoreanListing = lang === "KR";
+  const isChineseListing = lang === "CN";
 
   let enCandidate = "";
   let deCandidate = "";
+  let originalScriptCandidate = "";
+
+  // Extract base Pokémon candidate from raw name
+  let basePokemonEn = "";
+  for (const [en] of Object.entries(EN_TO_DE_POKEMON)) {
+    const regex = new RegExp(`\\b${en}\\b`, "i");
+    if (regex.test(fullName)) {
+      basePokemonEn = en;
+      break;
+    }
+  }
+
+  if (!basePokemonEn) {
+    for (const [de, en] of Object.entries(DE_TO_EN_POKEMON)) {
+      const regex = new RegExp(`\\b${de}\\b`, "i");
+      if (regex.test(fullName)) {
+        basePokemonEn = en;
+        break;
+      }
+    }
+  }
 
   // Case 1: Name contains a slash e.g. "Umbreon VMAX / Nachtara VMAX (Moonbreon)" or "Charizard / Glurak"
   if (fullName.includes(" / ")) {
@@ -445,10 +575,12 @@ export function resolveCardTitles(
     const partA = parts[0] || "";
     const partB = parts.slice(1).join(" / ").trim();
 
-    // Check if partA is English or German
     let isPartADe = false;
     for (const deName of Object.keys(DE_TO_EN_POKEMON)) {
-      if (partA.toLowerCase().includes(deName.toLowerCase()) && !partA.toLowerCase().includes(DE_TO_EN_POKEMON[deName]?.toLowerCase() || "")) {
+      if (
+        partA.toLowerCase().includes(deName.toLowerCase()) &&
+        !partA.toLowerCase().includes(DE_TO_EN_POKEMON[deName]?.toLowerCase() || "")
+      ) {
         isPartADe = true;
         break;
       }
@@ -462,16 +594,13 @@ export function resolveCardTitles(
       deCandidate = partB;
     }
   } else {
-    // Case 2: Single name provided e.g. "Umbreon VMAX", "Nachtara VMAX", "Glurak ex"
-    // Let's attempt to identify and translate the base Pokémon name
+    // Single name provided e.g. "Glurak ex", "Charizard ex", "リザードン"
     let foundEn: string | null = null;
-    let foundDe: string | null = null;
 
     // Check German dictionary first
     for (const [de, en] of Object.entries(DE_TO_EN_POKEMON)) {
       const regex = new RegExp(`\\b${de}\\b`, "i");
       if (regex.test(fullName)) {
-        foundDe = de;
         foundEn = en;
         deCandidate = fullName;
         enCandidate = fullName.replace(regex, en);
@@ -485,7 +614,6 @@ export function resolveCardTitles(
         const regex = new RegExp(`\\b${en}\\b`, "i");
         if (regex.test(fullName)) {
           foundEn = en;
-          foundDe = de;
           enCandidate = fullName;
           deCandidate = fullName.replace(regex, de);
           break;
@@ -493,20 +621,32 @@ export function resolveCardTitles(
       }
     }
 
-    // Fallback if no dictionary match: both candidates match raw string
     if (!enCandidate && !deCandidate) {
       enCandidate = fullName;
       deCandidate = fullName;
     }
   }
 
+  // Find original script if Asian language
+  if (basePokemonEn) {
+    if (isJapaneseListing && EN_TO_JA_POKEMON[basePokemonEn]) {
+      const jaName = EN_TO_JA_POKEMON[basePokemonEn];
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), jaName);
+    } else if (isKoreanListing && EN_TO_KO_POKEMON[basePokemonEn]) {
+      const koName = EN_TO_KO_POKEMON[basePokemonEn];
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), koName);
+    } else if (isChineseListing && EN_TO_ZH_POKEMON[basePokemonEn]) {
+      const zhName = EN_TO_ZH_POKEMON[basePokemonEn];
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), zhName);
+    }
+  }
+
   // Ensure clean strings
   enCandidate = enCandidate.trim();
   deCandidate = deCandidate.trim();
+  originalScriptCandidate = originalScriptCandidate.trim();
 
-  // If card is German -> primary is German
-  // If card is English -> primary is English
-  // If card is JP/CN/KR/other -> ALWAYS primary English!
+  // If card is German -> primary is German, secondary is English
   if (isGermanListing) {
     const primary = deCandidate || enCandidate || fullName;
     const secondary = enCandidate && enCandidate !== primary ? enCandidate : undefined;
@@ -516,36 +656,58 @@ export function resolveCardTitles(
       isGerman: true,
       canToggle: Boolean(secondary),
     };
-  } else {
-    // EN, JP, CN, KR or any other language
-    const primary = enCandidate || deCandidate || fullName;
-    const secondary = deCandidate && deCandidate !== primary ? deCandidate : undefined;
+  }
+
+  // If card is JP, KR, CN -> primary is English, secondary is original script!
+  if (isJapaneseListing || isKoreanListing || isChineseListing) {
+    const primary = enCandidate || fullName;
+    const secondary = originalScriptCandidate || (deCandidate !== primary ? deCandidate : undefined);
     return {
       primaryTitle: primary,
       secondaryTitle: secondary,
+      originalScriptTitle: originalScriptCandidate || undefined,
       isGerman: false,
       canToggle: Boolean(secondary),
     };
   }
+
+  // English or Other
+  const primary = enCandidate || deCandidate || fullName;
+  const secondary = deCandidate && deCandidate !== primary ? deCandidate : undefined;
+  return {
+    primaryTitle: primary,
+    secondaryTitle: secondary,
+    isGerman: false,
+    canToggle: Boolean(secondary),
+  };
 }
 
 /**
  * Formats a clean, concise card label strictly showing card name and code (e.g. "Nachtara VMAX #215/203"),
  * stripping bloated subtitles like "(Moonbreon)", "(Alternate Art)", set suffixes, etc.
+ * Supports toggling to the original title if requested!
  */
 export function formatSlabTitle(
   fullName: string,
   cardLanguage?: string,
-  cardNumber?: string
-): { cleanName: string; cleanCode: string; fullLabel: string } {
+  cardNumber?: string,
+  showOriginal?: boolean
+): {
+  cleanName: string;
+  cleanCode: string;
+  fullLabel: string;
+  canToggle: boolean;
+  originalName?: string;
+} {
   if (!fullName) {
     const code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
-    return { cleanName: "", cleanCode: code, fullLabel: code };
+    return { cleanName: "", cleanCode: code, fullLabel: code, canToggle: false };
   }
 
   const lang = (cardLanguage || "DE").toUpperCase();
   const titles = resolveCardTitles(fullName, lang);
-  let baseName = titles.primaryTitle || fullName;
+
+  let baseName = showOriginal && titles.secondaryTitle ? titles.secondaryTitle : (titles.primaryTitle || fullName);
 
   // 1. Extract embedded card number like #215/203 or #213/342
   let code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
@@ -578,5 +740,8 @@ export function formatSlabTitle(
     cleanName: baseName,
     cleanCode: code,
     fullLabel,
+    canToggle: titles.canToggle,
+    originalName: titles.secondaryTitle,
   };
 }
+

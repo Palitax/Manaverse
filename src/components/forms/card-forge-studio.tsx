@@ -36,62 +36,18 @@ import {
   Search,
   Calendar,
   FileText,
-  MessageCircle,
+  MessageSquare,
+  Upload,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlabTopSigil } from "../cards/slab-top-sigil";
-
-// 1-Click Quick Picks for instant test delight
-const QUICK_PRESETS = [
-  {
-    name: "Glurak ex (Special Illustration Rare)",
-    set: "151 (MEW)",
-    number: "199/165",
-    condition: "NM" as CardCondition,
-    language: "DE" as CardLanguage,
-    price: 185,
-    estimatedTradeValue: 190,
-    priceRange: "170 - 200 €",
-    photo: "https://images.pokemontcg.io/sv3pt5/199_hires.png",
-    wants: "Gengar VMAX Alt Art, Rayquaza VMAX",
-  },
-  {
-    name: "Pikachu with Grey Felt Hat",
-    set: "SVP Black Star Promos",
-    number: "085",
-    condition: "NM" as CardCondition,
-    language: "EN" as CardLanguage,
-    price: 95,
-    estimatedTradeValue: 100,
-    priceRange: "85 - 110 €",
-    photo: "https://images.pokemontcg.io/svp/85_hires.png",
-    wants: "Vintage WotC Holos, Mario Pikachu",
-  },
-  {
-    name: "Umbreon VMAX (Moonbreon Alternate Art)",
-    set: "Evolving Skies",
-    number: "215/203",
-    condition: "NM" as CardCondition,
-    language: "EN" as CardLanguage,
-    price: 780,
-    estimatedTradeValue: 800,
-    priceRange: "700 - 850 €",
-    photo: "https://images.pokemontcg.io/swsh7/215_hires.png",
-    wants: "Giratina V Alt Art, Latias & Latios GX Alt",
-  },
-  {
-    name: "Gengar VMAX (Alternate Art)",
-    set: "Fusion Strike",
-    number: "271/264",
-    condition: "EX" as CardCondition,
-    language: "DE" as CardLanguage,
-    price: 240,
-    estimatedTradeValue: 250,
-    priceRange: "220 - 260 €",
-    photo: "https://images.pokemontcg.io/swsh8/271_hires.png",
-    wants: "Mew VMAX Alt Art, Glurak V Alt",
-  },
-];
+import {
+  validateSetWithLanguage,
+  detectSetLanguage,
+  findSetByCode,
+  TCG_SETS,
+} from "@/lib/tcg-index-data";
 
 const CONDITIONS: {
   value: CardCondition;
@@ -171,6 +127,8 @@ const LANGUAGES: { value: CardLanguage; label: string; flag: string }[] = [
   { value: "DE", label: "Deutsch", flag: "🇩🇪" },
   { value: "EN", label: "Englisch", flag: "🇬🇧" },
   { value: "JP", label: "Japanisch", flag: "🇯🇵" },
+  { value: "KR", label: "Koreanisch", flag: "🇰🇷" },
+  { value: "CN", label: "Chinesisch", flag: "🇨🇳" },
   { value: "Egal", label: "Beliebig", flag: "🌐" },
   { value: "OTHER", label: "Sonstige", flag: "🌍" },
 ];
@@ -179,6 +137,11 @@ const QUICK_BUDGETS = ["15 €", "35 €", "65 €", "120 €", "250 €", "VB",
 
 interface CardForgeStudioProps {
   initialType?: ListingType;
+  initialName?: string;
+  initialSet?: string;
+  initialNumber?: string;
+  initialLanguage?: CardLanguage;
+  initialPhoto?: string;
   mode?: "page" | "inline";
   onSuccess?: (createdId?: string) => void;
   onCancel?: () => void;
@@ -187,6 +150,11 @@ interface CardForgeStudioProps {
 
 export function CardForgeStudio({
   initialType = "sell",
+  initialName = "",
+  initialSet = "",
+  initialNumber = "",
+  initialLanguage,
+  initialPhoto,
   mode = "page",
   onSuccess,
   onCancel,
@@ -202,12 +170,13 @@ export function CardForgeStudio({
       setType(initialType);
     }
   }, [initialType]);
-  const [name, setName] = useState("");
-  const [setNameText, setSetNameText] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [language, setLanguage] = useState<CardLanguage>("DE");
+
+  const [name, setName] = useState(initialName);
+  const [setNameText, setSetNameText] = useState(initialSet);
+  const [cardNumber, setCardNumber] = useState(initialNumber);
+  const [language, setLanguage] = useState<CardLanguage>(initialLanguage || "DE");
   const [condition, setCondition] = useState<CardCondition>("NM");
-  const [photos, setPhotos] = useState<string[]>([""]);
+  const [photos, setPhotos] = useState<string[]>(initialPhoto ? [initialPhoto] : [""]);
   const [videoUrl, setVideoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState<number | string>("");
@@ -217,6 +186,25 @@ export function CardForgeStudio({
   const [allowOffers, setAllowOffers] = useState(true);
   const [postToDiscord, setPostToDiscord] = useState(true);
   const [showDiscordName, setShowDiscordName] = useState(true);
+
+  // Preview Image Upload & Drag-and-Drop Ref
+  const previewFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDraggingPreview, setIsDraggingPreview] = useState(false);
+
+  const handlePreviewFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Bitte lade eine Bilddatei (PNG, JPG, WEBP) hoch.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (result) {
+        setPhotos((prev) => [result, ...prev.filter((p, i) => i !== 0 && Boolean(p))]);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // UX State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -235,29 +223,39 @@ export function CardForgeStudio({
   const activeLanguage =
     LANGUAGES.find((l) => l.value === language) || LANGUAGES[0];
 
+  // Set & Language cross-validation and auto-detection
+  const handleSetChange = (val: string) => {
+    setSetNameText(val);
+    const matched = findSetByCode(val);
+    if (matched) {
+      setLanguage(matched.language);
+    } else {
+      const detected = detectSetLanguage(val);
+      if (detected) {
+        setLanguage(detected);
+      }
+    }
+  };
+
+  const setValidation = React.useMemo(() => {
+    if (!setNameText.trim()) return { isValid: true, detectedLang: null };
+    return validateSetWithLanguage(setNameText, language);
+  }, [setNameText, language]);
+
   const handleSelectApiCard = (card: PokemonApiCard) => {
     setName(card.name);
     setSetNameText(card.set.name);
     if (card.number) setCardNumber(card.number);
+    if (card.language) {
+      setLanguage(card.language);
+    } else {
+      const detected = detectSetLanguage(card.set.id || card.set.name);
+      if (detected) setLanguage(detected);
+    }
     if (card.images?.large) {
       setPhotos([card.images.large]);
-    }
-  };
-
-  const handleApplyPreset = (preset: (typeof QUICK_PRESETS)[0]) => {
-    setName(preset.name);
-    setSetNameText(preset.set);
-    setCardNumber(preset.number);
-    setCondition(preset.condition);
-    setLanguage(preset.language);
-    setPhotos([preset.photo]);
-    if (type === "sell") {
-      setPrice(preset.price);
-    } else if (type === "trade") {
-      setEstimatedTradeValue(preset.estimatedTradeValue);
-      setLookingForWants(preset.wants);
-    } else {
-      setPriceRange(preset.priceRange);
+    } else if (card.images?.small) {
+      setPhotos([card.images.small]);
     }
   };
 
@@ -448,25 +446,7 @@ export function CardForgeStudio({
             )}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border flex items-center gap-1.5",
-                  isSell
-                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-                    : isTrade
-                    ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
-                    : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
-                )}
-              >
-                {isSell && <Tag className="w-3 h-3 text-emerald-400" />}
-                {isTrade && <ArrowLeftRight className="w-3 h-3 text-purple-400" />}
-                {isLookingFor && <Target className="w-3 h-3 text-cyan-400" />}
-                {isSell ? "SOFORTKAUF & VERKAUF" : isTrade ? "1:1 SAMMLERTAUSCH" : "KOPFGELD & GESUCH"}
-              </span>
-              <span className="hidden sm:inline-flex text-[10px] text-neutral-400">• 0% Provision</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+            <h2 className="text-xl sm:text-2xl font-black text-white">
               {isSell
                 ? "Karte zum Verkauf einstellen"
                 : isTrade
@@ -560,39 +540,33 @@ export function CardForgeStudio({
                 value={name}
                 onChange={setName}
                 onSelectCard={handleSelectApiCard}
+                language={language}
                 placeholder="z.B. Glurak, Charizard VMAX, Moonbreon..."
               />
               <p className="text-[11px] text-neutral-400 mt-1">
-                Wähle einen Treffer für automatisches High-Res Artwork & Set-Info.
+                Tippe für Live-Vorschläge aus dem offiziellen mehrsprachigen TCG-Index.
               </p>
             </div>
 
-            {/* Quick-Pick Presets */}
-            <div className="space-y-2 pt-2">
-              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400" /> Schnell-Vorlagen (1 Klick)
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {QUICK_PRESETS.map((preset) => (
+            {/* Set Validation Notice if mismatch */}
+            {setValidation.warningMessage && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <span>Set- & Sprachprüfung</span>
+                </div>
+                <p className="text-[11px] text-amber-200/90">{setValidation.warningMessage}</p>
+                {setValidation.detectedLang && (
                   <button
-                    key={preset.name}
                     type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition-all active:scale-95 flex items-center gap-2"
+                    onClick={() => setLanguage(setValidation.detectedLang!)}
+                    className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
                   >
-                    <img
-                      src={preset.photo}
-                      alt={preset.name}
-                      className="w-8 h-11 object-contain rounded flex-shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-bold text-white truncate">{preset.name}</p>
-                      <p className="text-[10px] text-neutral-400">{preset.set}</p>
-                    </div>
+                    Karte auf {setValidation.detectedLang} setzen
                   </button>
-                ))}
+                )}
               </div>
-            </div>
+            )}
 
             {/* Collapsible manual fields */}
             <div className="pt-2">
@@ -606,12 +580,12 @@ export function CardForgeStudio({
               {showManualFields && (
                 <div className="mt-2.5 space-y-3 p-3 rounded-2xl bg-black/40 border border-white/10">
                   <div>
-                    <label className="block text-[11px] text-neutral-400 mb-1">Set-Name / Edition</label>
+                    <label className="block text-[11px] text-neutral-400 mb-1">Set-Kürzel / Name (z.B. JTG, SV2a, MEW)</label>
                     <input
                       type="text"
                       value={setNameText}
-                      onChange={(e) => setSetNameText(e.target.value)}
-                      placeholder="z.B. 151, Paldea Evolved, Base Set..."
+                      onChange={(e) => handleSetChange(e.target.value)}
+                      placeholder="z.B. JTG, SV2a, MEW, 151..."
                       className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
                     />
                   </div>
@@ -986,9 +960,8 @@ export function CardForgeStudio({
           <div className="flex items-center justify-between text-xs font-bold text-neutral-400 px-1">
             <span className="flex items-center gap-1.5 text-white">
               <Layers className="w-4 h-4 text-amber-400" />
-              Live Graded-Slab Vorschau
+              Vorschau
             </span>
-            <span className="text-[10px] text-neutral-400">Acryl-Display-Slab</span>
           </div>
 
           {/* Ultra-Clean Acrylic Display Slab Component Preview (Stable, no wobble) */}
@@ -1030,8 +1003,36 @@ export function CardForgeStudio({
                 </div>
               </div>
 
-              {/* Recessed Card Well */}
-              <div className="slab-card-window">
+              {/* Recessed Card Well with Click & Drag-and-Drop Image Upload */}
+              <input
+                ref={previewFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePreviewFile(f);
+                }}
+                className="hidden"
+              />
+              <div
+                onClick={() => previewFileInputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingPreview(true);
+                }}
+                onDragLeave={() => setIsDraggingPreview(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingPreview(false);
+                  const f = e.dataTransfer.files?.[0];
+                  if (f) handlePreviewFile(f);
+                }}
+                className={cn(
+                  "slab-card-window cursor-pointer transition-all",
+                  isDraggingPreview && "ring-2 ring-amber-400 ring-offset-2 ring-offset-black"
+                )}
+                title="Klicken oder Bild hier ablegen zum Hochladen"
+              >
                 {photos[0] ? (
                   <img
                     src={photos[0]}
@@ -1043,7 +1044,7 @@ export function CardForgeStudio({
                     <ImageIcon className="w-8 h-8 opacity-40 text-neutral-400" />
                     <span className="text-xs font-semibold text-neutral-300">Noch kein Bild gewählt</span>
                     <span className="text-[10px] text-neutral-500 text-center px-4">
-                      Nutze die Suche rechts oder eine Vorlage für automatisches Artwork.
+                      Klicken oder Bild hier ablegen zum Hochladen
                     </span>
                   </div>
                 )}
@@ -1071,9 +1072,15 @@ export function CardForgeStudio({
                         : priceRange || "VB"}
                     </span>
                   </div>
-                  <span className={cn("text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border", themeAccentBg)}>
+                  <button
+                    type="button"
+                    className={cn(
+                      "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border cursor-pointer active:scale-95 transition-all shadow-sm",
+                      isSell ? "bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-400" : themeAccentBg
+                    )}
+                  >
                     {isSell ? "Kaufen" : isTrade ? "Tausch" : "Gesuch"}
-                  </span>
+                  </button>
                 </div>
 
                 {/* Quick Action Preview Buttons for sell cards */}
@@ -1085,7 +1092,7 @@ export function CardForgeStudio({
                       </div>
                     )}
                     <div className="w-full py-1.5 px-3 rounded-xl bg-white/5 border border-white/15 text-neutral-300 font-bold text-[11px] text-center shadow-sm flex items-center justify-center gap-1.5">
-                      <MessageCircle className="w-3.5 h-3.5 text-sky-400" />
+                      <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
                       <span>Verkäufer kontaktieren</span>
                     </div>
                   </div>
@@ -1101,33 +1108,6 @@ export function CardForgeStudio({
               <div className="slab-bottom-rim">
                 <div className="rim-reflection" />
               </div>
-            </div>
-          </div>
-
-          {/* Quick-Pick 1-Click Starter Cards */}
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
-            <span className="text-[11px] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-400" /> 1-Klick Schnellvorlagen zum Testen:
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              {QUICK_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  type="button"
-                  onClick={() => handleApplyPreset(preset)}
-                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition-all hover:border-white/30 flex items-center gap-2 cursor-pointer"
-                >
-                  <img
-                    src={preset.photo}
-                    alt={preset.name}
-                    className="w-7 h-10 object-contain rounded flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-white truncate">{preset.name}</p>
-                    <p className="text-[10px] text-neutral-400">{preset.set}</p>
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
 
@@ -1158,25 +1138,49 @@ export function CardForgeStudio({
                 value={name}
                 onChange={setName}
                 onSelectCard={handleSelectApiCard}
+                language={language}
                 placeholder="z.B. Glurak, Charizard VMAX, Moonbreon..."
               />
               <p className="text-[11px] text-neutral-400 mt-1">
-                Tippe mindestens 2 Buchstaben für Live-Vorschläge mit Original-Artwork.
+                Tippe mindestens 2 Buchstaben für Live-Vorschläge aus dem offiziellen TCG-Index.
               </p>
             </div>
+
+            {/* Set Validation Notice if mismatch */}
+            {setValidation.warningMessage && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <span>Set- & Sprachprüfung</span>
+                </div>
+                <p className="text-[11px] text-amber-200/90">{setValidation.warningMessage}</p>
+                {setValidation.detectedLang && (
+                  <button
+                    type="button"
+                    onClick={() => setLanguage(setValidation.detectedLang!)}
+                    className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
+                  >
+                    Karte auf {setValidation.detectedLang} umstellen
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-neutral-300 mb-1">
-                  Edition / Set-Name
+                  Edition / Set-Kürzel
                 </label>
                 <input
                   type="text"
                   value={setNameText}
-                  onChange={(e) => setSetNameText(e.target.value)}
-                  placeholder="z.B. 151, Paldea Evolved"
+                  onChange={(e) => handleSetChange(e.target.value)}
+                  placeholder="z.B. JTG, SV2a, MEW, 151"
                   className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-indigo-500"
                 />
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  Kürzel eingeben (z.B. JTG, SV2a) passt Sprache automatisch an.
+                </p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-300 mb-1">

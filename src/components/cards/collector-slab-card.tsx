@@ -23,7 +23,7 @@ import {
   ChevronUp,
   ChevronDown,
   X,
-  MessageCircle,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
@@ -59,6 +59,9 @@ export function CollectorSlabCard({
 
   // Collapsible bottom drawer state (default collapsed per user requirement)
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(true);
+
+  // Multilingual original title toggle (shows kana/hangul/hanzi or German/English)
+  const [showOriginalTitle, setShowOriginalTitle] = useState(false);
 
   // Hold-to-Delete Modal State (Progress fill, no countdown, confirmation animation)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -184,7 +187,7 @@ export function CollectorSlabCard({
   );
 
   // Clean, concise slab title strictly showing card name and code (e.g. "Nachtara VMAX #215/203")
-  const slabTitle = formatSlabTitle(card.name, card.language, card.cardNumber);
+  const slabTitle = formatSlabTitle(card.name, card.language, card.cardNumber, showOriginalTitle);
 
   // Formatted listing date for the slab label
   const listingDate = card.createdAt
@@ -390,7 +393,19 @@ export function CollectorSlabCard({
 
             <div className="plate-main-row">
               <div className="w-full">
-                <h4 className="card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate" title={slabTitle.fullLabel}>
+                <h4
+                  onClick={(e) => {
+                    if (slabTitle.canToggle) {
+                      e.stopPropagation();
+                      setShowOriginalTitle((prev) => !prev);
+                    }
+                  }}
+                  className={cn(
+                    "card-name text-[13px] leading-snug font-extrabold text-[#0f172a] truncate",
+                    slabTitle.canToggle && "cursor-pointer hover:text-indigo-800 transition-colors"
+                  )}
+                  title={slabTitle.canToggle ? "Klicken, um zwischen übersetztem und originalem Namen zu wechseln" : slabTitle.fullLabel}
+                >
                   {slabTitle.fullLabel}
                 </h4>
                 <p className="set-info text-[10px] text-slate-500 mt-0.5 truncate">
@@ -523,7 +538,7 @@ export function CollectorSlabCard({
                   }}
                   className="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 text-neutral-200 hover:text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[32px]"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-sky-400" />
+                  <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
                   <span>Verkäufer kontaktieren</span>
                 </button>
               </div>
@@ -730,9 +745,25 @@ export function CollectorSlabCard({
                   </div>
 
                   <div className="flex items-start justify-between gap-2">
-                    <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words">
-                      {slabTitle.cleanName} {slabTitle.cleanCode}
-                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setShowOriginalTitle((prev) => !prev)}
+                      className={cn(
+                        "text-left group/title",
+                        slabTitle.canToggle && "cursor-pointer"
+                      )}
+                      title={slabTitle.canToggle ? "Klicken, um zwischen übersetztem und originalem Namen zu wechseln" : undefined}
+                    >
+                      <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words group-hover/title:text-amber-300 transition-colors">
+                        {slabTitle.cleanName} {slabTitle.cleanCode}
+                      </h2>
+                      {slabTitle.canToggle && (
+                        <span className="text-xs text-neutral-400 flex items-center gap-1 mt-1 group-hover/title:text-amber-400 transition-colors">
+                          <ArrowLeftRight className="w-3 h-3" />
+                          {showOriginalTitle ? "Übersetzten Namen anzeigen" : "Original-Schreibweise anzeigen"}
+                        </span>
+                      )}
+                    </button>
                   </div>
                   {card.set && (
                     <p className="text-xs text-neutral-400">
@@ -924,7 +955,7 @@ export function CollectorSlabCard({
                         }}
                         className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/15 transition-all min-h-[44px] cursor-pointer"
                       >
-                        <MessageCircle className="w-4 h-4 text-sky-400" />
+                        <MessageSquare className="w-4 h-4 text-sky-400" />
                         <span>Verkäufer kontaktieren (Nachricht schreiben)</span>
                       </button>
                     </div>

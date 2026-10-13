@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
-import { PokemonApiCard } from "@/types";
+import { PokemonApiCard, CardLanguage } from "@/types";
 
 interface PokemonSearchInputProps {
   value: string;
   onChange: (value: string) => void;
   onSelectCard?: (card: PokemonApiCard) => void;
+  language?: CardLanguage;
   placeholder?: string;
   required?: boolean;
 }
@@ -16,6 +17,7 @@ export function PokemonSearchInput({
   value,
   onChange,
   onSelectCard,
+  language,
   placeholder = "z.B. Glurak, Charizard VMAX, Moonbreon...",
   required = true,
 }: PokemonSearchInputProps) {
@@ -34,7 +36,8 @@ export function PokemonSearchInput({
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/pokemon?query=${encodeURIComponent(value)}`);
+        const langQuery = language ? `&language=${encodeURIComponent(language)}` : "";
+        const res = await fetch(`/api/pokemon?query=${encodeURIComponent(value)}${langQuery}`);
         if (res.ok) {
           const data = await res.json();
           if (data.cards && data.cards.length > 0) {
@@ -47,10 +50,10 @@ export function PokemonSearchInput({
       } finally {
         setIsLoading(false);
       }
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
-  }, [value]);
+  }, [value, language]);
 
   // Click outside listener
   useEffect(() => {
@@ -122,18 +125,40 @@ export function PokemonSearchInput({
 
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate group-hover:text-indigo-300 transition-colors">
-                    {card.name}
-                  </p>
-                  <p className="text-xs text-neutral-400 truncate">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="text-sm font-semibold text-white truncate group-hover:text-indigo-300 transition-colors">
+                      {card.name}
+                    </p>
+                    {card.nameOriginal && card.nameOriginal !== card.name && (
+                      <span className="text-[11px] text-neutral-400 font-mono">
+                        ({card.nameOriginal})
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-400 truncate mt-0.5">
                     Set: <span className="text-neutral-300">{card.set.name}</span>
                     {card.number && ` • #${card.number}`}
                   </p>
-                  {card.rarity && (
-                    <span className="inline-block mt-0.5 text-[10px] text-indigo-400 font-medium bg-indigo-500/15 px-1.5 py-0.2 rounded border border-indigo-500/20">
-                      {card.rarity}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {card.language && (
+                      <span className="text-[10px] font-bold text-neutral-300 bg-white/10 px-1.5 py-0.5 rounded">
+                        {card.language === "DE"
+                          ? "🇩🇪 DE"
+                          : card.language === "JP"
+                          ? "🇯🇵 JP"
+                          : card.language === "KR"
+                          ? "🇰🇷 KR"
+                          : card.language === "CN"
+                          ? "🇨🇳 CN"
+                          : "🇬🇧 EN"}
+                      </span>
+                    )}
+                    {card.rarity && (
+                      <span className="text-[10px] text-indigo-400 font-medium bg-indigo-500/15 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                        {card.rarity}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </button>
             ))}

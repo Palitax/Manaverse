@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
@@ -20,6 +20,8 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+import { CardLanguage } from "@/types";
+
 export default function SellPage() {
   const { currentUser, listings, openAuthModal } = useStore();
   const [studioOpen, setStudioOpen] = useState(false);
@@ -28,6 +30,30 @@ export default function SellPage() {
   const [selectedCondition, setSelectedCondition] = useState<string>("ALL");
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "sold">("all");
+  const [prefilledCard, setPrefilledCard] = useState<{
+    name?: string;
+    set?: string;
+    number?: string;
+    lang?: CardLanguage;
+    photo?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get("name");
+      if (name) {
+        setPrefilledCard({
+          name: name || undefined,
+          set: params.get("set") || undefined,
+          number: params.get("number") || undefined,
+          lang: (params.get("lang")?.toUpperCase() || undefined) as CardLanguage | undefined,
+          photo: params.get("photo") || undefined,
+        });
+        setStudioOpen(true);
+      }
+    }
+  }, []);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -192,9 +218,20 @@ export default function SellPage() {
         <div id="sell-create-section" className="mb-10 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardForgeStudio
             initialType="sell"
+            initialName={prefilledCard?.name}
+            initialSet={prefilledCard?.set}
+            initialNumber={prefilledCard?.number}
+            initialLanguage={prefilledCard?.lang}
+            initialPhoto={prefilledCard?.photo}
             mode="inline"
-            onSuccess={() => setStudioOpen(false)}
-            onCancel={() => setStudioOpen(false)}
+            onSuccess={() => {
+              setStudioOpen(false);
+              setPrefilledCard(null);
+            }}
+            onCancel={() => {
+              setStudioOpen(false);
+              setPrefilledCard(null);
+            }}
           />
         </div>
       )}
