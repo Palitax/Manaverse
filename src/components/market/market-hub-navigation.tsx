@@ -248,9 +248,11 @@ export function MarketHubNavigation({
                 className="appearance-none pl-3.5 pr-8 py-2 bg-[#0d121f] text-neutral-200 hover:text-white border border-white/10 hover:border-white/20 rounded-xl text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px] cursor-pointer transition-colors"
               >
                 <option value="ALL" className="bg-[#0d121f] text-white">🌍 Alle Sprachen</option>
-                <option value="DE" className="bg-[#0d121f] text-white">🇩🇪 Deutsch (DE)</option>
-                <option value="EN" className="bg-[#0d121f] text-white">🇬🇧 Englisch (EN)</option>
-                <option value="JP" className="bg-[#0d121f] text-white">🇯🇵 Japanisch (JP)</option>
+                <option value="DE" className="bg-[#0d121f] text-white">🇩🇪 Deutsch</option>
+                <option value="EN" className="bg-[#0d121f] text-white">🇬🇧 Englisch</option>
+                <option value="JP" className="bg-[#0d121f] text-white">🇯🇵 Japanisch</option>
+                <option value="CN" className="bg-[#0d121f] text-white">🇨🇳 Chinesisch</option>
+                <option value="KR" className="bg-[#0d121f] text-white">🇰🇷 Koreanisch</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
             </div>
@@ -263,11 +265,13 @@ export function MarketHubNavigation({
                 className="appearance-none pl-3.5 pr-8 py-2 bg-[#0d121f] text-neutral-200 hover:text-white border border-white/10 hover:border-white/20 rounded-xl text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px] cursor-pointer transition-colors"
               >
                 <option value="ALL" className="bg-[#0d121f] text-white">Alle Zustände</option>
-                <option value="NM" className="bg-[#0d121f] text-white">Near Mint (Makellos)</option>
+                <option value="Graded" className="bg-[#0d121f] text-white">Graded</option>
+                <option value="NM" className="bg-[#0d121f] text-white">Near Mint</option>
                 <option value="EX" className="bg-[#0d121f] text-white">Excellent</option>
                 <option value="GD" className="bg-[#0d121f] text-white">Good</option>
                 <option value="LP" className="bg-[#0d121f] text-white">Light Played</option>
                 <option value="PL" className="bg-[#0d121f] text-white">Played</option>
+                <option value="PO" className="bg-[#0d121f] text-white">Poor</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
             </div>
@@ -346,6 +350,8 @@ export function MarketHubNavigation({
                     <option value="DE" className="bg-[#0d121f] text-white">🇩🇪 Deutsch</option>
                     <option value="EN" className="bg-[#0d121f] text-white">🇬🇧 Englisch</option>
                     <option value="JP" className="bg-[#0d121f] text-white">🇯🇵 Japanisch</option>
+                    <option value="CN" className="bg-[#0d121f] text-white">🇨🇳 Chinesisch</option>
+                    <option value="KR" className="bg-[#0d121f] text-white">🇰🇷 Koreanisch</option>
                   </select>
                   <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
                 </div>
@@ -362,10 +368,13 @@ export function MarketHubNavigation({
                     className="w-full appearance-none bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold focus:outline-none min-h-[44px] cursor-pointer"
                   >
                     <option value="ALL" className="bg-[#0d121f] text-white">Alle Zustände</option>
+                    <option value="Graded" className="bg-[#0d121f] text-white">Graded</option>
                     <option value="NM" className="bg-[#0d121f] text-white">Near Mint</option>
                     <option value="EX" className="bg-[#0d121f] text-white">Excellent</option>
                     <option value="GD" className="bg-[#0d121f] text-white">Good</option>
                     <option value="LP" className="bg-[#0d121f] text-white">Light Played</option>
+                    <option value="PL" className="bg-[#0d121f] text-white">Played</option>
+                    <option value="PO" className="bg-[#0d121f] text-white">Poor</option>
                   </select>
                   <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
                 </div>

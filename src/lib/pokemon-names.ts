@@ -539,35 +539,38 @@ export function resolveCardTitles(
     return { primaryTitle: "", isGerman: false, canToggle: false };
   }
 
-  const lang = (cardLanguage || "DE").toUpperCase();
-  const isGermanListing = lang === "DE";
-  const isJapaneseListing = lang === "JP";
-  const isKoreanListing = lang === "KR";
-  const isChineseListing = lang === "CN";
+  try {
+    const lang = (cardLanguage || "DE").toUpperCase();
+    const isGermanListing = lang === "DE";
+    const isJapaneseListing = lang === "JP";
+    const isKoreanListing = lang === "KR";
+    const isChineseListing = lang === "CN";
 
-  let enCandidate = "";
-  let deCandidate = "";
-  let originalScriptCandidate = "";
+    let enCandidate = "";
+    let deCandidate = "";
+    let originalScriptCandidate = "";
 
-  // Extract base Pokémon candidate from raw name
-  let basePokemonEn = "";
-  for (const [en] of Object.entries(EN_TO_DE_POKEMON)) {
-    const regex = new RegExp(`\\b${en}\\b`, "i");
-    if (regex.test(fullName)) {
-      basePokemonEn = en;
-      break;
-    }
-  }
-
-  if (!basePokemonEn) {
-    for (const [de, en] of Object.entries(DE_TO_EN_POKEMON)) {
-      const regex = new RegExp(`\\b${de}\\b`, "i");
+    // Extract base Pokémon candidate from raw name
+    let basePokemonEn = "";
+    for (const [en] of Object.entries(EN_TO_DE_POKEMON)) {
+      const safeEn = en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b${safeEn}\\b`, "i");
       if (regex.test(fullName)) {
         basePokemonEn = en;
         break;
       }
     }
-  }
+
+    if (!basePokemonEn) {
+      for (const [de, en] of Object.entries(DE_TO_EN_POKEMON)) {
+        const safeDe = de.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`\\b${safeDe}\\b`, "i");
+        if (regex.test(fullName)) {
+          basePokemonEn = en;
+          break;
+        }
+      }
+    }
 
   // Case 1: Name contains a slash e.g. "Umbreon VMAX / Nachtara VMAX (Moonbreon)" or "Charizard / Glurak"
   if (fullName.includes(" / ")) {
@@ -674,12 +677,20 @@ export function resolveCardTitles(
   // English or Other
   const primary = enCandidate || deCandidate || fullName;
   const secondary = deCandidate && deCandidate !== primary ? deCandidate : undefined;
-  return {
-    primaryTitle: primary,
-    secondaryTitle: secondary,
-    isGerman: false,
-    canToggle: Boolean(secondary),
-  };
+    return {
+      primaryTitle: primary,
+      secondaryTitle: secondary,
+      isGerman: false,
+      canToggle: Boolean(secondary),
+    };
+  } catch (err) {
+    return {
+      primaryTitle: fullName,
+      secondaryTitle: undefined,
+      isGerman: false,
+      canToggle: false,
+    };
+  }
 }
 
 /**
@@ -704,44 +715,54 @@ export function formatSlabTitle(
     return { cleanName: "", cleanCode: code, fullLabel: code, canToggle: false };
   }
 
-  const lang = (cardLanguage || "DE").toUpperCase();
-  const titles = resolveCardTitles(fullName, lang);
+  try {
+    const lang = (cardLanguage || "DE").toUpperCase();
+    const titles = resolveCardTitles(fullName, lang);
 
-  let baseName = showOriginal && titles.secondaryTitle ? titles.secondaryTitle : (titles.primaryTitle || fullName);
+    let baseName = showOriginal && titles.secondaryTitle ? titles.secondaryTitle : (titles.primaryTitle || fullName);
 
-  // 1. Extract embedded card number like #215/203 or #213/342
-  let code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
-  const codeMatch = baseName.match(/#([A-Za-z0-9\/-]+)/);
-  if (codeMatch) {
-    if (!code) {
-      code = `#${codeMatch[1]}`;
+    // 1. Extract embedded card number like #215/203 or #213/342
+    let code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
+    const codeMatch = baseName.match(/#([A-Za-z0-9\/-]+)/);
+    if (codeMatch) {
+      if (!code) {
+        code = `#${codeMatch[1]}`;
+      }
+      baseName = baseName.replace(/#([A-Za-z0-9\/-]+)/, "").trim();
     }
-    baseName = baseName.replace(/#([A-Za-z0-9\/-]+)/, "").trim();
+
+    // 2. Remove parenthesized text e.g. "(Moonbreon)", "(Alternative Art)", "(Secret Rare)"
+    baseName = baseName.replace(/\s*\([^)]*\)/g, "").trim();
+
+    // 3. Remove trailing dash or set additions e.g. "– Evolving Skies"
+    baseName = baseName.replace(/\s*[-–—]\s*.*$/, "").trim();
+
+    // 4. If name still contains slashes like "Umbreon VMAX / Nachtara VMAX", select language-appropriate side
+    if (baseName.includes("/")) {
+      const parts = baseName.split("/").map((s) => s.trim());
+      baseName = (lang === "DE" ? parts[1] || parts[0] : parts[0]) || baseName;
+    }
+
+    // 5. Clean up any accidental double spaces
+    baseName = baseName.replace(/\s+/g, " ").trim();
+
+    const fullLabel = code ? `${baseName} ${code}` : baseName;
+
+    return {
+      cleanName: baseName,
+      cleanCode: code,
+      fullLabel,
+      canToggle: titles.canToggle,
+      originalName: titles.secondaryTitle,
+    };
+  } catch (err) {
+    const code = cardNumber ? (cardNumber.startsWith("#") ? cardNumber : `#${cardNumber}`) : "";
+    return {
+      cleanName: fullName,
+      cleanCode: code,
+      fullLabel: code ? `${fullName} ${code}` : fullName,
+      canToggle: false,
+    };
   }
-
-  // 2. Remove parenthesized text e.g. "(Moonbreon)", "(Alternative Art)", "(Secret Rare)"
-  baseName = baseName.replace(/\s*\([^)]*\)/g, "").trim();
-
-  // 3. Remove trailing dash or set additions e.g. "– Evolving Skies"
-  baseName = baseName.replace(/\s*[-–—]\s*.*$/, "").trim();
-
-  // 4. If name still contains slashes like "Umbreon VMAX / Nachtara VMAX", select language-appropriate side
-  if (baseName.includes("/")) {
-    const parts = baseName.split("/").map((s) => s.trim());
-    baseName = (lang === "DE" ? parts[1] || parts[0] : parts[0]) || baseName;
-  }
-
-  // 5. Clean up any accidental double spaces
-  baseName = baseName.replace(/\s+/g, " ").trim();
-
-  const fullLabel = code ? `${baseName} ${code}` : baseName;
-
-  return {
-    cleanName: baseName,
-    cleanCode: code,
-    fullLabel,
-    canToggle: titles.canToggle,
-    originalName: titles.secondaryTitle,
-  };
 }
 

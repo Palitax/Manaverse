@@ -40,6 +40,7 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
   }, [modalOpen]);
 
   const conditionColors: Record<CardCondition, string> = {
+    Graded: "bg-purple-500/20 text-purple-400 border-purple-500/30",
     NM: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     EX: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     GD: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
@@ -50,6 +51,7 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
   };
 
   const conditionLabels: Record<CardCondition, string> = {
+    Graded: "Graded",
     NM: "Near Mint",
     EX: "Excellent",
     GD: "Good",

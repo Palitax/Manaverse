@@ -240,8 +240,8 @@ export default function BulkSellPage() {
                   onChange={(val) => updateCurrentCard({ name: val })}
                   onSelectCard={(card) =>
                     updateCurrentCard({
-                      name: `${card.name} (${card.set.name})`,
-                      image: card.images.large || currentCard.image,
+                      name: card.set?.name ? `${card.name} (${card.set.name})` : card.name,
+                      image: card.images?.large || card.images?.small || currentCard.image,
                     })
                   }
                   placeholder="z.B. Glurak Base Set..."
@@ -264,6 +264,8 @@ export default function BulkSellPage() {
                     <option value="DE">Deutsch (DE)</option>
                     <option value="EN">Englisch (EN)</option>
                     <option value="JP">Japanisch (JP)</option>
+                    <option value="CN">Chinesisch (CN)</option>
+                    <option value="KR">Koreanisch (KR)</option>
                     <option value="OTHER">Sonstige</option>
                   </select>
                 </div>
@@ -279,6 +281,7 @@ export default function BulkSellPage() {
                     }
                     className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none focus:border-amber-500"
                   >
+                    <option value="Graded">Graded</option>
                     <option value="NM">Near Mint (NM)</option>
                     <option value="EX">Excellent (EX)</option>
                     <option value="GD">Good (GD)</option>

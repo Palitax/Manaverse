@@ -110,8 +110,11 @@ export function TradeProposalModal({
                 value={offeredCardName}
                 onChange={setOfferedCardName}
                 onSelectCard={(card) => {
-                  setOfferedCardName(`${card.name} (${card.set.name})`);
-                  setPhotoUrl(card.images.large);
+                  const setName = card.set?.name || "";
+                  setOfferedCardName(setName ? `${card.name} (${setName})` : card.name);
+                  if (card.images?.large || card.images?.small) {
+                    setPhotoUrl(card.images.large || card.images.small);
+                  }
                 }}
                 placeholder="z.B. Rayquaza VMAX Alt Art..."
               />

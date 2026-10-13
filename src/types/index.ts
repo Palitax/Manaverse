@@ -1,6 +1,6 @@
 export type UserRole = 'founder' | 'beta' | 'member' | 'admin';
 
-export type CardCondition = 'NM' | 'EX' | 'GD' | 'LP' | 'PL' | 'PO' | 'Egal';
+export type CardCondition = 'Graded' | 'NM' | 'EX' | 'GD' | 'LP' | 'PL' | 'PO' | 'Egal';
 
 export type CardLanguage = 'DE' | 'EN' | 'JP' | 'KR' | 'CN' | 'OTHER' | 'Egal';
 

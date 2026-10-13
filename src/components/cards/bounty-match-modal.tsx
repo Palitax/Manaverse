@@ -214,7 +214,8 @@ export function BountyMatchModal({
                     onChange={(e) => setMyCondition(e.target.value)}
                     className="w-full bg-[#101524] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 font-semibold"
                   >
-                    <option value="NM">Near Mint (Makellos / Wie neu)</option>
+                    <option value="Graded">Graded</option>
+                    <option value="NM">Near Mint</option>
                     <option value="EX">Excellent (Minimale Spielspuren)</option>
                     <option value="GD">Good (Leichte Spielspuren)</option>
                     <option value="LP">Light Played (Sichtbare Abnutzung)</option>

@@ -207,11 +207,17 @@ export function CollectorSlabCard({
     CardCondition,
     { label: string; stars: string; badgeColor: string; desc: string }
   > = {
+    Graded: {
+      label: "Graded",
+      stars: "★★★★★",
+      badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/40",
+      desc: "Professionell bewertet & gekapselt",
+    },
     NM: {
       label: "Near Mint",
       stars: "★★★★★",
       badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-      desc: "Makellos, wie frisch aus dem Booster",
+      desc: "Wie frisch aus dem Booster gesleevt",
     },
     EX: {
       label: "Excellent",

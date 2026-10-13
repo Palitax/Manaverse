@@ -59,12 +59,21 @@ const CONDITIONS: {
   color: string;
 }[] = [
   {
+    value: "Graded",
+    label: "Graded",
+    gradeLabel: "SLAB GRADED",
+    gradeScore: "PSA/BGS/CGC",
+    stars: "★★★★★",
+    desc: "Professionell bewertet (PSA, BGS, CGC u.a.)",
+    color: "from-purple-500/20 to-indigo-500/20 border-purple-500/50 text-purple-300",
+  },
+  {
     value: "NM",
     label: "Near Mint",
     gradeLabel: "GEM-MT 10",
     gradeScore: "10.0",
     stars: "★★★★★",
-    desc: "Makellos, wie frisch aus dem Booster gesleevt",
+    desc: "Wie frisch aus dem Booster gesleevt",
     color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/50 text-emerald-300",
   },
   {
@@ -244,12 +253,16 @@ export function CardForgeStudio({
 
   const handleSelectApiCard = (card: PokemonApiCard) => {
     setName(card.name);
-    setSetNameText(card.set.name);
+    if (card.set?.name) {
+      setSetNameText(card.set.name);
+    } else if (card.set?.id) {
+      setSetNameText(card.set.id);
+    }
     if (card.number) setCardNumber(card.number);
     if (card.language) {
       setLanguage(card.language);
     } else {
-      const detected = detectSetLanguage(card.set.id || card.set.name);
+      const detected = detectSetLanguage(card.set?.id || card.set?.name || "");
       if (detected) setLanguage(detected);
     }
     if (card.images?.large) {
