@@ -38,9 +38,9 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       badgeLabel: "Stufe 5 • Legende",
       minDeals: 100,
       nextTierDeals: null,
-      glowColor: "shadow-[0_0_24px_rgba(168,85,247,0.8)]",
-      borderColor: "border-purple-400/80",
-      badgeBg: "bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-amber-500/30",
+      glowColor: "shadow-[0_0_10px_rgba(168,85,247,0.35)]",
+      borderColor: "border-purple-400/60",
+      badgeBg: "bg-purple-950/40",
       textColor: "text-purple-300",
       perks: "100+ Deals gemeistert • Unanfechtbare Händler-Reputation",
     };
@@ -54,9 +54,9 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       badgeLabel: "Stufe 4 • Meister",
       minDeals: 50,
       nextTierDeals: 100,
-      glowColor: "shadow-[0_0_20px_rgba(244,63,94,0.7)]",
-      borderColor: "border-rose-400/70",
-      badgeBg: "bg-gradient-to-r from-rose-500/30 to-orange-500/30",
+      glowColor: "shadow-[0_0_8px_rgba(244,63,94,0.3)]",
+      borderColor: "border-rose-400/60",
+      badgeBg: "bg-rose-950/40",
       textColor: "text-rose-300",
       perks: "50+ Deals erfolgreich • Priorisierter Treuhand-Status",
     };
@@ -70,9 +70,9 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       badgeLabel: "Stufe 3 • Elite",
       minDeals: 25,
       nextTierDeals: 50,
-      glowColor: "shadow-[0_0_18px_rgba(245,158,11,0.65)]",
-      borderColor: "border-amber-400/70",
-      badgeBg: "bg-gradient-to-r from-amber-500/30 to-yellow-500/30",
+      glowColor: "shadow-[0_0_8px_rgba(245,158,11,0.3)]",
+      borderColor: "border-amber-400/60",
+      badgeBg: "bg-amber-950/40",
       textColor: "text-amber-300",
       perks: "25+ Deals • Höchste Vertrauensstufe im Marktplatz",
     };
@@ -86,9 +86,9 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       badgeLabel: "Stufe 2 • Veteran",
       minDeals: 10,
       nextTierDeals: 25,
-      glowColor: "shadow-[0_0_16px_rgba(6,182,212,0.6)]",
-      borderColor: "border-cyan-400/60",
-      badgeBg: "bg-gradient-to-r from-cyan-500/25 to-blue-500/25",
+      glowColor: "shadow-[0_0_8px_rgba(6,182,212,0.3)]",
+      borderColor: "border-cyan-400/50",
+      badgeBg: "bg-cyan-950/40",
       textColor: "text-cyan-300",
       perks: "10+ Deals • Verifizierter Händler mit hoher Aktivität",
     };
@@ -102,9 +102,9 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       badgeLabel: "Stufe 1 • Verifiziert",
       minDeals: 3,
       nextTierDeals: 10,
-      glowColor: "shadow-[0_0_12px_rgba(59,130,246,0.5)]",
-      borderColor: "border-blue-400/60",
-      badgeBg: "bg-blue-500/20",
+      glowColor: "shadow-[0_0_6px_rgba(59,130,246,0.25)]",
+      borderColor: "border-blue-400/50",
+      badgeBg: "bg-blue-950/40",
       textColor: "text-blue-300",
       perks: "Mindestens 3 Deals verifiziert • Sicherer Handelspartner",
     };
@@ -254,17 +254,17 @@ export function VerificationShield({
           aria-label={`${tier.title} (Klicken für Details)`}
           className={cn(
             "relative flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px]",
-            "active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50",
-            tier.glowColor
+            "active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50"
           )}
         >
-          {/* Shield Icon Visual Container */}
+          {/* Shield Icon Visual Container with single calm glow */}
           <div
             className={cn(
               "relative flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300",
               sizeClasses[size],
               tier.borderColor,
-              tier.badgeBg
+              tier.badgeBg,
+              tier.glowColor
             )}
           >
             {/* Level 0: Minimaler matter Schild */}
@@ -277,11 +277,10 @@ export function VerificationShield({
               <ShieldCheck className={cn(iconSizes[size], "text-blue-400")} />
             )}
 
-            {/* Level 2: Cyan Veteran Schild mit Doppelring-Effekt */}
+            {/* Level 2: Cyan Veteran Schild (Ruhiger, sauberer Schild ohne Ping-Animation) */}
             {tier.level === 2 && (
               <div className="relative flex items-center justify-center">
                 <ShieldCheck className={cn(iconSizes[size], "text-cyan-300")} />
-                <div className="absolute inset-0 border border-cyan-400/40 rounded-full scale-125 opacity-70 animate-ping pointer-events-none" style={{ animationDuration: "3s" }} />
               </div>
             )}
 
@@ -293,19 +292,19 @@ export function VerificationShield({
               </div>
             )}
 
-            {/* Level 4: Feuriger Rubin-Schild mit Glut */}
+            {/* Level 4: Feuriger Rubin-Schild */}
             {tier.level === 4 && (
               <div className="relative flex items-center justify-center">
-                <ShieldCheck className={cn(iconSizes[size], "text-rose-300 fill-rose-500/30 animate-pulse")} />
+                <ShieldCheck className={cn(iconSizes[size], "text-rose-300 fill-rose-500/30")} />
                 <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-500 absolute -top-1.5 -right-1 drop-shadow-[0_0_6px_#ff4500]" />
               </div>
             )}
 
-            {/* Level 5: Kosmischer Prismen-Schild mit Regenbogen-Aura */}
+            {/* Level 5: Kosmischer Prismen-Schild */}
             {tier.level === 5 && (
               <div className="relative flex items-center justify-center">
                 <ShieldCheck className={cn(iconSizes[size], "text-purple-200 fill-purple-400/30")} />
-                <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1 animate-pulse" />
+                <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1" />
               </div>
             )}
 

@@ -53,67 +53,12 @@ export function AdminMoltenFrame({
         className
       )}
     >
-      {/* ==================================================================== */}
-      {/* 1. OUTER DEEP ATMOSPHERIC MAGMA HEAT AURA                            */}
-      {/* Radiates deep red-orange thermal glow into dark surroundings         */}
-      {/* ==================================================================== */}
-      <div
-        className="absolute inset-[-45%] rounded-full pointer-events-none -z-30 opacity-80 blur-xl animate-molten-heat-pulse"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255, 68, 0, 0.58) 0%, rgba(210, 30, 0, 0.35) 45%, rgba(60, 8, 0, 0.18) 68%, transparent 80%)",
-        }}
-      />
-
-      {/* ==================================================================== */}
-      {/* 2. ROTATING FLAME CORONA (Outer Fire Vortex)                         */}
-      {/* ==================================================================== */}
-      <div
-        className="absolute inset-[-24%] rounded-full pointer-events-none -z-20 animate-molten-spin opacity-90 blur-[1.2px]"
-        style={{
-          background:
-            "conic-gradient(from 0deg, #ff1a00 0%, #ff5500 16%, #ffd200 30%, #ff2600 46%, #1c0301 62%, #ff7700 80%, #ff1a00 100%)",
-          maskImage:
-            "radial-gradient(circle, transparent 48%, black 64%, transparent 76%)",
-          WebkitMaskImage:
-            "radial-gradient(circle, transparent 48%, black 64%, transparent 76%)",
-        }}
-      />
-
-      {/* Counter-rotating secondary magma plasma ring */}
-      <div
-        className="absolute inset-[-18%] rounded-full pointer-events-none -z-20 animate-molten-spin-reverse opacity-85"
-        style={{
-          background:
-            "conic-gradient(from 180deg, #ff3b00 0%, #ffa200 20%, #fff4b8 36%, #ff1a00 54%, #120200 68%, #ff5500 86%, #ff3b00 100%)",
-          maskImage:
-            "radial-gradient(circle, transparent 52%, black 66%, transparent 74%)",
-          WebkitMaskImage:
-            "radial-gradient(circle, transparent 52%, black 66%, transparent 74%)",
-        }}
-      />
-
-      {/* ==================================================================== */}
-      {/* 3. FLOATING RISING EMBERS & SPARKS                                   */}
-      {/* ==================================================================== */}
-      <div className="absolute inset-0 pointer-events-none z-20 overflow-visible">
-        <div className="absolute top-[6%] left-[16%] w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#ff9900] animate-ember-1" />
-        <div className="absolute top-[10%] right-[14%] w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_6px_#ff6600] animate-ember-2" />
-        <div className="absolute top-[-4%] left-[46%] w-1.5 h-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_#ff3300] animate-ember-3" />
-        <div className="absolute top-[42%] left-[-6%] w-1 h-1 rounded-full bg-amber-400 shadow-[0_0_6px_#ff5500] animate-ember-4" />
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 4. THE MOLTEN LAVA & OBSIDIAN FRAME RING                             */}
-      {/* Rich volcanic rock structure with burning magma fissures and glossy  */}
-      {/* 3D liquid highlight (matching the reference image)                   */}
-      {/* ==================================================================== */}
+      {/* Single, crisp Molten Lava & Obsidian Frame Ring (No double-glow aura) */}
       <div
         className={cn(
           "rounded-full relative transition-all duration-300 overflow-hidden",
           framePaddingMap[size],
-          "animate-molten-rim-pulse",
-          "shadow-[0_0_18px_rgba(255,68,0,0.9),0_0_36px_rgba(200,20,0,0.5),inset_0_0_6px_rgba(255,200,60,0.6)]"
+          "shadow-[0_0_12px_rgba(255,68,0,0.65),inset_0_0_4px_rgba(255,200,60,0.5)]"
         )}
       >
         {/* Layer A: Base Volcanic Magma Bed (Deep fiery foundation) */}

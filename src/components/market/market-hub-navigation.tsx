@@ -70,24 +70,24 @@ export function MarketHubNavigation({
 
   const modeConfigs = [
     {
-      id: "sell",
-      href: "/buy",
-      label: "Kaufen",
-      sublabel: "Sofortkauf Vault",
-      icon: ShoppingBag,
-      color: "text-emerald-400",
-      activeBg: "bg-emerald-500 text-black shadow-lg shadow-emerald-500/25",
-      count: counts.sell,
-    },
-    {
       id: "own_sell",
       href: "/sell",
       label: "Verkaufen",
       sublabel: "Deine Vitrine",
       icon: PlusCircle,
-      color: "text-amber-400",
-      activeBg: "bg-amber-500 text-black shadow-lg shadow-amber-500/25",
+      color: "text-emerald-400",
+      activeBg: "bg-emerald-500 text-black shadow-lg shadow-emerald-500/25",
       count: undefined,
+    },
+    {
+      id: "sell",
+      href: "/buy",
+      label: "Kaufen",
+      sublabel: "Sofortkauf Vault",
+      icon: ShoppingBag,
+      color: "text-amber-400",
+      activeBg: "bg-amber-400 text-black shadow-lg shadow-amber-400/30",
+      count: counts.sell,
     },
     {
       id: "trade",
@@ -105,8 +105,8 @@ export function MarketHubNavigation({
       label: "Gesucht",
       sublabel: "Bounty Radar",
       icon: Target,
-      color: "text-cyan-400",
-      activeBg: "bg-cyan-500 text-black shadow-lg shadow-cyan-500/25",
+      color: "text-orange-400",
+      activeBg: "bg-orange-500 text-white shadow-lg shadow-orange-500/30",
       count: counts.looking_for,
     },
   ];

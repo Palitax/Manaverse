@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { CardListing, CardCondition } from "@/types";
 import { HoloAvatarFrame } from "../frames/holo-avatar-frame";
 import { BorderBeam } from "../magicui/border-beam";
@@ -20,6 +20,9 @@ import {
   Send,
   Calendar,
   Trash2,
+  ChevronUp,
+  ChevronDown,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
@@ -50,46 +53,55 @@ export function CollectorSlabCard({
   const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [copiedDiscord, setCopiedDiscord] = useState(false);
 
-  // Collapsible draggable bottom drawer state
+  // Collapsible bottom drawer state & hover cursor tracking
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
-  const [dragStartY, setDragStartY] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isHoveringToggle, setIsHoveringToggle] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    e.stopPropagation();
-    try {
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
+  // 2-Second Hold-to-Delete Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteHoldProgress, setDeleteHoldProgress] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const holdStartRef = useRef<number | null>(null);
+
+  const startDeleteHold = () => {
+    holdStartRef.current = Date.now();
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    holdIntervalRef.current = setInterval(() => {
+      if (!holdStartRef.current) return;
+      const elapsed = Date.now() - holdStartRef.current;
+      const progress = Math.min(100, (elapsed / 2000) * 100);
+      setDeleteHoldProgress(progress);
+      if (progress >= 100) {
+        if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+        holdIntervalRef.current = null;
+        holdStartRef.current = null;
+        setIsDeleting(true);
+        setTimeout(() => {
+          deleteListing(card.id);
+          setDeleteModalOpen(false);
+          setIsDeleting(false);
+          setDeleteHoldProgress(0);
+        }, 350);
+      }
+    }, 25);
+  };
+
+  const cancelDeleteHold = () => {
+    if (holdIntervalRef.current) {
+      clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
     }
-    setDragStartY(e.clientY);
-    setIsDragging(true);
+    holdStartRef.current = null;
+    setDeleteHoldProgress(0);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging || dragStartY === null) return;
-    const deltaY = e.clientY - dragStartY;
-    if (deltaY < -15) {
-      setIsBottomCollapsed(true);
-      setIsDragging(false);
-      setDragStartY(null);
-    } else if (deltaY > 15) {
-      setIsBottomCollapsed(false);
-      setIsDragging(false);
-      setDragStartY(null);
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    setDragStartY(null);
-  };
-
-  const handleHandleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsBottomCollapsed((prev) => !prev);
-  };
+  useEffect(() => {
+    return () => {
+      if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    };
+  }, []);
 
   // Dynamic seller profile synchronization (live updates across app)
   const seller = React.useMemo(() => {
@@ -312,9 +324,27 @@ export function CollectorSlabCard({
                 )}
               </div>
 
-              <span className="foil-badge font-bold tracking-wide flex-shrink-0">
-                {cond.label.toUpperCase()} • {languageFlag}
-              </span>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className="foil-badge font-bold tracking-wide flex-shrink-0">
+                  {cond.label.toUpperCase()} • {languageFlag}
+                </span>
+
+                {/* Owner Delete Button: Black X */}
+                {isOwnCard && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setDeleteModalOpen(true);
+                    }}
+                    title="Karte vom Marktplatz entfernen"
+                    className="w-5 h-5 rounded-full bg-black/10 hover:bg-black/25 active:scale-90 border border-black/20 flex items-center justify-center text-black transition-all cursor-pointer shadow-sm min-h-[22px] min-w-[22px]"
+                  >
+                    <X className="w-3 h-3 stroke-[2.5]" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="plate-main-row">
@@ -516,9 +546,9 @@ export function CollectorSlabCard({
                         e.stopPropagation();
                         updateListingStatus(card.id, "active");
                       }}
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[34px] flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <CheckCircle2 className="w-3 h-3" /> Wieder aktivieren
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Wieder aktivieren
                     </button>
                   ) : card.status === "draft" ? (
                     <button
@@ -527,9 +557,9 @@ export function CollectorSlabCard({
                         e.stopPropagation();
                         updateListingStatus(card.id, "active");
                       }}
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[34px] flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <CheckCircle2 className="w-3 h-3" /> Veröffentlichen
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Veröffentlichen
                     </button>
                   ) : (
                     <button
@@ -538,51 +568,73 @@ export function CollectorSlabCard({
                         e.stopPropagation();
                         updateListingStatus(card.id, "sold");
                       }}
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/25 hover:border-white/40 font-bold transition-all text-center min-h-[36px] flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
                     >
-                      <Tag className="w-3 h-3" /> Als verkauft
+                      <Tag className="w-3.5 h-3.5 text-white" /> Als verkauft markieren
                     </button>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.confirm("Möchtest du dieses Inserat wirklich löschen?")) {
-                        deleteListing(card.id);
-                      }
-                    }}
-                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 font-bold transition-all min-h-[32px] min-w-[32px] flex items-center justify-center cursor-pointer"
-                    title="Karte löschen"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
                 </div>
               )}
             </div>
 
-            {/* Interactive Drag Handle Bar (Pull up to snap under price, pull down to expand) */}
+            {/* Interactive Toggle Control Bar (Click to snap under price or expand) */}
             <div
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onClick={handleHandleClick}
-              className="pt-2 pb-0.5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing group/drag select-none transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsBottomCollapsed((prev) => !prev);
+              }}
+              onMouseEnter={() => setIsHoveringToggle(true)}
+              onMouseLeave={() => setIsHoveringToggle(false)}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+              }}
+              className="relative pt-2 pb-1 px-2 flex flex-col items-center justify-center cursor-none group/toggle select-none transition-all rounded-xl"
               title={
                 isBottomCollapsed
-                  ? "Nach unten ziehen oder tippen für Verkäufer-Details"
-                  : "Nach oben ziehen oder tippen zum Einklappen"
+                  ? "Hier klicken, um Details auszufahren"
+                  : "Hier klicken, um Details einzuklappen"
               }
             >
-              <div className="w-full h-px bg-white/10 mb-1.5 transition-colors group-hover/drag:bg-white/25" />
+              {/* Subtle divider line under Discord / lower content */}
+              <div className="w-full h-px bg-white/10 mb-1.5 transition-colors group-hover/toggle:bg-white/30" />
+
+              {/* Static / Touch friendly indicator bar */}
               <div
                 className={cn(
-                  "w-12 h-1.5 rounded-full transition-all flex items-center justify-center",
+                  "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all shadow-sm",
                   isBottomCollapsed
-                    ? "bg-white/45 shadow-[0_0_8px_rgba(255,255,255,0.4)] w-14"
-                    : "bg-white/20 group-hover/drag:bg-white/45"
+                    ? "bg-white/20 text-white border border-white/30 shadow-[0_0_10px_rgba(255,255,255,0.25)]"
+                    : "bg-white/10 text-neutral-300 group-hover/toggle:bg-white/20 group-hover/toggle:text-white border border-white/10"
                 )}
-              />
+              >
+                {isBottomCollapsed ? (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    <span>Details ausfahren</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    <span>Kompakt einklappen</span>
+                  </>
+                )}
+              </div>
+
+              {/* Cursor-replacing floating circle with Arrow UP / DOWN */}
+              {isHoveringToggle && (
+                <div
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.9)] flex items-center justify-center z-40 transition-transform duration-75 ease-out scale-105 border border-white"
+                  style={{ left: cursorPos.x, top: cursorPos.y }}
+                >
+                  {isBottomCollapsed ? (
+                    <ChevronDown className="w-4 h-4 stroke-[3] text-black" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4 stroke-[3] text-black" />
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -781,21 +833,18 @@ export function CollectorSlabCard({
                             type="button"
                             onClick={() => {
                               updateListingStatus(card.id, "sold");
-                              alert("Karte als verkauft markiert!");
                             }}
-                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
                           >
-                            <Tag className="w-4 h-4" /> Als verkauft markieren
+                            <Tag className="w-4 h-4 text-white" /> Als verkauft markieren
                           </button>
                         )}
 
                         <button
                           type="button"
                           onClick={() => {
-                            if (window.confirm("Möchtest du dieses Inserat wirklich unwiderruflich löschen?")) {
-                              deleteListing(card.id);
-                              setDetailModalOpen(false);
-                            }
+                            setDetailModalOpen(false);
+                            setDeleteModalOpen(true);
                           }}
                           className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
                         >
@@ -980,6 +1029,108 @@ export function CollectorSlabCard({
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>{isSendingOffer ? "Wird gesendet..." : "Angebot verbindlich senden"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* HOLD-TO-CONFIRM DELETE MODAL (2 Sekunden gedrückt halten)            */}
+      {/* ==================================================================== */}
+      {deleteModalOpen && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            cancelDeleteHold();
+            setDeleteModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "max-w-md w-full rounded-3xl bg-[#0c101c] border border-rose-500/30 p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300",
+              isDeleting ? "scale-90 opacity-0 -translate-y-4" : "scale-100 opacity-100"
+            )}
+          >
+            {/* Top red accent glow */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
+
+            <div className="space-y-5 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/20">
+                <Trash2 className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-black text-white leading-snug">
+                  Hey, möchtest du deine Karte wirklich vom Marktplatz entfernen?
+                </h3>
+                <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                  Dein Inserat für <strong className="text-neutral-200 font-semibold">{card.name}</strong> wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
+                </p>
+              </div>
+
+              {/* Compact Card Reference */}
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-black/60 border border-white/10 text-left">
+                {card.photos[0] ? (
+                  <img
+                    src={card.photos[0]}
+                    alt={card.name}
+                    className="w-12 h-16 object-contain rounded-lg flex-shrink-0 bg-black/40"
+                  />
+                ) : (
+                  <div className="w-12 h-16 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                    <Tag className="w-5 h-5 text-neutral-500" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="font-extrabold text-sm text-white truncate">{slabTitle.fullLabel}</p>
+                  <p className="text-[11px] text-neutral-400 truncate">{card.set || "Edition"} • {cond.label}</p>
+                  <p className="text-xs font-bold text-rose-300 mt-0.5">
+                    {card.price !== undefined ? `${card.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €` : "VB"}
+                  </p>
+                </div>
+              </div>
+
+              {/* 2-Second Hold Button */}
+              <div className="space-y-2.5 pt-1">
+                <div
+                  onMouseDown={startDeleteHold}
+                  onMouseUp={cancelDeleteHold}
+                  onMouseLeave={cancelDeleteHold}
+                  onTouchStart={startDeleteHold}
+                  onTouchEnd={cancelDeleteHold}
+                  onTouchCancel={cancelDeleteHold}
+                  className="relative overflow-hidden w-full min-h-[52px] rounded-2xl border border-rose-500/40 bg-neutral-950 flex items-center justify-center select-none cursor-pointer active:scale-[0.99] transition-transform shadow-lg shadow-rose-950/50"
+                >
+                  {/* Progress bar fill */}
+                  <div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 transition-[width] ease-linear"
+                    style={{ width: `${deleteHoldProgress}%` }}
+                  />
+
+                  {/* Button text */}
+                  <div className="relative z-10 font-black text-xs sm:text-sm text-white flex items-center justify-center gap-2 px-4">
+                    <Trash2 className={cn("w-4 h-4 text-white", deleteHoldProgress > 0 && "animate-pulse")} />
+                    <span>
+                      {deleteHoldProgress > 0
+                        ? `Gedrückt halten... (${((2000 - (deleteHoldProgress / 100) * 2000) / 1000).toFixed(1)}s)`
+                        : "2 Sekunden gedrückt halten zum Löschen"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    cancelDeleteHold();
+                    setDeleteModalOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white font-bold text-xs border border-white/10 transition-all cursor-pointer min-h-[44px]"
+                >
+                  Abbrechen
                 </button>
               </div>
             </div>
