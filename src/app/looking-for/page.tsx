@@ -7,7 +7,6 @@ import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
-import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Target,
   Plus,
@@ -101,14 +100,11 @@ export default function LookingForPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-orange-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Target className="w-4 h-4 text-orange-400" /> Cyber Kopfgeld-Radar • Wanted Board
-          </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Gesuchte Karten (Bounties)
+            Gesuchte Karten
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Hilf Sammlern bei ihrer Suche oder setze selbst ein Kopfgeld mit deinem Wunschbudget aus.
+            Stelle Karten ein, die du suchst, oder schau nach, ob du eine Karte hast, die andere Sammler gerade suchen.
           </p>
         </div>
       </div>
@@ -146,13 +142,12 @@ export default function LookingForPage() {
       {/* Content */}
       {filteredListings.length === 0 ? (
         <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={200} duration={8} colorFrom="#f97316" colorTo="#ea580c" />
           <div className="w-16 h-16 rounded-2xl bg-orange-500/15 text-orange-400 border border-orange-500/30 flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">
             <Target className="w-8 h-8" />
           </div>
           <h3 className="text-xl font-black text-white">Aktuell keine Gesuche</h3>
           <p className="text-xs text-neutral-400 leading-relaxed">
-            Keine aktiven Suchanfragen für diese Filtereinstellungen gefunden. Erstelle jetzt ein Gesuch für deine gesuchte Traumkarte!
+            Keine passenden Gesuche gefunden. Erstelle selbst ein Gesuch und zeige der Community, welche Karte du suchst!
           </p>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
             <button

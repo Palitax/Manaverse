@@ -451,7 +451,7 @@ export function CardForgeStudio({
                 ? "Karte zum Verkauf einstellen"
                 : isTrade
                 ? "Karte zum Tausch anbieten"
-                : "Gesuch aufgeben (Kopfgeld)"}
+                : "Gesuch aufgeben"}
             </h2>
           </div>
         </div>
@@ -757,7 +757,7 @@ export function CardForgeStudio({
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                    Dein Budget / Kopfgeld-Rahmen *
+                    Dein Preisrahmen / Maximalbudget *
                   </label>
                   <input
                     type="text"
@@ -1057,7 +1057,7 @@ export function CardForgeStudio({
                   <div className="min-w-0">
                     {!isSell && (
                       <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
-                        {isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
+                        {isTrade ? "Tauschwert (ETV)" : "Gesuch-Budget"}
                       </span>
                     )}
                     <span className="text-base font-black text-white truncate block">
@@ -1385,7 +1385,7 @@ export function CardForgeStudio({
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1">
-                    Dein Budget / Kopfgeld-Rahmen *
+                    Dein Preisrahmen / Maximalbudget *
                   </label>
                   <input
                     type="text"
@@ -1549,7 +1549,7 @@ export function CardForgeStudio({
                     ? "Karte jetzt im Marktplatz zum Verkauf listen"
                     : isTrade
                     ? "Tausch-Inserat live schalten"
-                    : "Kopfgeld jetzt auf dem Radar aktivieren"}
+                    : "Gesuch jetzt veröffentlichen"}
                 </>
               )}
             </button>

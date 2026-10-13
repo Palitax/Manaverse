@@ -163,7 +163,7 @@ export default function HomePage() {
       pokemonImg: "/pokemon/charizard.webp",
       objectPosition: "50% 16%",
       flip: true,
-      title: "Wunschkarten mit Live-Bounties ausschreiben",
+      title: "Wunschkarten suchen & finden",
       description: (
         <>
           Fehlt dir eine bestimmte Karte für dein Set? Schreibe ein Gesuch mit deinem <strong className="text-white font-semibold">individuellen Wunschpreis</strong> aus. Dein Inserat wird automatisch in Echtzeit mit unserem <strong className="text-white font-semibold">Discord synchronisiert (#gesucht)</strong>, damit interessierte Sammler dich direkt kontaktieren können.
@@ -348,7 +348,7 @@ export default function HomePage() {
           </h2>
 
           <p className="text-xs sm:text-sm text-neutral-300/90 max-w-2xl mx-auto leading-relaxed">
-            Transparenter Ankauf, sicherer Marktplatz, 1:1 Tauschsystem und Live-Bounties in einer zusammenhängenden TCG-Plattform.
+            Transparenter Ankauf, sicherer Marktplatz, flexibles Tauschen und Gesuche in einer zusammenhängenden Community-Plattform.
           </p>
         </motion.div>
 

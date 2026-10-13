@@ -188,8 +188,6 @@ export default function BulkSellPage() {
       ) : !isFinished ? (
         /* STEP 2: Step-by-Step Card Inspector */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 relative">
-          <BorderBeam size={280} duration={12} />
-
           {/* Left: Card Image & Progress */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -343,8 +341,6 @@ export default function BulkSellPage() {
         /* STEP 3: Final Collection Overview & "An Manacards verkaufen" Button */
         <div className="space-y-6">
           <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-amber-500/30 relative overflow-hidden">
-            <BorderBeam size={320} duration={10} colorFrom="#f59e0b" colorTo="#ec4899" />
-
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-black text-white flex items-center gap-2">

@@ -94,10 +94,10 @@ export function BountyMatchModal({
             <div>
               <div className="flex items-center gap-1.5">
                 <h2 className="text-lg sm:text-xl font-black text-white">
-                  Kopfgeld-Match: „Ich habe diese Karte!“
+                  „Ich habe diese Karte!“
                 </h2>
                 <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                  Bounty
+                  Gesucht
                 </span>
               </div>
               <p className="text-xs text-neutral-400">
@@ -119,7 +119,7 @@ export function BountyMatchModal({
             <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-400/40 flex items-center justify-center mx-auto shadow-lg shadow-cyan-500/25 animate-bounce">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-2xl font-black text-white">Bounty-Match übermittelt!</h3>
+            <h3 className="text-2xl font-black text-white">Angebot übermittelt!</h3>
             <p className="text-xs text-neutral-300 max-w-md mx-auto">
               Dein Angebot wurde an <b>{listing.user.username}</b> gesendet. Der Suchende wurde benachrichtigt und kann deinen Preis annehmen!
             </p>

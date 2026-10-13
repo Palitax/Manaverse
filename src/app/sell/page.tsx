@@ -5,7 +5,6 @@ import { useStore } from "@/lib/store";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
-import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Tag,
   Plus,
@@ -137,11 +136,8 @@ export default function SellPage() {
       {/* Top Banner & Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Tag className="w-4 h-4" /> Deine Sammler-Vitrine
-          </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Deine Verkaufskarten
+            Deine Karten
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
             Verwalte deine aktiven Einzelkarten-Inserate oder biete ganze Sammlungen an Manacards an.
@@ -239,8 +235,6 @@ export default function SellPage() {
       {/* Content */}
       {!currentUser ? (
         <div className="my-12 max-w-lg mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-5 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={220} duration={8} colorFrom="#10b981" colorTo="#38bdf8" />
-
           <div
             onClick={() => openAuthModal("login")}
             className="w-18 h-18 rounded-3xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto cursor-pointer transition-all hover:scale-105 shadow-lg shadow-emerald-500/20 group min-h-[64px] min-w-[64px]"
@@ -274,8 +268,6 @@ export default function SellPage() {
         </div>
       ) : allMySellListings.length === 0 ? (
         <div className="my-12 max-w-lg mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-5 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={220} duration={8} colorFrom="#10b981" colorTo="#f59e0b" />
-
           <div
             onClick={handleOpenCreate}
             className="w-18 h-18 rounded-3xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto cursor-pointer transition-all hover:scale-105 shadow-lg shadow-emerald-500/20 group min-h-[64px] min-w-[64px]"

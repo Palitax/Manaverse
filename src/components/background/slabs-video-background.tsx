@@ -24,7 +24,7 @@ const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
 // Gibt die 5 Karten pro Track zurück. Mit Track 1 + Track 2 (identischer Zwilling)
 // werden bereits 10 Karten pro Reihe gerendert (>3.000px Breite) bei 50% weniger DOM-Knoten und Bild-Requests!
 function createSeamlessTrack(cards: BackgroundSlab[]) {
-  return cards;
+  return [...cards, ...cards];
 }
 
 interface MarqueeRowProps {
@@ -32,6 +32,7 @@ interface MarqueeRowProps {
   cards: BackgroundSlab[];
   direction: "left" | "right";
   duration: string;
+  delay?: string;
   tiltOffset: number;
   isPaused: boolean;
   className?: string;
@@ -42,6 +43,7 @@ function MarqueeRow({
   cards,
   direction,
   duration,
+  delay = "0s",
   tiltOffset,
   isPaused,
   className,
@@ -53,6 +55,13 @@ function MarqueeRow({
       ? "animate-marquee-track-left"
       : "animate-marquee-track-right";
 
+  const trackStyle = {
+    animationDuration: duration,
+    animationDelay: delay,
+    animationPlayState: isPaused ? ("paused" as const) : ("running" as const),
+    willChange: "transform",
+  };
+
   return (
     <div
       className={cn(
@@ -60,17 +69,13 @@ function MarqueeRow({
         className
       )}
     >
-      {/* Track 1 - Großzügiger, eleganter Galerie-Abstand zwischen den Sammelkarten */}
+      {/* Track 1 */}
       <div
         className={cn(
           "flex shrink-0 items-center gap-14 sm:gap-20 md:gap-28 lg:gap-36 pr-14 sm:pr-20 md:pr-28 lg:pr-36",
           animationClass
         )}
-        style={{
-          animationDuration: duration,
-          animationPlayState: isPaused ? "paused" : "running",
-          willChange: "transform",
-        }}
+        style={trackStyle}
       >
         {trackItems.map((slab, idx) => (
           <LuxurySlab
@@ -81,22 +86,36 @@ function MarqueeRow({
         ))}
       </div>
 
-      {/* Track 2 (Pixel-identischer Zwilling für nahtlose 60fps Endlosschleife) */}
+      {/* Track 2 */}
       <div
         className={cn(
           "flex shrink-0 items-center gap-14 sm:gap-20 md:gap-28 lg:gap-36 pr-14 sm:pr-20 md:pr-28 lg:pr-36",
           animationClass
         )}
-        style={{
-          animationDuration: duration,
-          animationPlayState: isPaused ? "paused" : "running",
-          willChange: "transform",
-        }}
+        style={trackStyle}
         aria-hidden="true"
       >
         {trackItems.map((slab, idx) => (
           <LuxurySlab
             key={`t2-${rowId}-${slab.id}-${idx}`}
+            slab={slab}
+            tiltVariant={TILT_VARIANTS[(idx + tiltOffset) % 4]}
+          />
+        ))}
+      </div>
+
+      {/* Track 3 - garantiert lückenlose Abdeckung auch bei Ultra-Wide & Monitoren > 2000px */}
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-14 sm:gap-20 md:gap-28 lg:gap-36 pr-14 sm:pr-20 md:pr-28 lg:pr-36",
+          animationClass
+        )}
+        style={trackStyle}
+        aria-hidden="true"
+      >
+        {trackItems.map((slab, idx) => (
+          <LuxurySlab
+            key={`t3-${rowId}-${slab.id}-${idx}`}
             slab={slab}
             tiltVariant={TILT_VARIANTS[(idx + tiltOffset) % 4]}
           />
@@ -290,32 +309,35 @@ export function SlabsVideoBackground() {
                   : "opacity-65 brightness-[0.80] contrast-[0.95]"
             )}
           >
-            {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
+            {/* REIHE 1: Links -> Rechts (Flüssige, majestätische Bewegung) */}
             <MarqueeRow
               rowId="r1"
               cards={BACKGROUND_SLABS_ROW_1}
               direction="right"
-              duration="190s"
+              duration="120s"
+              delay="-30s"
               tiltOffset={0}
               isPaused={isEffectivelyPaused}
             />
 
-            {/* REIHE 2: Rechts -> Links (Majestätische Slow Motion) */}
+            {/* REIHE 2: Rechts -> Links (Flüssige, majestätische Bewegung) */}
             <MarqueeRow
               rowId="r2"
               cards={BACKGROUND_SLABS_ROW_2}
               direction="left"
-              duration="230s"
+              duration="145s"
+              delay="-65s"
               tiltOffset={1}
               isPaused={isEffectivelyPaused}
             />
 
-            {/* REIHE 3: Links -> Rechts (Majestätische Slow Motion) */}
+            {/* REIHE 3: Links -> Rechts (Flüssige, majestätische Bewegung) */}
             <MarqueeRow
               rowId="r3"
               cards={BACKGROUND_SLABS_ROW_3}
               direction="right"
-              duration="210s"
+              duration="130s"
+              delay="-45s"
               tiltOffset={2}
               isPaused={isEffectivelyPaused}
             />

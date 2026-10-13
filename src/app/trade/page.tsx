@@ -9,7 +9,6 @@ import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { TradeBalanceDrawer } from "@/components/cards/trade-balance-drawer";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
-import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   ArrowLeftRight,
   Plus,
@@ -116,14 +115,11 @@ export default function TradePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <ArrowLeftRight className="w-4 h-4" /> 1:1 Tausch-Arena & Swap Chamber
-          </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Karten tauschen (Trade)
+            Karten tauschen
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Tausche Pokémon-Karten auf Augenhöhe mit transparenter Tausch-Waage und ETV-Wertermittlung.
+            Tausche deine Sammelkarten 1:1 oder mit fairem Wertausgleich – biete eigene Karten an oder gleiche Differenzen flexibel mit Zuzahlung aus.
           </p>
         </div>
       </div>
@@ -194,7 +190,6 @@ export default function TradePage() {
         <>
           {filteredTrades.length === 0 ? (
             <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-              <BorderBeam size={200} duration={8} colorFrom="#a855f7" colorTo="#ec4899" />
               <div className="w-16 h-16 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/20">
                 <ArrowLeftRight className="w-8 h-8" />
               </div>

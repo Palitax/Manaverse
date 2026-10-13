@@ -6,7 +6,6 @@ import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
-import { BorderBeam } from "@/components/magicui/border-beam";
 import { Tag, Plus, ShieldCheck } from "lucide-react";
 
 export default function BuyPage() {
@@ -91,14 +90,11 @@ export default function BuyPage() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Tag className="w-4 h-4 text-amber-400" /> Sammelboard • Verkaufsinserate
-          </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
             Karten kaufen
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Entdecke verifizierte Einzelkarten im Collector-Slab-Format von Sammlern.
+            Entdecke Community-Einzelkarten.
           </p>
         </div>
       </div>
@@ -136,7 +132,6 @@ export default function BuyPage() {
       {/* Content */}
       {filteredListings.length === 0 ? (
         <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={200} duration={8} colorFrom="#f59e0b" colorTo="#fbbf24" />
           <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
             <Tag className="w-8 h-8" />
           </div>

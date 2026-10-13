@@ -85,8 +85,6 @@ export default function ProfilePage() {
     return (
       <div className="min-h-[75vh] flex items-center justify-center p-4">
         <div className="max-w-md w-full p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 text-center space-y-6 relative overflow-hidden shadow-2xl">
-          <BorderBeam size={220} duration={10} colorFrom="#6366f1" colorTo="#06b6d4" />
-
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
             <Flame className="w-8 h-8 fill-amber-200 text-amber-300" />
           </div>
