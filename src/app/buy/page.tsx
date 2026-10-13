@@ -7,8 +7,7 @@ import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { BorderBeam } from "@/components/magicui/border-beam";
-import { Tag, Plus, ArrowRight, ShieldCheck, Crown } from "lucide-react";
-import Link from "next/link";
+import { Tag, Plus, ShieldCheck } from "lucide-react";
 
 export default function BuyPage() {
   const { listings, currentUser, openAuthModal } = useStore();
@@ -102,16 +101,6 @@ export default function BuyPage() {
             Entdecke verifizierte Einzelkarten im Collector-Slab-Format von Sammlern.
           </p>
         </div>
-
-        {/* Bulk Trade-In Link */}
-        <Link
-          href="/sell/bulk"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-600/20 border border-amber-500/40 text-amber-300 hover:text-white hover:border-amber-400 font-bold text-xs transition-all shadow-md shadow-amber-500/10 min-h-[44px]"
-        >
-          <Crown className="w-4 h-4 text-amber-400" />
-          <span>Sammlung verkaufen (Bulk-Ankauf)</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
       </div>
 
       {/* Mode Hub & Navigation */}

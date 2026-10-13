@@ -19,6 +19,7 @@ import {
   DollarSign,
   Send,
   Calendar,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
@@ -39,7 +40,7 @@ export function CollectorSlabCard({
   onTradeClick,
   className,
 }: CollectorSlabCardProps) {
-  const { currentUser, users, createDeal, openAuthModal } = useStore();
+  const { currentUser, users, createDeal, openAuthModal, deleteListing, updateListingStatus } = useStore();
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const [bountyModalOpen, setBountyModalOpen] = useState(false);
@@ -48,6 +49,47 @@ export function CollectorSlabCard({
   const [offerMessage, setOfferMessage] = useState<string>("");
   const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [copiedDiscord, setCopiedDiscord] = useState(false);
+
+  // Collapsible draggable bottom drawer state
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const [dragStartY, setDragStartY] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+    setDragStartY(e.clientY);
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || dragStartY === null) return;
+    const deltaY = e.clientY - dragStartY;
+    if (deltaY < -15) {
+      setIsBottomCollapsed(true);
+      setIsDragging(false);
+      setDragStartY(null);
+    } else if (deltaY > 15) {
+      setIsBottomCollapsed(false);
+      setIsDragging(false);
+      setDragStartY(null);
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setDragStartY(null);
+  };
+
+  const handleHandleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsBottomCollapsed((prev) => !prev);
+  };
 
   // Dynamic seller profile synchronization (live updates across app)
   const seller = React.useMemo(() => {
@@ -257,10 +299,15 @@ export function CollectorSlabCard({
                   </div>
                 </div>
 
-                {/* If own card, display distinct badge */}
-                {isOwnCard && (
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9px] font-black uppercase tracking-wider truncate flex-shrink-0">
-                    Deine eigene Karte
+                {/* Status Badges for Sold or Draft */}
+                {card.status === "sold" && (
+                  <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-200 border border-neutral-600 text-[9px] font-black uppercase tracking-wider truncate flex-shrink-0">
+                    Verkauft
+                  </span>
+                )}
+                {card.status === "draft" && (
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 border border-amber-500/40 text-[9px] font-black uppercase tracking-wider truncate flex-shrink-0">
+                    Entwurf
                   </span>
                 )}
               </div>
@@ -321,7 +368,10 @@ export function CollectorSlabCard({
                 <span className="text-[9px] text-neutral-400 uppercase tracking-wider block font-bold truncate">
                   {mode.valueLabel}
                 </span>
-                <span className={cn("text-base sm:text-lg font-black leading-tight truncate block", mode.valueColor)}>
+                <span className={cn(
+                  "text-base sm:text-lg font-black leading-tight truncate block",
+                  card.status === "sold" ? "text-neutral-500 line-through" : mode.valueColor
+                )}>
                   {card.type === "sell" && card.price !== undefined
                     ? `${card.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
                     : card.type === "trade" && card.estimatedTradeValue
@@ -332,7 +382,21 @@ export function CollectorSlabCard({
                 </span>
               </div>
 
-              {isOwnCard ? (
+              {card.status === "sold" ? (
+                <div
+                  className="px-3 py-2 rounded-xl text-xs font-black bg-neutral-800 text-neutral-300 border border-neutral-600 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  title="Diese Karte ist verkauft"
+                >
+                  <span>Verkauft</span>
+                </div>
+              ) : card.status === "draft" ? (
+                <div
+                  className="px-3 py-2 rounded-xl text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  title="Entwurf - noch nicht aktiv gelistet"
+                >
+                  <span>Entwurf</span>
+                </div>
+              ) : isOwnCard ? (
                 <div
                   className="px-3 py-2 rounded-xl text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
                   title="Dies ist deine eigene angebotene Karte"
@@ -354,83 +418,171 @@ export function CollectorSlabCard({
               )}
             </div>
 
-            {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
-            {card.type === "sell" && card.allowOffers && !isOwnCard && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
-                  setOfferModalOpen(true);
-                }}
-                className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[34px]"
-              >
-                <span>Angebot machen</span>
-              </button>
-            )}
+            {/* Collapsible Lower Section (Snaps animated under the price row) */}
+            <div
+              className={cn(
+                "overflow-hidden transition-all duration-300 ease-out space-y-2.5",
+                isBottomCollapsed
+                  ? "max-h-0 opacity-0 pointer-events-none mt-0 pt-0"
+                  : "max-h-[380px] opacity-100 mt-2.5"
+              )}
+            >
+              {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
+              {card.type === "sell" && card.allowOffers && !isOwnCard && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
+                    setOfferModalOpen(true);
+                  }}
+                  className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[34px]"
+                >
+                  <span>Angebot machen</span>
+                </button>
+              )}
 
-            {/* Trade Wants note */}
-            {card.type === "trade" && card.lookingForWants && (
-              <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-[10px] text-purple-200 backdrop-blur-sm">
-                <span className="font-bold text-purple-300 block text-[9px] uppercase">Wants:</span>
-                <p className="truncate text-white font-medium">{card.lookingForWants}</p>
-              </div>
-            )}
-
-            {/* Seller / Seeker footer with generous frame spacing, full username, Trusted shield & deals */}
-            <div className="pt-2.5 mt-2 border-t border-white/10 space-y-2">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 pt-0.5">
-                  <HoloAvatarFrame
-                    avatarUrl={seller.avatarUrl}
-                    username={seller.username}
-                    role={seller.role}
-                    verified={seller.verified}
-                    size="sm"
-                  />
+              {/* Trade Wants note */}
+              {card.type === "trade" && card.lookingForWants && (
+                <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-[10px] text-purple-200 backdrop-blur-sm">
+                  <span className="font-bold text-purple-300 block text-[9px] uppercase">Wants:</span>
+                  <p className="truncate text-white font-medium">{card.lookingForWants}</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-white text-[12px] leading-tight break-words">
-                      {seller.username}
-                    </span>
-                    <VerificationShield
-                      dealsCount={seller.dealsCount || 0}
+              )}
+
+              {/* Seller / Seeker footer with generous frame spacing, full username, Trusted shield & deals */}
+              <div className="pt-2.5 mt-2 border-t border-white/10 space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 pt-0.5">
+                    <HoloAvatarFrame
+                      avatarUrl={seller.avatarUrl}
+                      username={seller.username}
+                      role={seller.role}
+                      verified={seller.verified}
                       size="sm"
-                      className="inline-flex flex-shrink-0"
                     />
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-400">
-                    <span className="font-semibold text-neutral-300">
-                      {seller.dealsCount || 0} {seller.dealsCount === 1 ? "Deal" : "Deals"}
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-white text-[12px] leading-tight break-words">
+                        {seller.username}
+                      </span>
+                      <VerificationShield
+                        dealsCount={seller.dealsCount || 0}
+                        size="sm"
+                        className="inline-flex flex-shrink-0"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-400">
+                      <span className="font-semibold text-neutral-300">
+                        {seller.dealsCount || 0} {seller.dealsCount === 1 ? "Deal" : "Deals"}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {card.showDiscordName !== false && seller.discordUsername && (
+                  <div className="flex items-center justify-end pt-0.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(seller.discordUsername!);
+                        setCopiedDiscord(true);
+                        setTimeout(() => setCopiedDiscord(false), 2000);
+                      }}
+                      title="Klicken zum Kopieren des Discord-Namen"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/30 text-[#8ea1e1] hover:text-white text-[10px] font-mono transition-all cursor-pointer group/discord active:scale-95"
+                    >
+                      <svg className="w-3 h-3 fill-current flex-shrink-0 text-[#5865F2]" viewBox="0 0 24 24">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.077.077 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.127c-.598.35-1.22.648-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                      </svg>
+                      <span>@{seller.discordUsername}</span>
+                      <span className="text-[9px] text-indigo-300 font-sans ml-1">
+                        {copiedDiscord ? "✓ Kopiert!" : ""}
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {card.showDiscordName !== false && seller.discordUsername && (
-                <div className="flex items-center justify-end pt-0.5">
+              {/* Owner Actions Mini Bar if isOwnCard */}
+              {isOwnCard && (
+                <div className="pt-2 flex items-center gap-1.5 text-[10px]">
+                  {card.status === "sold" ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateListingStatus(card.id, "active");
+                      }}
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3 h-3" /> Wieder aktivieren
+                    </button>
+                  ) : card.status === "draft" ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateListingStatus(card.id, "active");
+                      }}
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3 h-3" /> Veröffentlichen
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateListingStatus(card.id, "sold");
+                      }}
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold transition-all text-center min-h-[32px] flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Tag className="w-3 h-3" /> Als verkauft
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigator.clipboard.writeText(seller.discordUsername!);
-                      setCopiedDiscord(true);
-                      setTimeout(() => setCopiedDiscord(false), 2000);
+                      if (window.confirm("Möchtest du dieses Inserat wirklich löschen?")) {
+                        deleteListing(card.id);
+                      }
                     }}
-                    title="Klicken zum Kopieren des Discord-Namen"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/30 text-[#8ea1e1] hover:text-white text-[10px] font-mono transition-all cursor-pointer group/discord active:scale-95"
+                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 font-bold transition-all min-h-[32px] min-w-[32px] flex items-center justify-center cursor-pointer"
+                    title="Karte löschen"
                   >
-                    <svg className="w-3 h-3 fill-current flex-shrink-0 text-[#5865F2]" viewBox="0 0 24 24">
-                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.077.077 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.127c-.598.35-1.22.648-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                    </svg>
-                    <span>@{seller.discordUsername}</span>
-                    <span className="text-[9px] text-indigo-300 font-sans ml-1">
-                      {copiedDiscord ? "✓ Kopiert!" : ""}
-                    </span>
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Interactive Drag Handle Bar (Pull up to snap under price, pull down to expand) */}
+            <div
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onClick={handleHandleClick}
+              className="pt-2 pb-0.5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing group/drag select-none transition-all"
+              title={
+                isBottomCollapsed
+                  ? "Nach unten ziehen oder tippen für Verkäufer-Details"
+                  : "Nach oben ziehen oder tippen zum Einklappen"
+              }
+            >
+              <div className="w-full h-px bg-white/10 mb-1.5 transition-colors group-hover/drag:bg-white/25" />
+              <div
+                className={cn(
+                  "w-12 h-1.5 rounded-full transition-all flex items-center justify-center",
+                  isBottomCollapsed
+                    ? "bg-white/45 shadow-[0_0_8px_rgba(255,255,255,0.4)] w-14"
+                    : "bg-white/20 group-hover/drag:bg-white/45"
+                )}
+              />
             </div>
           </div>
 
@@ -578,14 +730,78 @@ export function CollectorSlabCard({
                       <Target className="w-4 h-4 fill-black" /> Ich habe diese Karte (Angebot senden)
                     </button>
                   ) : isOwnCard ? (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1">
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3">
                       <div className="flex items-center justify-center gap-1.5 text-xs font-black text-emerald-400">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Deine eigene Karte</span>
+                        {card.status === "sold" && (
+                          <span className="ml-1.5 px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-600 text-[10px]">
+                            VERKAUFT
+                          </span>
+                        )}
+                        {card.status === "draft" && (
+                          <span className="ml-1.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]">
+                            ENTWURF
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-neutral-400">
-                        Dieses Inserat ist in deiner Vitrine online und für andere Sammler im Marktplatz gelistet.
+                        {card.status === "sold"
+                          ? "Diese Karte ist als verkauft markiert und nicht mehr im öffentlichen Marktplatz aktiv."
+                          : card.status === "draft"
+                          ? "Dieser Entwurf ist nur für dich in deinem Profil sichtbar."
+                          : "Dieses Inserat ist in deiner Vitrine online und für andere Sammler im Marktplatz gelistet."}
                       </p>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                        {card.status === "sold" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updateListingStatus(card.id, "active");
+                              alert("Karte wieder als aktiv markiert!");
+                            }}
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> Wieder aktiv listen
+                          </button>
+                        ) : card.status === "draft" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updateListingStatus(card.id, "active");
+                              alert("Entwurf erfolgreich veröffentlicht!");
+                            }}
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> Jetzt veröffentlichen
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updateListingStatus(card.id, "sold");
+                              alert("Karte als verkauft markiert!");
+                            }}
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+                          >
+                            <Tag className="w-4 h-4" /> Als verkauft markieren
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Möchtest du dieses Inserat wirklich unwiderruflich löschen?")) {
+                              deleteListing(card.id);
+                              setDetailModalOpen(false);
+                            }
+                          }}
+                          className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" /> Inserat löschen
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">

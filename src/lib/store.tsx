@@ -93,7 +93,8 @@ interface StoreContextType {
   registerWithEmail: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">) => Promise<CardListing>;
+  addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status"> & { status?: CardListing["status"] }) => Promise<CardListing>;
+  updateListingStatus: (listingId: string, status: CardListing["status"]) => Promise<void>;
   addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => void;
   addBulkSubmission: (submission: { cards: BulkSubmission["cards"]; askingPrice?: number; notes?: string }) => Promise<void>;
   confirmDeal: (dealId: string, asRole: "seller" | "buyer") => void;
@@ -942,7 +943,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addListing = async (
-    listingData: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status">
+    listingData: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status"> & { status?: CardListing["status"] }
   ): Promise<CardListing> => {
     if (!currentUser) {
       openAuthModal("register");
@@ -950,6 +951,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     let newListing: CardListing;
+    const initialStatus = listingData.status || "active";
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -973,7 +975,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             allow_offers: listingData.allowOffers ?? true,
             post_to_discord: listingData.postToDiscord ?? true,
             show_discord_name: listingData.showDiscordName ?? true,
-            status: "active",
+            status: initialStatus,
           })
           .select("*, user:profiles(*)")
           .single();
@@ -987,7 +989,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             id: `list-${Date.now()}`,
             userId: currentUser.id,
             user: currentUser,
-            status: "active",
+            status: initialStatus,
             createdAt: new Date().toISOString(),
           };
         }
@@ -998,7 +1000,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           id: `list-${Date.now()}`,
           userId: currentUser.id,
           user: currentUser,
-          status: "active",
+          status: initialStatus,
           createdAt: new Date().toISOString(),
         };
       }
@@ -1008,7 +1010,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         id: `list-${Date.now()}`,
         userId: currentUser.id,
         user: currentUser,
-        status: "active",
+        status: initialStatus,
         createdAt: new Date().toISOString(),
       };
     }
@@ -1023,11 +1025,44 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
-    if (newListing.postToDiscord) {
+    if (newListing.postToDiscord && newListing.status === "active") {
       await dispatchDiscordWebhook(newListing);
     }
 
     return newListing;
+  };
+
+  const updateListingStatus = async (listingId: string, newStatus: CardListing["status"]) => {
+    let updatedListing: CardListing | undefined;
+
+    setListings((prev) => {
+      const updated = prev.map((l) => {
+        if (l.id === listingId) {
+          updatedListing = { ...l, status: newStatus };
+          return updatedListing;
+        }
+        return l;
+      });
+      try {
+        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from("listings").update({ status: newStatus }).eq("id", listingId);
+      } catch (err) {
+        console.error("Supabase updateListingStatus error:", err);
+      }
+    }
+
+    // When publishing from draft to active, send webhook to Discord if postToDiscord is enabled
+    if (newStatus === "active" && updatedListing?.postToDiscord) {
+      await dispatchDiscordWebhook(updatedListing);
+    }
   };
 
   const deleteListing = async (listingId: string) => {
@@ -1334,6 +1369,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         resetPassword,
         logout,
         addListing,
+        updateListingStatus,
         deleteListing,
         addTradeOffer,
         addBulkSubmission,

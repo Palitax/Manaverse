@@ -18,13 +18,26 @@ import {
   Flame,
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function SellPage() {
   const { currentUser, listings, openAuthModal } = useStore();
   const [studioOpen, setStudioOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("ALL");
+  const [selectedCondition, setSelectedCondition] = useState<string>("ALL");
+  const [onlyVerified, setOnlyVerified] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "sold">("all");
 
-  // User's own active sell listings (strictly only own cards when logged in)
-  const mySellListings = useMemo(() => {
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedLanguage("ALL");
+    setSelectedCondition("ALL");
+    setOnlyVerified(false);
+  };
+
+  // User's own sell listings
+  const allMySellListings = useMemo(() => {
     return currentUser
       ? listings.filter(
           (l) =>
@@ -36,10 +49,36 @@ export default function SellPage() {
       : [];
   }, [currentUser, listings]);
 
+  const filteredMySellListings = useMemo(() => {
+    return allMySellListings.filter((card) => {
+      if (statusFilter !== "all" && card.status !== statusFilter) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = card.name.toLowerCase().includes(q);
+        const matchesSet = card.set?.toLowerCase().includes(q);
+        const matchesNumber = card.cardNumber?.toLowerCase().includes(q);
+        if (!matchesName && !matchesSet && !matchesNumber) return false;
+      }
+      if (selectedLanguage !== "ALL" && card.language !== selectedLanguage) {
+        return false;
+      }
+      if (selectedCondition !== "ALL" && card.condition !== selectedCondition) {
+        return false;
+      }
+      return true;
+    });
+  }, [allMySellListings, statusFilter, searchQuery, selectedLanguage, selectedCondition]);
+
+  const activeMySellListings = useMemo(() => {
+    return allMySellListings.filter((l) => l.status === "active");
+  }, [allMySellListings]);
+
   // Total value of user's active listings
   const totalValue = useMemo(() => {
-    return mySellListings.reduce((acc, curr) => acc + (curr.price || 0), 0);
-  }, [mySellListings]);
+    return activeMySellListings.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  }, [activeMySellListings]);
 
   // Overall counts for navigation hub
   const counts = useMemo(() => {
@@ -84,7 +123,7 @@ export default function SellPage() {
         </div>
 
         {/* Portfolio Stats Card */}
-        {currentUser && mySellListings.length > 0 && (
+        {currentUser && activeMySellListings.length > 0 && (
           <div className="flex items-center gap-4 p-3.5 rounded-2xl glass-panel border border-emerald-500/30">
             <div>
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block font-bold">
@@ -100,17 +139,33 @@ export default function SellPage() {
                 Online
               </span>
               <span className="text-lg font-black text-white">
-                {mySellListings.length} {mySellListings.length === 1 ? "Karte" : "Karten"}
+                {activeMySellListings.length} {activeMySellListings.length === 1 ? "Karte" : "Karten"}
               </span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Bulk Appraisal Gold Banner */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-950/40 via-yellow-950/25 to-[#0b0f19] border border-amber-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative overflow-hidden shadow-xl">
+      {/* Mode Hub & Navigation Quick Switch */}
+      <MarketHubNavigation
+        activeMode="own_sell"
+        counts={counts}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
+        selectedCondition={selectedCondition}
+        onConditionChange={setSelectedCondition}
+        onlyVerified={onlyVerified}
+        onVerifiedChange={setOnlyVerified}
+        onOpenCreate={handleOpenCreate}
+        onResetFilters={resetFilters}
+      />
+
+      {/* Bulk Appraisal Gold Banner (90% Solid, Premium High-Contrast) */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-[#0c101c]/95 bg-gradient-to-r from-[#1c1204]/95 via-[#181106]/90 to-[#0c101c]/95 border border-amber-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative overflow-hidden shadow-2xl">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/25 text-amber-300 border border-amber-500/50 flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
             <Crown className="w-6 h-6 text-amber-400" />
           </div>
           <div>
@@ -125,7 +180,7 @@ export default function SellPage() {
 
         <Link
           href="/sell/bulk"
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-black text-xs transition-all shadow-md shadow-amber-500/25 flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px]"
+          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-black text-xs transition-all shadow-md shadow-amber-500/25 flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px] cursor-pointer"
         >
           <span>Sammlung einreichen</span>
           <ArrowRight className="w-4 h-4" />
@@ -180,7 +235,7 @@ export default function SellPage() {
             </Link>
           </div>
         </div>
-      ) : mySellListings.length === 0 ? (
+      ) : allMySellListings.length === 0 ? (
         <div className="my-12 max-w-lg mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-5 shadow-2xl relative overflow-hidden">
           <BorderBeam size={220} duration={8} colorFrom="#10b981" colorTo="#f59e0b" />
 
@@ -217,23 +272,70 @@ export default function SellPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10 text-xs">
-            <span className="text-neutral-400">
-              Deine aktiven Verkaufskarten ({mySellListings.length})
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10 text-xs">
+            {/* Status Tabs */}
+            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5 overflow-x-auto no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg font-bold text-xs transition-all min-h-[36px]",
+                  statusFilter === "all" ? "bg-white/20 text-white" : "text-neutral-400 hover:text-white"
+                )}
+              >
+                Alle ({allMySellListings.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("active")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg font-bold text-xs transition-all min-h-[36px]",
+                  statusFilter === "active" ? "bg-emerald-500/30 text-emerald-300 border border-emerald-500/40" : "text-neutral-400 hover:text-white"
+                )}
+              >
+                Aktiv ({allMySellListings.filter((l) => l.status === "active").length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("draft")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg font-bold text-xs transition-all min-h-[36px]",
+                  statusFilter === "draft" ? "bg-amber-500/30 text-amber-300 border border-amber-500/40" : "text-neutral-400 hover:text-white"
+                )}
+              >
+                Entwürfe ({allMySellListings.filter((l) => l.status === "draft").length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("sold")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg font-bold text-xs transition-all min-h-[36px]",
+                  statusFilter === "sold" ? "bg-neutral-600/40 text-neutral-300 border border-white/20" : "text-neutral-400 hover:text-white"
+                )}
+              >
+                Verkauft ({allMySellListings.filter((l) => l.status === "sold").length})
+              </button>
+            </div>
+
             <button
               onClick={handleOpenCreate}
-              className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5 min-h-[36px]"
+              className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5 min-h-[36px] self-start sm:self-auto cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Weitere Karte hinzufügen
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
-            {mySellListings.map((card) => (
-              <CollectorSlabCard key={card.id} card={card} />
-            ))}
-          </div>
+          {filteredMySellListings.length === 0 ? (
+            <div className="py-12 text-center text-xs text-neutral-400 glass-panel rounded-2xl border border-white/5 p-6">
+              Keine Karten für diesen Filter gefunden.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+              {filteredMySellListings.map((card) => (
+                <CollectorSlabCard key={card.id} card={card} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

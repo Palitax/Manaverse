@@ -13,7 +13,6 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   ArrowLeftRight,
   Plus,
-  Scale,
   Inbox,
   Info,
   CheckCircle2,
@@ -126,14 +125,6 @@ export default function TradePage() {
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
             Tausche Pokémon-Karten auf Augenhöhe mit transparenter Tausch-Waage und ETV-Wertermittlung.
           </p>
-        </div>
-
-        {/* Explain Tausch-Waage Banner */}
-        <div className="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 flex items-center gap-3 text-xs text-purple-200">
-          <Scale className="w-5 h-5 text-purple-400 flex-shrink-0" />
-          <span>
-            <b>Tauschwert (ETV):</b> Reeller Marktwert für faire Deals ohne Übervorteilung.
-          </span>
         </div>
       </div>
 

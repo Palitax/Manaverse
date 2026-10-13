@@ -65,7 +65,7 @@ export interface CardListing {
   lookingForWants?: string; // For trade: what they want in return
   postToDiscord: boolean;
   showDiscordName?: boolean;
-  status: 'active' | 'reserved' | 'completed';
+  status: 'active' | 'reserved' | 'completed' | 'sold' | 'draft';
   createdAt: string;
 }
 

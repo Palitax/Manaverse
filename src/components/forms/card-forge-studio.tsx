@@ -35,6 +35,7 @@ import {
   RefreshCw,
   Search,
   Calendar,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlabTopSigil } from "../cards/slab-top-sigil";
@@ -219,6 +220,7 @@ export function CardForgeStudio({
   // UX State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isDraftSaved, setIsDraftSaved] = useState(false);
   const [mobileStep, setMobileStep] = useState<number>(1);
   const [showManualFields, setShowManualFields] = useState(false);
 
@@ -278,7 +280,7 @@ export function CardForgeStudio({
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent, isDraft: boolean = false) => {
     if (e) e.preventDefault();
     if (!name.trim()) return;
 
@@ -310,13 +312,15 @@ export function CardForgeStudio({
             : undefined,
         lookingForWants: type === "trade" ? lookingForWants.trim() : undefined,
         allowOffers,
-        postToDiscord,
+        postToDiscord: isDraft ? false : postToDiscord,
         showDiscordName,
+        status: isDraft ? "draft" : "active",
       });
 
+      setIsDraftSaved(isDraft);
       setIsSuccess(true);
       if (onSuccess) {
-        setTimeout(() => onSuccess(), 1200);
+        setTimeout(() => onSuccess(), 1400);
       }
     } catch (err) {
       console.error("Fehler beim Erstellen der Karte:", err);
@@ -350,22 +354,39 @@ export function CardForgeStudio({
 
   if (isSuccess) {
     return (
-      <div className="w-full p-8 sm:p-12 rounded-3xl bg-[#0b0f1a] border border-emerald-500/40 text-center space-y-4 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-        <BorderBeam size={280} duration={6} colorFrom="#10b981" colorTo="#06b6d4" />
-        <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.4)]">
+      <div className={cn(
+        "w-full p-8 sm:p-12 rounded-3xl bg-[#0b0f1a] border text-center space-y-4 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-300",
+        isDraftSaved ? "border-amber-500/40" : "border-emerald-500/40"
+      )}>
+        <BorderBeam size={280} duration={6} colorFrom={isDraftSaved ? "#f59e0b" : "#10b981"} colorTo="#06b6d4" />
+        <div className={cn(
+          "w-20 h-20 rounded-full border flex items-center justify-center mx-auto",
+          isDraftSaved
+            ? "bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.4)]"
+            : "bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.4)]"
+        )}>
           <CheckCircle2 className="w-10 h-10" />
         </div>
         <h3 className="text-2xl sm:text-3xl font-black text-white">
-          Inserat erfolgreich veröffentlicht!
+          {isDraftSaved ? "Als Entwurf gespeichert!" : "Inserat erfolgreich veröffentlicht!"}
         </h3>
         <p className="text-sm text-neutral-300 max-w-md mx-auto">
-          Dein Inserat für <strong className="text-white">{name}</strong> ist ab sofort live im Manaverse Marktplatz
-          {postToDiscord && " und wurde per Webhook im Discord #marktplatz gepostet"}.
+          {isDraftSaved ? (
+            <>
+              Dein Entwurf für <strong className="text-white">{name}</strong> ist in deinem Profil gespeichert und noch nicht öffentlich im Marktplatz gelistet.
+            </>
+          ) : (
+            <>
+              Dein Inserat für <strong className="text-white">{name}</strong> ist ab sofort live im Manaverse Marktplatz
+              {postToDiscord && " und wurde per Webhook im Discord #marktplatz gepostet"}.
+            </>
+          )}
         </p>
         <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => {
               setIsSuccess(false);
+              setIsDraftSaved(false);
               setName("");
               setPhotos([""]);
               setPrice("");
@@ -373,16 +394,16 @@ export function CardForgeStudio({
               setPriceRange("");
               setMobileStep(1);
             }}
-            className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/20 min-h-[44px]"
+            className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/20 min-h-[44px] cursor-pointer"
           >
-            + Weiteres Inserat erstellen
+            + Weiteres Inserat / Entwurf erstellen
           </button>
           {onCancel && (
             <button
               onClick={onCancel}
-              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-all min-h-[44px]"
+              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-all min-h-[44px] cursor-pointer"
             >
-              Zurück zur Übersicht
+              Schließen
             </button>
           )}
         </div>
@@ -922,25 +943,35 @@ export function CardForgeStudio({
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
-            <button
-              type="button"
-              disabled={isSubmitting || !name.trim()}
-              onClick={() => handleSubmit()}
-              className={cn(
-                "flex-1 min-h-[48px] rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-xl transition-all",
-                isSubmitting ? "opacity-75 cursor-wait" : themePrimaryButton
-              )}
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" /> Inserat wird veröffentlicht...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" /> Jetzt veröffentlichen
-                </>
-              )}
-            </button>
+            <div className="flex-1 flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={isSubmitting || !name.trim()}
+                onClick={() => handleSubmit(undefined, true)}
+                className="w-full min-h-[44px] rounded-xl font-bold text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Tag className="w-4 h-4" /> Als Entwurf speichern
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting || !name.trim()}
+                onClick={() => handleSubmit(undefined, false)}
+                className={cn(
+                  "w-full min-h-[48px] rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-xl transition-all cursor-pointer",
+                  isSubmitting ? "opacity-75 cursor-wait" : themePrimaryButton
+                )}
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Inserat wird veröffentlicht...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" /> Jetzt veröffentlichen
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1463,7 +1494,22 @@ export function CardForgeStudio({
           </div>
 
           {/* Submit Action Bar */}
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button
+              type="button"
+              disabled={isSubmitting || !name.trim()}
+              onClick={() => handleSubmit(undefined, true)}
+              className={cn(
+                "min-h-[52px] px-5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 border transition-all cursor-pointer",
+                isSubmitting || !name.trim()
+                  ? "bg-white/5 text-neutral-600 border-white/5 cursor-not-allowed"
+                  : "bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border-white/10 hover:border-white/20 active:scale-98"
+              )}
+            >
+              <FileText className="w-4 h-4 text-neutral-400" />
+              Als Entwurf speichern
+            </button>
+
             <button
               type="submit"
               disabled={isSubmitting || !name.trim()}

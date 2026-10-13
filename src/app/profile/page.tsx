@@ -23,10 +23,14 @@ import {
   Timer,
   ChevronRight,
   Pencil,
+  Tag,
+  Plus,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BoosterPackCard } from "@/components/booster/booster-pack-card";
 import { AvatarCustomizerModal } from "@/components/profile/avatar-customizer-modal";
+import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 
 function DiscordIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -41,6 +45,7 @@ export default function ProfilePage() {
     currentUser,
     updateProfile,
     deals,
+    listings,
     confirmDeal,
     loginWithDiscord,
     logout,
@@ -63,6 +68,7 @@ export default function ProfilePage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentUser?.role || "member");
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [cardTab, setCardTab] = useState<"draft" | "active" | "sold" | "all">("draft");
 
   useEffect(() => {
     if (currentUser) {
@@ -119,6 +125,23 @@ export default function ProfilePage() {
   const myDeals = deals.filter(
     (d) => d.sellerId === currentUser.id || d.buyerId === currentUser.id
   );
+
+  // Listings involving the current user
+  const myListings = listings.filter(
+    (l) => l.userId === currentUser.id || l.user?.id === currentUser.id
+  );
+  const myDrafts = myListings.filter((l) => l.status === "draft");
+  const myActive = myListings.filter((l) => l.status === "active" || !l.status);
+  const mySold = myListings.filter((l) => l.status === "sold");
+
+  const displayedCards =
+    cardTab === "draft"
+      ? myDrafts
+      : cardTab === "active"
+      ? myActive
+      : cardTab === "sold"
+      ? mySold
+      : myListings;
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +211,39 @@ export default function ProfilePage() {
               >
                 <span>{currentUser.dealsCount} Deals</span>
               </div>
+
+              {/* Entwürfe Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCardTab("draft");
+                  document.getElementById("profile-cards-section")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                title="Klicke hier, um deine Entwürfe anzuzeigen"
+                className={cn(
+                  "h-9 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]",
+                  myDrafts.length > 0
+                    ? "bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25 shadow-sm font-bold"
+                    : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"
+                )}
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>{myDrafts.length} {myDrafts.length === 1 ? "Entwurf" : "Entwürfe"}</span>
+              </button>
+
+              {/* Inserate Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCardTab("active");
+                  document.getElementById("profile-cards-section")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                title="Klicke hier, um deine aktiven Inserate anzuzeigen"
+                className="h-9 px-3.5 rounded-xl bg-white/5 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-white/10 transition-all cursor-pointer min-h-[44px]"
+              >
+                <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                <span>{myActive.length} Inserate</span>
+              </button>
             </div>
 
             <p className="text-xs sm:text-sm text-neutral-300 max-w-xl">
@@ -219,6 +275,134 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* MEINE KARTEN & ENTWÜRFE SECTION */}
+      <div id="profile-cards-section" className="p-6 sm:p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 relative overflow-hidden shadow-2xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
+              <Layers className="w-6 h-6 text-indigo-400" />
+              <span>Meine Sammlerkarten & Entwürfe</span>
+            </h2>
+            <p className="text-xs text-neutral-400 mt-1">
+              Verwalte deine Entwürfe, aktiviere Inserate im Marktplatz oder markiere verkaufte Karten.
+            </p>
+          </div>
+
+          <Link
+            href="/sell"
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2 self-start sm:self-auto cursor-pointer min-h-[44px]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Neues Inserat erstellen</span>
+          </Link>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCardTab("draft")}
+            className={cn(
+              "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
+              cardTab === "draft"
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
+                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+            )}
+          >
+            <FileText className="w-4 h-4 text-amber-400" />
+            <span>Entwürfe ({myDrafts.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCardTab("active")}
+            className={cn(
+              "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
+              cardTab === "active"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
+                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+            )}
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>Aktive Inserate ({myActive.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCardTab("sold")}
+            className={cn(
+              "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
+              cardTab === "sold"
+                ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/10"
+                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+            )}
+          >
+            <Tag className="w-4 h-4 text-purple-400" />
+            <span>Verkauft ({mySold.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCardTab("all")}
+            className={cn(
+              "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
+              cardTab === "all"
+                ? "bg-white/20 text-white border border-white/30"
+                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+            )}
+          >
+            <Layers className="w-4 h-4 text-neutral-400" />
+            <span>Alle Karten ({myListings.length})</span>
+          </button>
+        </div>
+
+        {/* Grid of Cards */}
+        {displayedCards.length === 0 ? (
+          <div className="py-12 px-4 rounded-2xl bg-black/20 border border-white/5 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
+              {cardTab === "draft" ? (
+                <FileText className="w-6 h-6 text-amber-400" />
+              ) : cardTab === "sold" ? (
+                <Tag className="w-6 h-6 text-purple-400" />
+              ) : (
+                <Layers className="w-6 h-6 text-neutral-400" />
+              )}
+            </div>
+            <p className="text-sm font-bold text-white">
+              {cardTab === "draft"
+                ? "Keine Entwürfe vorhanden"
+                : cardTab === "active"
+                ? "Keine aktiven Inserate online"
+                : cardTab === "sold"
+                ? "Keine verkauften Karten"
+                : "Noch keine Karten vorhanden"}
+            </p>
+            <p className="text-xs text-neutral-400 max-w-md mx-auto">
+              {cardTab === "draft"
+                ? "Beim Erstellen einer Karte kannst du 'Als Entwurf speichern' wählen, um die Karte erst in Ruhe vorzubereiten, bevor sie öffentlich im Marktplatz gelistet wird."
+                : cardTab === "active"
+                ? "Stelle deine Karten zum Verkauf, Tausch oder als Gesuch ein, um Sammler zu erreichen."
+                : "Erstelle dein erstes Inserat mit wenigen Klicks im Sammelkarten-Studio."}
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/sell"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg transition-all min-h-[44px]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Neues Inserat vorbereiten</span>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {displayedCards.map((card) => (
+              <CollectorSlabCard key={card.id} card={card} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* MANAFORGE BOOSTER ARENA (HIGHLIGHT SECTION) */}

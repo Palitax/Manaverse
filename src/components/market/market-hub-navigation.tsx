@@ -15,11 +15,14 @@ import {
   RotateCcw,
   Layers,
   X,
+  ChevronDown,
+  ShoppingBag,
+  PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MarketHubNavigationProps {
-  activeMode: ListingType | "all";
+  activeMode: ListingType | "all" | "own_sell";
   counts: {
     sell: number;
     trade: number;
@@ -56,6 +59,7 @@ export function MarketHubNavigation({
   onViewModeChange,
   onResetFilters,
 }: MarketHubNavigationProps) {
+  const pathname = usePathname();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const hasActiveFilters =
@@ -70,10 +74,20 @@ export function MarketHubNavigation({
       href: "/buy",
       label: "Kaufen",
       sublabel: "Sofortkauf Vault",
-      icon: Tag,
+      icon: ShoppingBag,
       color: "text-emerald-400",
       activeBg: "bg-emerald-500 text-black shadow-lg shadow-emerald-500/25",
       count: counts.sell,
+    },
+    {
+      id: "own_sell",
+      href: "/sell",
+      label: "Verkaufen",
+      sublabel: "Deine Vitrine",
+      icon: PlusCircle,
+      color: "text-amber-400",
+      activeBg: "bg-amber-500 text-black shadow-lg shadow-amber-500/25",
+      count: undefined,
     },
     {
       id: "trade",
@@ -100,13 +114,13 @@ export function MarketHubNavigation({
   return (
     <div className="space-y-4 mb-8">
       {/* ==================================================================== */}
-      {/* 1. TOP SEGMENTED MODE HUB (Verkaufen 🟢, Tauschen 🟣, Gesucht 🔵)    */}
+      {/* 1. TOP SEGMENTED MODE HUB (Kaufen, Verkaufen, Tauschen, Gesucht)      */}
       {/* ==================================================================== */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-2 rounded-3xl glass-panel border border-white/10 backdrop-blur-2xl">
         {/* Navigation Pills */}
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/5 overflow-x-auto no-scrollbar">
           {modeConfigs.map((m) => {
-            const isActive = activeMode === m.id;
+            const isActive = pathname === m.href || activeMode === m.id;
             return (
               <Link
                 key={m.id}
@@ -120,14 +134,16 @@ export function MarketHubNavigation({
               >
                 <m.icon className="w-4 h-4 flex-shrink-0" />
                 <span>{m.label}</span>
-                <span
-                  className={cn(
-                    "text-[10px] font-black px-1.5 py-0.5 rounded-full",
-                    isActive ? "bg-black/25 text-inherit" : "bg-white/10 text-neutral-300"
-                  )}
-                >
-                  {m.count}
-                </span>
+                {m.count !== undefined && (
+                  <span
+                    className={cn(
+                      "text-[10px] font-black px-1.5 py-0.5 rounded-full",
+                      isActive ? "bg-black/25 text-inherit" : "bg-white/10 text-neutral-300"
+                    )}
+                  >
+                    {m.count}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -221,40 +237,46 @@ export function MarketHubNavigation({
           {/* Desktop Filter Pills */}
           <div className="hidden md:flex items-center gap-2">
             {/* Language */}
-            <select
-              value={selectedLanguage}
-              onChange={(e) => onLanguageChange(e.target.value)}
-              className="bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px]"
-            >
-              <option value="ALL">🌍 Alle Sprachen</option>
-              <option value="DE">🇩🇪 Deutsch (DE)</option>
-              <option value="EN">🇬🇧 Englisch (EN)</option>
-              <option value="JP">🇯🇵 Japanisch (JP)</option>
-            </select>
+            <div className="relative inline-flex items-center">
+              <select
+                value={selectedLanguage}
+                onChange={(e) => onLanguageChange(e.target.value)}
+                className="appearance-none pl-3.5 pr-8 py-2 bg-[#0d121f] text-neutral-200 hover:text-white border border-white/10 hover:border-white/20 rounded-xl text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px] cursor-pointer transition-colors"
+              >
+                <option value="ALL" className="bg-[#0d121f] text-white">🌍 Alle Sprachen</option>
+                <option value="DE" className="bg-[#0d121f] text-white">🇩🇪 Deutsch (DE)</option>
+                <option value="EN" className="bg-[#0d121f] text-white">🇬🇧 Englisch (EN)</option>
+                <option value="JP" className="bg-[#0d121f] text-white">🇯🇵 Japanisch (JP)</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+            </div>
 
             {/* Condition */}
-            <select
-              value={selectedCondition}
-              onChange={(e) => onConditionChange(e.target.value)}
-              className="bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px]"
-            >
-              <option value="ALL">Alle Zustände</option>
-              <option value="NM">Near Mint (Makellos)</option>
-              <option value="EX">Excellent</option>
-              <option value="GD">Good</option>
-              <option value="LP">Light Played</option>
-              <option value="PL">Played</option>
-            </select>
+            <div className="relative inline-flex items-center">
+              <select
+                value={selectedCondition}
+                onChange={(e) => onConditionChange(e.target.value)}
+                className="appearance-none pl-3.5 pr-8 py-2 bg-[#0d121f] text-neutral-200 hover:text-white border border-white/10 hover:border-white/20 rounded-xl text-xs font-bold focus:outline-none focus:border-indigo-500 min-h-[44px] cursor-pointer transition-colors"
+              >
+                <option value="ALL" className="bg-[#0d121f] text-white">Alle Zustände</option>
+                <option value="NM" className="bg-[#0d121f] text-white">Near Mint (Makellos)</option>
+                <option value="EX" className="bg-[#0d121f] text-white">Excellent</option>
+                <option value="GD" className="bg-[#0d121f] text-white">Good</option>
+                <option value="LP" className="bg-[#0d121f] text-white">Light Played</option>
+                <option value="PL" className="bg-[#0d121f] text-white">Played</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+            </div>
 
             {/* Verified Seller Switch */}
             <button
               type="button"
               onClick={() => onVerifiedChange(!onlyVerified)}
               className={cn(
-                "px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 min-h-[44px] cursor-pointer",
+                "px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 min-h-[44px] cursor-pointer",
                 onlyVerified
                   ? "bg-blue-600/30 border-blue-500 text-blue-300 shadow-sm shadow-blue-500/20"
-                  : "bg-[#0d121f] border-white/10 text-neutral-400 hover:text-white"
+                  : "bg-[#0d121f] border-white/10 text-neutral-400 hover:text-white hover:border-white/20"
               )}
             >
               <ShieldCheck className="w-4 h-4 text-blue-400" />
@@ -266,7 +288,7 @@ export function MarketHubNavigation({
               <button
                 type="button"
                 onClick={onResetFilters}
-                className="px-2.5 py-2 rounded-xl text-xs text-neutral-400 hover:text-white bg-white/5 border border-white/10 flex items-center gap-1 min-h-[44px]"
+                className="px-2.5 py-2 rounded-xl text-xs text-neutral-400 hover:text-white bg-white/5 border border-white/10 flex items-center gap-1 min-h-[44px] cursor-pointer"
                 title="Filter zurücksetzen"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -310,33 +332,39 @@ export function MarketHubNavigation({
                 <label className="block text-[10px] text-neutral-400 font-bold mb-1">
                   Sprache
                 </label>
-                <select
-                  value={selectedLanguage}
-                  onChange={(e) => onLanguageChange(e.target.value)}
-                  className="w-full bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none min-h-[44px]"
-                >
-                  <option value="ALL">🌍 Alle Sprachen</option>
-                  <option value="DE">🇩🇪 Deutsch</option>
-                  <option value="EN">🇬🇧 Englisch</option>
-                  <option value="JP">🇯🇵 Japanisch</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => onLanguageChange(e.target.value)}
+                    className="w-full appearance-none bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold focus:outline-none min-h-[44px] cursor-pointer"
+                  >
+                    <option value="ALL" className="bg-[#0d121f] text-white">🌍 Alle Sprachen</option>
+                    <option value="DE" className="bg-[#0d121f] text-white">🇩🇪 Deutsch</option>
+                    <option value="EN" className="bg-[#0d121f] text-white">🇬🇧 Englisch</option>
+                    <option value="JP" className="bg-[#0d121f] text-white">🇯🇵 Japanisch</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[10px] text-neutral-400 font-bold mb-1">
                   Zustand
                 </label>
-                <select
-                  value={selectedCondition}
-                  onChange={(e) => onConditionChange(e.target.value)}
-                  className="w-full bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none min-h-[44px]"
-                >
-                  <option value="ALL">Alle Zustände</option>
-                  <option value="NM">Near Mint</option>
-                  <option value="EX">Excellent</option>
-                  <option value="GD">Good</option>
-                  <option value="LP">Light Played</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={selectedCondition}
+                    onChange={(e) => onConditionChange(e.target.value)}
+                    className="w-full appearance-none bg-[#0d121f] text-neutral-200 border border-white/10 rounded-xl pl-3 pr-8 py-2.5 text-xs font-semibold focus:outline-none min-h-[44px] cursor-pointer"
+                  >
+                    <option value="ALL" className="bg-[#0d121f] text-white">Alle Zustände</option>
+                    <option value="NM" className="bg-[#0d121f] text-white">Near Mint</option>
+                    <option value="EX" className="bg-[#0d121f] text-white">Excellent</option>
+                    <option value="GD" className="bg-[#0d121f] text-white">Good</option>
+                    <option value="LP" className="bg-[#0d121f] text-white">Light Played</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+                </div>
               </div>
             </div>
 

@@ -12,7 +12,6 @@ import {
   Target,
   Plus,
   HelpCircle,
-  Coins,
   ShieldCheck,
   Search,
 } from "lucide-react";
@@ -111,14 +110,6 @@ export default function LookingForPage() {
           <p className="text-xs sm:text-sm text-neutral-400 mt-1">
             Hilf Sammlern bei ihrer Suche oder setze selbst ein Kopfgeld mit deinem Wunschbudget aus.
           </p>
-        </div>
-
-        {/* Explain Bounty System */}
-        <div className="p-3.5 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex items-center gap-3 text-xs text-cyan-200">
-          <Coins className="w-5 h-5 text-cyan-400 flex-shrink-0" />
-          <span>
-            <b>1-Klick Match:</b> Besitzt du die gesuchte Karte? Klicke auf <i>„Habe ich!“</i> und biete deinen Preis an.
-          </span>
         </div>
       </div>
 
