@@ -378,14 +378,14 @@ export function CollectorSlabCard({
 
             {/* Quick Hover Inspect Lens */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-3 pointer-events-none z-20">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/30 shadow-lg">
+              <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-black/75 px-3.5 py-1.5 rounded-full border border-white/30 shadow-lg">
                 <Eye className="w-3.5 h-3.5" /> Details & Zoom
               </span>
             </div>
 
             {/* Video preview badge */}
             {card.videoUrl && (
-              <div className="absolute top-2.5 right-2.5 bg-black/80 backdrop-blur-md p-1.5 rounded-full text-white border border-white/25 shadow-md z-20">
+              <div className="absolute top-2.5 right-2.5 bg-black/90 p-1.5 rounded-full text-white border border-white/25 shadow-md z-20">
                 <Play className="w-3 h-3 fill-current text-white" />
               </div>
             )}
@@ -393,7 +393,7 @@ export function CollectorSlabCard({
 
           {/* Value & Action Row */}
           <div className="mt-3.5 space-y-2.5 relative z-10">
-            <div className="p-2.5 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-between gap-2 shadow-inner">
+            <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between gap-2 shadow-inner">
               <div className="min-w-0">
                 <span className="text-[9px] text-neutral-400 uppercase tracking-wider block font-bold truncate">
                   {mode.valueLabel}
@@ -474,7 +474,7 @@ export function CollectorSlabCard({
 
               {/* Trade Wants note */}
               {card.type === "trade" && card.lookingForWants && (
-                <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-[10px] text-purple-200 backdrop-blur-sm">
+                <div className="p-2 rounded-lg bg-purple-950/80 border border-purple-500/30 text-[10px] text-purple-200">
                   <span className="font-bold text-purple-300 block text-[9px] uppercase">Wants:</span>
                   <p className="truncate text-white font-medium">{card.lookingForWants}</p>
                 </div>

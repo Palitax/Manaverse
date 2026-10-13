@@ -178,7 +178,7 @@ export function Navbar() {
       <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-2.5 right-2.5 max-w-md mx-auto z-50 pointer-events-auto">
         <nav
           aria-label="Mobile Navigation"
-          className="flex items-center justify-around p-1.5 rounded-2xl bg-[#080c14]/80 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]"
+          className="flex items-center justify-around p-1.5 rounded-2xl bg-[#080c14]/92 backdrop-blur-md border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]"
         >
           {navItems.map((item) => {
             const isActive = pathname === item.href;

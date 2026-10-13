@@ -71,8 +71,8 @@ export function ForgeEmbersCanvas({
     handleResize();
     window.addEventListener("resize", handleResize, { passive: true });
 
-    // Partikel-Anzahl responsiv: Mobile ca. 35, Desktop 65
-    const particleCount = width < 640 ? 32 : width < 1024 ? 48 : 65;
+    // Partikel-Anzahl hochgradig optimiert: Mobile 16, Tablet 24, Desktop 36
+    const particleCount = width < 640 ? 16 : width < 1024 ? 24 : 36;
     const particles: Particle[] = [];
 
     const getThemeConfig = (theme: AmbientCardKey) => {
@@ -88,7 +88,7 @@ export function ForgeEmbersCanvas({
       return {
         x: Math.random() * width,
         y: initialRandomY ? Math.random() * height : height + 10 + Math.random() * 80,
-        radius: 0.9 + Math.random() * 1.8,
+        radius: 0.9 + Math.random() * 1.6,
         alpha: 0,
         targetAlpha: 0.35 + Math.random() * 0.55,
         speedY: 0.45 + Math.random() * 0.75,
@@ -109,7 +109,7 @@ export function ForgeEmbersCanvas({
 
     const render = (now: number) => {
       if (document.hidden || isPaused) {
-        animationFrameId = requestAnimationFrame(render);
+        // Pausiert: Loop stoppen, nicht kontinuierlich 60fps leeren Loop triggern!
         return;
       }
 
@@ -137,25 +137,29 @@ export function ForgeEmbersCanvas({
         const currentX = p.x + Math.sin(p.swayPhase) * p.swayAmp;
 
         // Ein- und Ausblenden:
-        // Unten sanft aufblenden, im oberen Drittel allmählich verblassen
         const progressY = p.y / height; // 1 = unten, 0 = ganz oben
         let verticalFade = 1;
         if (progressY > 0.85) {
-          verticalFade = (1 - progressY) / 0.15; // Einblenden beim Start von unten
+          verticalFade = (1 - progressY) / 0.15;
         } else if (progressY < 0.25) {
-          verticalFade = Math.max(0, progressY / 0.25); // Verblassen nach oben
+          verticalFade = Math.max(0, progressY / 0.25);
         }
 
         p.alpha += (p.targetAlpha - p.alpha) * 0.08 * delta;
         const effectiveAlpha = Math.max(0, Math.min(1, p.alpha * verticalFade));
 
-        // Partikel zeichnen mit feinem Weichzeichner-Glow
+        // Partikel zeichnen OHNE CPU-fressendes shadowBlur (10x schneller & akkuschonend)
         if (effectiveAlpha > 0.02) {
+          // 1. Zarter äußerer Gluthalo
+          ctx.beginPath();
+          ctx.arc(currentX, p.y, p.radius * 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${effectiveAlpha * 0.25})`;
+          ctx.fill();
+
+          // 2. Heller Glutfunken-Kern
           ctx.beginPath();
           ctx.arc(currentX, p.y, p.radius, 0, Math.PI * 2);
           ctx.fillStyle = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${effectiveAlpha})`;
-          ctx.shadowColor = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${effectiveAlpha * 0.8})`;
-          ctx.shadowBlur = p.radius * 3.5;
           ctx.fill();
         }
 
@@ -169,7 +173,9 @@ export function ForgeEmbersCanvas({
       animationFrameId = requestAnimationFrame(render);
     };
 
-    animationFrameId = requestAnimationFrame(render);
+    if (!isPaused && !document.hidden) {
+      animationFrameId = requestAnimationFrame(render);
+    }
 
     return () => {
       window.removeEventListener("resize", handleResize);

@@ -1054,7 +1054,7 @@ export function CardForgeStudio({
 
               {/* Bottom Slab Footer / Price Tag */}
               <div className="mt-3.5 space-y-2 relative z-10">
-                <div className="p-2.5 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center justify-between text-xs shadow-inner">
+                <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between text-xs shadow-inner">
                   <div className="min-w-0">
                     <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
                       {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}

@@ -11,25 +11,29 @@ interface LuxurySlabProps {
   className?: string;
 }
 
+const STATIC_TILTS: Record<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d", string> = {
+  "tilt-a": "-rotate-[1.2deg] -translate-y-1",
+  "tilt-b": "rotate-[1deg] translate-y-1.5",
+  "tilt-c": "-rotate-[0.8deg] translate-y-0.5",
+  "tilt-d": "rotate-[1.4deg] -translate-y-1.5",
+};
+
 export function LuxurySlab({
   slab,
   tiltVariant = "tilt-a",
   className,
 }: LuxurySlabProps) {
+  const tiltClass = STATIC_TILTS[tiltVariant] || STATIC_TILTS["tilt-a"];
+
   return (
     <div
       className={cn(
-        "relative flex-shrink-0 select-none pointer-events-none transition-transform duration-700",
+        "relative flex-shrink-0 select-none pointer-events-none transition-transform duration-500",
         // Authentisches TCG-Kartenformat: 63mm x 88mm (~1:1.397)
-        // Responsive Skalierung, damit 3 Reihen auf allen Displayhöhen mit großzügigem Freiraum schweben
         "w-[105px] sm:w-[120px] md:w-[138px] lg:w-[152px] xl:w-[165px] aspect-[63/88]",
-        // Sanftes, hardware-beschleunigtes Schweben (0% CPU-Last)
-        `animate-slab-${tiltVariant}`,
+        tiltClass,
         className
       )}
-      style={{
-        willChange: "transform",
-      }}
     >
       {/* 
         Reine TCG-Sammelkarte:

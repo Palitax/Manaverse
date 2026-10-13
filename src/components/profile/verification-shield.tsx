@@ -260,7 +260,7 @@ export function VerificationShield({
           {/* Shield Icon Visual Container with single calm glow */}
           <div
             className={cn(
-              "relative flex items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300",
+              "relative flex items-center justify-center rounded-xl border transition-all duration-300",
               sizeClasses[size],
               tier.borderColor,
               tier.badgeBg,

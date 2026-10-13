@@ -116,7 +116,7 @@ export function MarketHubNavigation({
       {/* ==================================================================== */}
       {/* 1. TOP SEGMENTED MODE HUB (Kaufen, Verkaufen, Tauschen, Gesucht)      */}
       {/* ==================================================================== */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-2 rounded-3xl glass-panel border border-white/10 backdrop-blur-2xl">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-2 rounded-3xl glass-panel border border-white/10">
         {/* Navigation Pills */}
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/5 overflow-x-auto no-scrollbar">
           {modeConfigs.map((m) => {

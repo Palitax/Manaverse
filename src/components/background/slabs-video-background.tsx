@@ -21,12 +21,12 @@ const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
   "tilt-d",
 ];
 
-// Erzeugt einen nahtlosen Repetition-Block (3 Wiederholungen der 5 Karten = 15 Karten)
-// 15 Karten decken mit den großzügigen Abständen auch 5K- und 6K-Displays mühelos ab,
-// während die mathematische Dual-Track-Struktur 100% sprungfreie Endlos-Schleifen garantiert.
+// Erzeugt einen nahtlosen Repetition-Block (2 Wiederholungen der 5 Karten = 10 Karten)
+// 10 Karten decken mit den großzügigen Abständen auch 4K- und 5K-Displays mühelos ab,
+// während 33% weniger DOM-Knoten und Bilder geladen werden müssen.
 function createSeamlessTrack(cards: BackgroundSlab[]) {
   const result: BackgroundSlab[] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     result.push(...cards);
   }
   return result;
@@ -121,6 +121,11 @@ export function SlabsVideoBackground() {
     }
     return false;
   });
+
+  // Performance-Booster: Auf Unterseiten (Kaufen, Verkaufen, Profil etc.) pausieren,
+  // damit 0% GPU- und CPU-Ressourcen für unsichtbare Hintergrundanimationen verschwendet werden.
+  const isEffectivelyPaused = isPaused || !isHome;
+
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
   const hoveredCard = useAmbientHoveredCard();
 
@@ -264,7 +269,7 @@ export function SlabsVideoBackground() {
           {/* Aufsteigende Glutfunken der Mana-Schmiede (Canvas) - HINTER DEN KARTEN */}
           <ForgeEmbersCanvas
             activeTheme={hoveredCard}
-            isPaused={isPaused}
+            isPaused={isEffectivelyPaused}
             className="absolute inset-0 pointer-events-none z-0"
           />
         </div>
@@ -279,10 +284,10 @@ export function SlabsVideoBackground() {
             focusMode === "ambient"
               ? isHome
                 ? "opacity-60 brightness-[0.80] contrast-[0.98]"
-                : "opacity-45 brightness-[0.70] contrast-[0.92] blur-[0.6px]"
+                : "opacity-40 brightness-[0.65] contrast-[0.90]"
               : isHome
                 ? "opacity-85 brightness-[0.96] contrast-[1]"
-                : "opacity-70 brightness-[0.88] contrast-[0.98]"
+                : "opacity-65 brightness-[0.80] contrast-[0.95]"
           )}
         >
           {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
@@ -292,7 +297,7 @@ export function SlabsVideoBackground() {
             direction="right"
             duration="190s"
             tiltOffset={0}
-            isPaused={isPaused}
+            isPaused={isEffectivelyPaused}
           />
 
           {/* REIHE 2: Rechts -> Links (Majestätische Slow Motion) */}
@@ -302,7 +307,7 @@ export function SlabsVideoBackground() {
             direction="left"
             duration="230s"
             tiltOffset={1}
-            isPaused={isPaused}
+            isPaused={isEffectivelyPaused}
           />
 
           {/* REIHE 3: Links -> Rechts (Majestätische Slow Motion) */}
@@ -312,7 +317,7 @@ export function SlabsVideoBackground() {
             direction="right"
             duration="210s"
             tiltOffset={2}
-            isPaused={isPaused}
+            isPaused={isEffectivelyPaused}
           />
         </div>
 
@@ -322,12 +327,12 @@ export function SlabsVideoBackground() {
         <div className="absolute inset-x-0 top-0 h-28 sm:h-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none z-20" />
         <div className="absolute inset-x-0 bottom-0 h-24 sm:h-36 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-20" />
 
-        {/* UNTERSEITEN-OVERLAY: Sanfter Kontrastfilter für Inhaltsseiten */}
+        {/* UNTERSEITEN-OVERLAY: Performanter Kontrastfilter für Inhaltsseiten OHNE Fullscreen-Blur */}
         {!isHome && (
           <div
             className={cn(
-              "absolute inset-0 transition-opacity duration-700 pointer-events-none z-20",
-              focusMode === "ambient" ? "bg-black/65 backdrop-blur-[2px]" : "bg-black/45 backdrop-blur-[1px]"
+              "absolute inset-0 transition-opacity duration-500 pointer-events-none z-20",
+              focusMode === "ambient" ? "bg-black/85" : "bg-black/70"
             )}
           />
         )}
