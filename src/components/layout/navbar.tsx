@@ -13,7 +13,6 @@ import {
   Zap,
   Flame,
   Gift,
-  Database,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -58,7 +57,6 @@ export function Navbar() {
     { label: "Kaufen", href: "/buy", icon: <ShoppingBag className="w-4 h-4" /> },
     { label: "Tauschen", href: "/trade", icon: <ArrowLeftRight className="w-4 h-4" /> },
     { label: "Gesucht", href: "/looking-for", icon: <Search className="w-4 h-4" /> },
-    { label: "TCG-Index", href: "/tcg-index", icon: <Database className="w-4 h-4" /> },
   ];
 
   return (
@@ -75,8 +73,10 @@ export function Navbar() {
           )}
         >
           <img
-            src="/manaforge-logo.png"
+            src="/manaforge-logo.webp"
             alt="MANAFORGE"
+            loading="lazy"
+            decoding="async"
             className="h-9 sm:h-11 md:h-12 w-auto max-w-[170px] sm:max-w-[210px] object-contain drop-shadow-[0_2px_14px_rgba(249,115,22,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_4px_22px_rgba(249,115,22,0.85)] transition-all duration-300"
           />
         </Link>

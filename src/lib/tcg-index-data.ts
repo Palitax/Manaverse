@@ -910,17 +910,29 @@ export function searchTcgCards(
   }
 
   const q = query.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+
   return list.filter((c) => {
-    return (
-      c.name.toLowerCase().includes(q) ||
-      c.nameOriginal.toLowerCase().includes(q) ||
-      c.nameEn.toLowerCase().includes(q) ||
-      c.nameDe.toLowerCase().includes(q) ||
-      c.pokemon.toLowerCase().includes(q) ||
-      c.setCode.toLowerCase().includes(q) ||
-      c.setName.toLowerCase().includes(q) ||
-      c.number.toLowerCase().includes(q)
-    );
+    const searchable = [
+      c.name,
+      c.nameOriginal,
+      c.nameEn,
+      c.nameDe,
+      c.pokemon,
+      c.setCode,
+      c.setName,
+      c.number,
+      `${c.name} ${c.setName}`,
+      `${c.nameDe} ${c.setName}`,
+      `${c.nameEn} ${c.setName}`,
+      `${c.pokemon} ${c.setCode}`,
+      `${c.pokemon} ${c.setName}`,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    // All words in query must match
+    return words.every((w) => searchable.includes(w));
   });
 }
 

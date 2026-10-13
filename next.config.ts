@@ -35,6 +35,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false, // Prevents server fingerprinting
   productionBrowserSourceMaps: false, // Prevents source maps leakage in production
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "https",

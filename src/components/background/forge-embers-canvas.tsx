@@ -71,8 +71,8 @@ export function ForgeEmbersCanvas({
     handleResize();
     window.addEventListener("resize", handleResize, { passive: true });
 
-    // Partikel-Anzahl hochgradig optimiert: Mobile 16, Tablet 24, Desktop 36
-    const particleCount = width < 640 ? 16 : width < 1024 ? 24 : 36;
+    // Partikel-Anzahl hochgradig optimiert: Mobile 12, Tablet 20, Desktop 32
+    const particleCount = width < 640 ? 12 : width < 1024 ? 20 : 32;
     const particles: Particle[] = [];
 
     const getThemeConfig = (theme: AmbientCardKey) => {
@@ -173,12 +173,22 @@ export function ForgeEmbersCanvas({
       animationFrameId = requestAnimationFrame(render);
     };
 
+    const handleVisibility = () => {
+      if (!document.hidden && !isPaused) {
+        cancelAnimationFrame(animationFrameId);
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     if (!isPaused && !document.hidden) {
       animationFrameId = requestAnimationFrame(render);
     }
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibility);
       cancelAnimationFrame(animationFrameId);
     };
   }, [activeTheme, isPaused]);

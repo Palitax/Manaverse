@@ -154,8 +154,10 @@ export function AuthModal() {
         <div className="text-center space-y-2 mb-6 relative z-10">
           <div className="flex justify-center mb-1">
             <img
-              src="/manaforge-logo.png"
+              src="/manaforge-logo.webp"
               alt="MANAFORGE"
+              loading="lazy"
+              decoding="async"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_16px_rgba(249,115,22,0.4)]"
             />
           </div>

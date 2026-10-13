@@ -4,9 +4,7 @@ import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { Navbar } from "@/components/layout/navbar";
 import { SlabsVideoBackground } from "@/components/background/slabs-video-background";
-import { AuthModal } from "@/components/forms/auth-modal";
-import { DiscordWelcomeModal } from "@/components/forms/discord-welcome-modal";
-import { BoosterRipModal } from "@/components/booster/booster-rip-modal";
+import { GlobalModals } from "@/components/modals/global-modals";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -18,9 +16,9 @@ export const metadata: Metadata = {
   title: "MANAFORGE • Community & Trading Platform",
   description: "Exklusive Plattform für die Community von Manaforge / Manacards. Karten verkaufen, tauschen, suchen und direkt per Discord vernetzen.",
   icons: {
-    icon: "/manaforge-logo.png",
-    shortcut: "/manaforge-logo.png",
-    apple: "/manaforge-logo.png",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -35,9 +33,7 @@ export default function RootLayout({
         <StoreProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 relative">{children}</main>
-          <AuthModal />
-          <DiscordWelcomeModal />
-          <BoosterRipModal />
+          <GlobalModals />
         </StoreProvider>
         {/* Luxury 3D Graded Slabs Video Background & Ambience Controls */}
         <SlabsVideoBackground />

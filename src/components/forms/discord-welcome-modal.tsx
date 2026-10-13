@@ -165,8 +165,10 @@ export function DiscordWelcomeModal() {
           <div className="flex items-center justify-center gap-3 mb-1">
             <div className="w-14 h-14 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-center shadow-lg">
               <img
-                src="/manaforge-logo.png"
+                src="/manaforge-logo.webp"
                 alt="MANAFORGE"
+                loading="lazy"
+                decoding="async"
                 className="w-10 h-10 object-contain drop-shadow-[0_2px_8px_rgba(249,115,22,0.5)]"
               />
             </div>

@@ -21,15 +21,10 @@ const TILT_VARIANTS: Array<"tilt-a" | "tilt-b" | "tilt-c" | "tilt-d"> = [
   "tilt-d",
 ];
 
-// Erzeugt einen nahtlosen Repetition-Block (2 Wiederholungen der 5 Karten = 10 Karten)
-// 10 Karten decken mit den großzügigen Abständen auch 4K- und 5K-Displays mühelos ab,
-// während 33% weniger DOM-Knoten und Bilder geladen werden müssen.
+// Gibt die 5 Karten pro Track zurück. Mit Track 1 + Track 2 (identischer Zwilling)
+// werden bereits 10 Karten pro Reihe gerendert (>3.000px Breite) bei 50% weniger DOM-Knoten und Bild-Requests!
 function createSeamlessTrack(cards: BackgroundSlab[]) {
-  const result: BackgroundSlab[] = [];
-  for (let i = 0; i < 2; i++) {
-    result.push(...cards);
-  }
-  return result;
+  return cards;
 }
 
 interface MarqueeRowProps {
@@ -127,9 +122,11 @@ export function SlabsVideoBackground() {
   const isEffectivelyPaused = isPaused || !isHome;
 
   const [focusMode, setFocusMode] = useState<"ambient" | "bright">("ambient");
+  const [isMounted, setIsMounted] = useState(false);
   const hoveredCard = useAmbientHoveredCard();
 
   useEffect(() => {
+    setIsMounted(true);
     try {
       const saved = localStorage.getItem("manaforge_bg_focus");
       if (saved === "ambient" || saved === "bright") {
@@ -267,59 +264,63 @@ export function SlabsVideoBackground() {
           />
 
           {/* Aufsteigende Glutfunken der Mana-Schmiede (Canvas) - HINTER DEN KARTEN */}
-          <ForgeEmbersCanvas
-            activeTheme={hoveredCard}
-            isPaused={isEffectivelyPaused}
-            className="absolute inset-0 pointer-events-none z-0"
-          />
+          {isMounted && (
+            <ForgeEmbersCanvas
+              activeTheme={hoveredCard}
+              isPaused={isEffectivelyPaused}
+              className="absolute inset-0 pointer-events-none z-0"
+            />
+          )}
         </div>
 
         {/* ==================================================================== */}
         {/* LAYER B (ÜBER DEN FUNKEN & DEM ORANGE - z-10): DIE SCHWEBENDEN KARTEN */}
         {/* 100% kristallklar sichtbar, nicht von Funken oder Nebel überdeckt!   */}
         {/* ==================================================================== */}
-        <div
-          className={cn(
-            "relative z-10 w-full h-full flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
-            focusMode === "ambient"
-              ? isHome
-                ? "opacity-60 brightness-[0.80] contrast-[0.98]"
-                : "opacity-40 brightness-[0.65] contrast-[0.90]"
-              : isHome
-                ? "opacity-85 brightness-[0.96] contrast-[1]"
-                : "opacity-65 brightness-[0.80] contrast-[0.95]"
-          )}
-        >
-          {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
-          <MarqueeRow
-            rowId="r1"
-            cards={BACKGROUND_SLABS_ROW_1}
-            direction="right"
-            duration="190s"
-            tiltOffset={0}
-            isPaused={isEffectivelyPaused}
-          />
+        {isMounted && (
+          <div
+            className={cn(
+              "relative z-10 w-full h-full flex flex-col justify-evenly py-2 sm:py-6 pointer-events-none select-none transition-all duration-700",
+              focusMode === "ambient"
+                ? isHome
+                  ? "opacity-60 brightness-[0.80] contrast-[0.98]"
+                  : "opacity-40 brightness-[0.65] contrast-[0.90]"
+                : isHome
+                  ? "opacity-85 brightness-[0.96] contrast-[1]"
+                  : "opacity-65 brightness-[0.80] contrast-[0.95]"
+            )}
+          >
+            {/* REIHE 1: Links -> Rechts (Majestätische Slow Motion) */}
+            <MarqueeRow
+              rowId="r1"
+              cards={BACKGROUND_SLABS_ROW_1}
+              direction="right"
+              duration="190s"
+              tiltOffset={0}
+              isPaused={isEffectivelyPaused}
+            />
 
-          {/* REIHE 2: Rechts -> Links (Majestätische Slow Motion) */}
-          <MarqueeRow
-            rowId="r2"
-            cards={BACKGROUND_SLABS_ROW_2}
-            direction="left"
-            duration="230s"
-            tiltOffset={1}
-            isPaused={isEffectivelyPaused}
-          />
+            {/* REIHE 2: Rechts -> Links (Majestätische Slow Motion) */}
+            <MarqueeRow
+              rowId="r2"
+              cards={BACKGROUND_SLABS_ROW_2}
+              direction="left"
+              duration="230s"
+              tiltOffset={1}
+              isPaused={isEffectivelyPaused}
+            />
 
-          {/* REIHE 3: Links -> Rechts (Majestätische Slow Motion) */}
-          <MarqueeRow
-            rowId="r3"
-            cards={BACKGROUND_SLABS_ROW_3}
-            direction="right"
-            duration="210s"
-            tiltOffset={2}
-            isPaused={isEffectivelyPaused}
-          />
-        </div>
+            {/* REIHE 3: Links -> Rechts (Majestätische Slow Motion) */}
+            <MarqueeRow
+              rowId="r3"
+              cards={BACKGROUND_SLABS_ROW_3}
+              direction="right"
+              duration="210s"
+              tiltOffset={2}
+              isPaused={isEffectivelyPaused}
+            />
+          </div>
+        )}
 
         {/* ==================================================================== */}
         {/* LAYER C (z-20): KONTRAST-VERLÄUFE FÜR NAVIGATION & FOOTER           */}

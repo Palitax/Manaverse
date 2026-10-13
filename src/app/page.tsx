@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -42,7 +43,7 @@ export default function HomePage() {
       nameGradient: "holo-text-sell",
       description: "Einzelkarten verkaufen oder ganze Sammlungen bei Manaforge einreichen.",
       href: "/sell",
-      bgImage: "/pokemon/rayquaza.jpg",
+      bgImage: "/pokemon/rayquaza.webp",
       cardBg: "from-emerald-950/40 via-teal-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-emerald-400/90 via-green-500/90 to-teal-600/90",
       borderColor: "border-emerald-500/40 group-hover:border-emerald-400/90",
@@ -60,7 +61,7 @@ export default function HomePage() {
       nameGradient: "holo-text-buy",
       description: "Karten und Angebote aus der Community erwerben.",
       href: "/buy",
-      bgImage: "/pokemon/pikachu.jpg",
+      bgImage: "/pokemon/pikachu.webp",
       cardBg: "from-cyan-950/40 via-sky-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-yellow-400/90 via-amber-400/90 to-cyan-400/90",
       borderColor: "border-cyan-400/40 group-hover:border-yellow-300/90",
@@ -78,7 +79,7 @@ export default function HomePage() {
       nameGradient: "holo-text-trade",
       description: "Karten fair 1:1 innerhalb der Community tauschen.",
       href: "/trade",
-      bgImage: "/pokemon/mewtwo.jpg",
+      bgImage: "/pokemon/mewtwo.webp",
       cardBg: "from-purple-950/40 via-fuchsia-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-purple-400/90 via-fuchsia-400/90 to-pink-500/90",
       borderColor: "border-purple-400/40 group-hover:border-fuchsia-300/90",
@@ -96,7 +97,7 @@ export default function HomePage() {
       nameGradient: "holo-text-look",
       description: "Eigene Wunschkarten ausschreiben.",
       href: "/looking-for",
-      bgImage: "/pokemon/charizard.jpg",
+      bgImage: "/pokemon/charizard.webp",
       cardBg: "from-amber-950/40 via-orange-950/20 to-black/60",
       sidebarBg: "bg-gradient-to-b from-amber-400/90 via-orange-500/90 to-red-500/90",
       borderColor: "border-orange-400/40 group-hover:border-amber-300/90",
@@ -111,7 +112,7 @@ export default function HomePage() {
       id: "bento-sell",
       align: "left",
       categoryName: "ANKAUF",
-      pokemonImg: "/pokemon/rayquaza.jpg",
+      pokemonImg: "/pokemon/rayquaza.webp",
       objectPosition: "50% 16%",
       flip: false,
       title: "Einzelkarten & Sammlungen direkt verkaufen",
@@ -127,7 +128,7 @@ export default function HomePage() {
       id: "bento-buy",
       align: "right",
       categoryName: "MARKTPLATZ",
-      pokemonImg: "/pokemon/pikachu.jpg",
+      pokemonImg: "/pokemon/pikachu.webp",
       objectPosition: "50% 24%",
       flip: true,
       title: "Geprüfter Community-Marktplatz",
@@ -143,7 +144,7 @@ export default function HomePage() {
       id: "bento-trade",
       align: "left",
       categoryName: "1:1 TAUSCH",
-      pokemonImg: "/pokemon/mewtwo.jpg",
+      pokemonImg: "/pokemon/mewtwo.webp",
       objectPosition: "50% 16%",
       flip: false,
       title: "Fairer 1:1 Kartentausch mit ETV-Wertausgleich",
@@ -159,7 +160,7 @@ export default function HomePage() {
       id: "bento-seek",
       align: "right",
       categoryName: "GESUCHE",
-      pokemonImg: "/pokemon/charizard.jpg",
+      pokemonImg: "/pokemon/charizard.webp",
       objectPosition: "50% 16%",
       flip: true,
       title: "Wunschkarten mit Live-Bounties ausschreiben",
@@ -184,18 +185,17 @@ export default function HomePage() {
         {/* ========================================================
             HERO BRAND LOGO: Centered at top of website in grand size
            ======================================================== */}
-        <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex flex-col items-center justify-center pt-1 sm:pt-2 pb-1 sm:pb-2 px-4 z-30 pointer-events-auto"
-        >
-          <img
-            src="/manaforge-logo.png"
+        <div className="w-full flex flex-col items-center justify-center pt-1 sm:pt-2 pb-1 sm:pb-2 px-4 z-30 pointer-events-auto">
+          <Image
+            src="/manaforge-logo.webp"
             alt="MANAFORGE"
+            width={720}
+            height={270}
+            priority
+            fetchPriority="high"
             className="w-[145px] min-[390px]:w-[165px] sm:w-[210px] md:w-[250px] lg:w-[290px] xl:w-[330px] 2xl:w-[360px] max-w-[85vw] h-auto object-contain filter drop-shadow-[0_3px_20px_rgba(249,115,22,0.6)] drop-shadow-[0_8px_20px_rgba(0,0,0,0.9)] hover:scale-105 transition-all duration-300 select-none"
           />
-        </motion.div>
+        </div>
 
         {/* Main 4 Cards: 2x2 Grid on Mobile (Zero horizontal scrolling), 4-in-a-row on Desktop */}
         <main className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 overflow-visible flex items-center justify-center my-auto">
@@ -227,6 +227,8 @@ export default function HomePage() {
                     <img
                       src={card.bgImage}
                       alt={card.title}
+                      loading="eager"
+                      decoding="async"
                       className="absolute inset-0 w-full h-full object-cover object-top sm:object-center transform group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none select-none z-0 brightness-[0.95] contrast-[1.04]"
                     />
 
@@ -379,6 +381,8 @@ export default function HomePage() {
                   <img
                     src={bento.pokemonImg}
                     alt={bento.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{ objectPosition: bento.objectPosition }}
                     className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-85 md:opacity-95 ${
                       bento.flip ? "scale-x-[-1]" : ""
