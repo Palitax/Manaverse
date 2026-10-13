@@ -91,8 +91,8 @@ export default function BuyPage() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Tag className="w-4 h-4" /> Sammler-Vault • Sofortkauf & Inserate
+          <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
+            <Tag className="w-4 h-4 text-amber-400" /> Sammelboard • Verkaufsinserate
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
             Karten kaufen
@@ -136,8 +136,8 @@ export default function BuyPage() {
       {/* Content */}
       {filteredListings.length === 0 ? (
         <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={200} duration={8} colorFrom="#10b981" colorTo="#38bdf8" />
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+          <BorderBeam size={200} duration={8} colorFrom="#f59e0b" colorTo="#fbbf24" />
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
             <Tag className="w-8 h-8" />
           </div>
           <h3 className="text-xl font-black text-white">Keine passenden Verkaufskarten</h3>
@@ -147,7 +147,7 @@ export default function BuyPage() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
             <button
               onClick={handleOpenCreate}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all min-h-[44px]"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs transition-all min-h-[44px]"
             >
               + Neue Karte anbieten
             </button>

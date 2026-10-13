@@ -96,6 +96,16 @@ export function DiscordWelcomeModal() {
     }
   }, [currentUser]);
 
+  // Escape key listener to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -132,7 +142,10 @@ export function DiscordWelcomeModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      onClick={handleClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-lg rounded-3xl bg-[#121316] border border-orange-500/30 p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_50px_rgba(249,115,22,0.15)] max-h-[92dvh] overflow-y-auto">
         {/* Subtle orange ambient glow in background */}
         <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-orange-500/15 via-amber-500/5 to-transparent pointer-events-none rounded-t-3xl" />

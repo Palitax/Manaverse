@@ -36,6 +36,7 @@ import {
   Search,
   Calendar,
   FileText,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlabTopSigil } from "../cards/slab-top-sigil";
@@ -993,9 +994,6 @@ export function CardForgeStudio({
           {/* Ultra-Clean Acrylic Display Slab Component Preview (Stable, no wobble) */}
           <div className="acrylic-slab-container">
             <div className="acrylic-display-slab select-none">
-              {/* Overhanging Top Crest Sigil (Manaforge Sigil / Magma Glow / Rising Ash / 90° Hover Rotation) */}
-              <SlabTopSigil />
-
               {/* Chamfered Bevel & Specular Glare */}
               <div className="slab-edge-bevel" />
               <div className="slab-glare-effect" />
@@ -1056,9 +1054,11 @@ export function CardForgeStudio({
               <div className="mt-3.5 space-y-2 relative z-10">
                 <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between text-xs shadow-inner">
                   <div className="min-w-0">
-                    <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
-                      {isSell ? "Verkaufspreis" : isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
-                    </span>
+                    {!isSell && (
+                      <span className="text-[9px] text-neutral-400 uppercase font-bold block leading-none truncate">
+                        {isTrade ? "Tauschwert (ETV)" : "Kopfgeld-Budget"}
+                      </span>
+                    )}
                     <span className="text-base font-black text-white truncate block">
                       {isSell
                         ? price
@@ -1076,12 +1076,25 @@ export function CardForgeStudio({
                   </span>
                 </div>
 
-                {/* Slim full-width "Angebot machen" preview button for sell with offers */}
-                {isSell && allowOffers && (
-                  <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
-                    Angebot machen
+                {/* Quick Action Preview Buttons for sell cards */}
+                {isSell && (
+                  <div className="space-y-1.5 pt-0.5">
+                    {allowOffers && (
+                      <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
+                        Angebot machen
+                      </div>
+                    )}
+                    <div className="w-full py-1.5 px-3 rounded-xl bg-white/5 border border-white/15 text-neutral-300 font-bold text-[11px] text-center shadow-sm flex items-center justify-center gap-1.5">
+                      <MessageCircle className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Verkäufer kontaktieren</span>
+                    </div>
                   </div>
                 )}
+
+                {/* Centered Animated Manaforge Sigil Trigger Preview */}
+                <div className="flex flex-col items-center justify-center pt-2 pb-0.5">
+                  <SlabTopSigil interactive isExpanded={false} />
+                </div>
               </div>
 
               {/* Polished Bottom Acrylic Rim (Clean) */}

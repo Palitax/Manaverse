@@ -37,6 +37,17 @@ export function TradeBalanceDrawer({
   const [tradeMessage, setTradeMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !listing) return null;
 
   // Filter current user's own cards that can be offered
@@ -130,8 +141,14 @@ export function TradeBalanceDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel border border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.25)] p-5 sm:p-7">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-200"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel border border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.25)] p-5 sm:p-7"
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">

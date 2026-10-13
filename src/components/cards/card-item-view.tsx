@@ -30,6 +30,15 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const { currentUser, createDeal, openAuthModal } = useStore();
 
+  React.useEffect(() => {
+    if (!modalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalOpen]);
+
   const conditionColors: Record<CardCondition, string> = {
     NM: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     EX: "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -218,8 +227,14 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
 
       {/* Detail Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 border border-white/15 shadow-2xl">
+        <div
+          onClick={() => setModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 border border-white/15 shadow-2xl"
+          >
             {/* Close Button */}
             <button
               onClick={() => setModalOpen(false)}

@@ -189,16 +189,20 @@ export function MarketHubNavigation({
             onClick={onOpenCreate}
             className={cn(
               "px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all active:scale-95 flex items-center gap-2 shadow-lg min-h-[44px] cursor-pointer whitespace-nowrap",
-              activeMode === "sell"
+              activeMode === "own_sell"
                 ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/25"
+                : activeMode === "sell"
+                ? "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-400/30"
                 : activeMode === "trade"
                 ? "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30"
-                : "bg-cyan-500 hover:bg-cyan-400 text-black shadow-cyan-500/25"
+                : "bg-orange-500 hover:bg-orange-400 text-white shadow-orange-500/30"
             )}
           >
             <Plus className="w-4 h-4" />
             <span>
-              {activeMode === "sell"
+              {activeMode === "own_sell"
+                ? "Karte anbieten"
+                : activeMode === "sell"
                 ? "Karte anbieten"
                 : activeMode === "trade"
                 ? "Tausch anbieten"

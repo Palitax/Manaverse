@@ -23,6 +23,7 @@ import {
   ChevronUp,
   ChevronDown,
   X,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TradeBalanceDrawer } from "./trade-balance-drawer";
@@ -48,47 +49,55 @@ export function CollectorSlabCard({
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const [bountyModalOpen, setBountyModalOpen] = useState(false);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [isSendingContact, setIsSendingContact] = useState(false);
   const [offerAmount, setOfferAmount] = useState<string>("");
   const [offerMessage, setOfferMessage] = useState<string>("");
   const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [copiedDiscord, setCopiedDiscord] = useState(false);
 
-  // Collapsible bottom drawer state & hover cursor tracking
-  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
-  const [isHoveringToggle, setIsHoveringToggle] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  // Collapsible bottom drawer state (default collapsed per user requirement)
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(true);
 
-  // 2-Second Hold-to-Delete Modal State
+  // Hold-to-Delete Modal State (Progress fill, no countdown, confirmation animation)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteHoldProgress, setDeleteHoldProgress] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletedSuccess, setIsDeletedSuccess] = useState(false);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const holdStartRef = useRef<number | null>(null);
 
   const startDeleteHold = () => {
+    if (isDeletedSuccess) return;
     holdStartRef.current = Date.now();
     if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
     holdIntervalRef.current = setInterval(() => {
       if (!holdStartRef.current) return;
       const elapsed = Date.now() - holdStartRef.current;
-      const progress = Math.min(100, (elapsed / 2000) * 100);
+      const progress = Math.min(100, (elapsed / 1800) * 100);
       setDeleteHoldProgress(progress);
       if (progress >= 100) {
         if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
         holdIntervalRef.current = null;
         holdStartRef.current = null;
-        setIsDeleting(true);
+        setIsDeletedSuccess(true);
         setTimeout(() => {
-          deleteListing(card.id);
-          setDeleteModalOpen(false);
-          setIsDeleting(false);
-          setDeleteHoldProgress(0);
-        }, 350);
+          setIsDeleting(true);
+          setTimeout(() => {
+            deleteListing(card.id);
+            setDeleteModalOpen(false);
+            setIsDeleting(false);
+            setIsDeletedSuccess(false);
+            setDeleteHoldProgress(0);
+          }, 300);
+        }, 700);
       }
     }, 25);
   };
 
   const cancelDeleteHold = () => {
+    if (isDeletedSuccess) return;
     if (holdIntervalRef.current) {
       clearInterval(holdIntervalRef.current);
       holdIntervalRef.current = null;
@@ -102,6 +111,41 @@ export function CollectorSlabCard({
       if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
     };
   }, []);
+
+  // Global Escape key listener to close open modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (contactModalOpen) setContactModalOpen(false);
+        if (offerModalOpen) setOfferModalOpen(false);
+        if (deleteModalOpen) {
+          cancelDeleteHold();
+          setDeleteModalOpen(false);
+        }
+        if (detailModalOpen) setDetailModalOpen(false);
+        if (tradeDrawerOpen) setTradeDrawerOpen(false);
+        if (bountyModalOpen) setBountyModalOpen(false);
+      }
+    };
+    if (
+      detailModalOpen ||
+      offerModalOpen ||
+      contactModalOpen ||
+      deleteModalOpen ||
+      tradeDrawerOpen ||
+      bountyModalOpen
+    ) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [
+    detailModalOpen,
+    offerModalOpen,
+    contactModalOpen,
+    deleteModalOpen,
+    tradeDrawerOpen,
+    bountyModalOpen,
+  ]);
 
   // Dynamic seller profile synchronization (live updates across app)
   const seller = React.useMemo(() => {
@@ -287,9 +331,6 @@ export function CollectorSlabCard({
             className
           )}
         >
-          {/* Overhanging Top Crest Sigil (Manaforge Sigil / Magma Glow / Rising Ash / 90° Hover Rotation) */}
-          <SlabTopSigil />
-
           {/* Chamfered Bevel & Specular Glare */}
           <div className="slab-edge-bevel" />
           <div className="slab-glare-effect" />
@@ -392,12 +433,14 @@ export function CollectorSlabCard({
           </div>
 
           {/* Value & Action Row */}
-          <div className="mt-3.5 space-y-2.5 relative z-10">
+          <div className="mt-3.5 space-y-2 relative z-10">
             <div className="p-2.5 rounded-xl bg-black/75 border border-white/10 flex items-center justify-between gap-2 shadow-inner">
               <div className="min-w-0">
-                <span className="text-[9px] text-neutral-400 uppercase tracking-wider block font-bold truncate">
-                  {mode.valueLabel}
-                </span>
+                {card.type !== "sell" && (
+                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider block font-bold truncate">
+                    {mode.valueLabel}
+                  </span>
+                )}
                 <span className={cn(
                   "text-base sm:text-lg font-black leading-tight truncate block",
                   card.status === "sold" ? "text-neutral-500 line-through" : mode.valueColor
@@ -414,21 +457,21 @@ export function CollectorSlabCard({
 
               {card.status === "sold" ? (
                 <div
-                  className="px-3 py-2 rounded-xl text-xs font-black bg-neutral-800 text-neutral-300 border border-neutral-600 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-600 flex items-center gap-1 select-none flex-shrink-0"
                   title="Diese Karte ist verkauft"
                 >
                   <span>Verkauft</span>
                 </div>
               ) : card.status === "draft" ? (
                 <div
-                  className="px-3 py-2 rounded-xl text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 select-none flex-shrink-0"
                   title="Entwurf - noch nicht aktiv gelistet"
                 >
                   <span>Entwurf</span>
                 </div>
               ) : isOwnCard ? (
                 <div
-                  className="px-3 py-2 rounded-xl text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 min-h-[44px] shadow-sm select-none flex-shrink-0"
+                  className="flex items-center gap-1.5 text-xs font-bold text-emerald-400/90 py-1 px-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex-shrink-0"
                   title="Dies ist deine eigene angebotene Karte"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -439,7 +482,7 @@ export function CollectorSlabCard({
                   type="button"
                   onClick={handleActionClick}
                   className={cn(
-                    "px-3 py-2 rounded-xl text-xs font-black transition-all active:scale-95 flex items-center gap-1 min-h-[44px] cursor-pointer shadow-md flex-shrink-0",
+                    "px-3 py-1.5 rounded-xl text-xs font-black transition-all active:scale-95 flex items-center gap-1 min-h-[38px] cursor-pointer shadow-md flex-shrink-0",
                     mode.btnBg
                   )}
                 >
@@ -448,30 +491,66 @@ export function CollectorSlabCard({
               )}
             </div>
 
+            {/* Quick Action Buttons under the price box for sell cards */}
+            {card.type === "sell" && !isOwnCard && card.status !== "sold" && (
+              <div className="space-y-1.5 pt-0.5">
+                {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
+                {card.allowOffers && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
+                      setOfferModalOpen(true);
+                    }}
+                    className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[32px]"
+                  >
+                    <Tag className="w-3 h-3 text-emerald-400" />
+                    <span>Angebot machen</span>
+                  </button>
+                )}
+
+                {/* Slim compact "Verkäufer kontaktieren" button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!currentUser) {
+                      openAuthModal("login");
+                      return;
+                    }
+                    setContactModalOpen(true);
+                  }}
+                  className="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 text-neutral-200 hover:text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[32px]"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Verkäufer kontaktieren</span>
+                </button>
+              </div>
+            )}
+
+            {/* Centered Animated Manaforge Sigil Trigger (Always animated, rotates on click to expand/collapse) */}
+            <div className="flex flex-col items-center justify-center pt-2 pb-0.5">
+              <SlabTopSigil
+                interactive
+                isExpanded={!isBottomCollapsed}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setIsBottomCollapsed((prev) => !prev);
+                }}
+              />
+            </div>
+
             {/* Collapsible Lower Section (Snaps animated under the price row) */}
             <div
               className={cn(
                 "overflow-hidden transition-all duration-300 ease-out space-y-2.5",
                 isBottomCollapsed
                   ? "max-h-0 opacity-0 pointer-events-none mt-0 pt-0"
-                  : "max-h-[380px] opacity-100 mt-2.5"
+                  : "max-h-[380px] opacity-100 mt-1 pt-2 border-t border-white/10"
               )}
             >
-              {/* Slim full-width "Angebot machen" button for sell cards when allowOffers is true */}
-              {card.type === "sell" && card.allowOffers && !isOwnCard && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOfferAmount(card.price ? String(Math.round(card.price * 0.9)) : "");
-                    setOfferModalOpen(true);
-                  }}
-                  className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm min-h-[34px]"
-                >
-                  <span>Angebot machen</span>
-                </button>
-              )}
-
               {/* Trade Wants note */}
               {card.type === "trade" && card.lookingForWants && (
                 <div className="p-2 rounded-lg bg-purple-950/80 border border-purple-500/30 text-[10px] text-purple-200">
@@ -481,7 +560,7 @@ export function CollectorSlabCard({
               )}
 
               {/* Seller / Seeker footer with generous frame spacing, full username, Trusted shield & deals */}
-              <div className="pt-2.5 mt-2 border-t border-white/10 space-y-2">
+              <div className="space-y-2">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 pt-0.5">
                     <HoloAvatarFrame
@@ -576,66 +655,6 @@ export function CollectorSlabCard({
                 </div>
               )}
             </div>
-
-            {/* Interactive Toggle Control Bar (Click to snap under price or expand) */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setIsBottomCollapsed((prev) => !prev);
-              }}
-              onMouseEnter={() => setIsHoveringToggle(true)}
-              onMouseLeave={() => setIsHoveringToggle(false)}
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-              }}
-              className="relative pt-2 pb-1 px-2 flex flex-col items-center justify-center cursor-none group/toggle select-none transition-all rounded-xl"
-              title={
-                isBottomCollapsed
-                  ? "Hier klicken, um Details auszufahren"
-                  : "Hier klicken, um Details einzuklappen"
-              }
-            >
-              {/* Subtle divider line under Discord / lower content */}
-              <div className="w-full h-px bg-white/10 mb-1.5 transition-colors group-hover/toggle:bg-white/30" />
-
-              {/* Static / Touch friendly indicator bar */}
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all shadow-sm",
-                  isBottomCollapsed
-                    ? "bg-white/20 text-white border border-white/30 shadow-[0_0_10px_rgba(255,255,255,0.25)]"
-                    : "bg-white/10 text-neutral-300 group-hover/toggle:bg-white/20 group-hover/toggle:text-white border border-white/10"
-                )}
-              >
-                {isBottomCollapsed ? (
-                  <>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                    <span>Details ausfahren</span>
-                  </>
-                ) : (
-                  <>
-                    <ChevronUp className="w-3.5 h-3.5" />
-                    <span>Kompakt einklappen</span>
-                  </>
-                )}
-              </div>
-
-              {/* Cursor-replacing floating circle with Arrow UP / DOWN */}
-              {isHoveringToggle && (
-                <div
-                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.9)] flex items-center justify-center z-40 transition-transform duration-75 ease-out scale-105 border border-white"
-                  style={{ left: cursorPos.x, top: cursorPos.y }}
-                >
-                  {isBottomCollapsed ? (
-                    <ChevronDown className="w-4 h-4 stroke-[3] text-black" />
-                  ) : (
-                    <ChevronUp className="w-4 h-4 stroke-[3] text-black" />
-                  )}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Polished Bottom Acrylic Rim (Clean) */}
@@ -667,8 +686,14 @@ export function CollectorSlabCard({
       {/* DETAIL MODAL (Full inspection with gallery, description & deals)     */}
       {/* ==================================================================== */}
       {detailModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-150">
-          <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 sm:p-8 border border-white/20 shadow-2xl">
+        <div
+          onClick={() => setDetailModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel bg-[#0c101c] p-6 sm:p-8 border border-white/20 shadow-2xl"
+          >
             <button
               onClick={() => setDetailModalOpen(false)}
               className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center z-20"
@@ -718,9 +743,11 @@ export function CollectorSlabCard({
                   {/* Price / ETV Highlight Box */}
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
                     <div>
-                      <span className="text-xs text-neutral-400 uppercase tracking-wider block font-bold">
-                        {mode.valueLabel}
-                      </span>
+                      {card.type !== "sell" && (
+                        <span className="text-xs text-neutral-400 uppercase tracking-wider block font-bold">
+                          {mode.valueLabel}
+                        </span>
+                      )}
                       <span className={cn("text-2xl font-black", mode.valueColor)}>
                         {card.type === "sell" && card.price !== undefined
                           ? `${card.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
@@ -880,13 +907,170 @@ export function CollectorSlabCard({
                           }}
                           className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/30 transition-all min-h-[44px] cursor-pointer"
                         >
+                          <Tag className="w-4 h-4 text-emerald-400" />
                           <span>Preisvorschlag (Angebot) einreichen</span>
                         </button>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDetailModalOpen(false);
+                          if (!currentUser) {
+                            openAuthModal("login");
+                            return;
+                          }
+                          setContactModalOpen(true);
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/15 transition-all min-h-[44px] cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4 text-sky-400" />
+                        <span>Verkäufer kontaktieren (Nachricht schreiben)</span>
+                      </button>
                     </div>
                   )}
                 </div>
 
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* CONTACT SELLER MODAL ("Verkäufer kontaktieren" / Chat-Bubble)         */}
+      {/* ==================================================================== */}
+      {contactModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-150"
+          onClick={() => setContactModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl glass-panel bg-[#0c101c] p-6 sm:p-7 border border-sky-500/30 shadow-2xl space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 block">
+                  Direktnachricht
+                </span>
+                <h3 className="text-lg font-black text-white">
+                  Verkäufer kontaktieren
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContactModalOpen(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Card Reference & Seller */}
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
+                {card.photos[0] && (
+                  <img
+                    src={card.photos[0]}
+                    alt={slabTitle.fullLabel}
+                    className="w-12 h-16 object-contain rounded-lg flex-shrink-0 bg-black/40"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">{slabTitle.fullLabel}</p>
+                  <p className="text-[10px] text-neutral-400">
+                    Preis:{" "}
+                    <span className="text-emerald-400 font-bold">
+                      {card.price !== undefined ? `${card.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €` : "VB"}
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-neutral-400">
+                    Verkäufer: <span className="text-white font-medium">{seller.username}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Discord copy quick pill if available */}
+              {card.showDiscordName !== false && seller.discordUsername && (
+                <div className="p-2.5 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[10px] text-neutral-300 font-bold">Discord:</span>
+                    <span className="text-xs font-mono text-white truncate">@{seller.discordUsername}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(seller.discordUsername!);
+                      setCopiedDiscord(true);
+                      setTimeout(() => setCopiedDiscord(false), 2000);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#5865F2]/20 hover:bg-[#5865F2]/30 text-white text-[10px] font-bold transition-all active:scale-95 cursor-pointer"
+                  >
+                    {copiedDiscord ? "✓ Kopiert!" : "Kopieren"}
+                  </button>
+                </div>
+              )}
+
+              {/* Message field */}
+              <div>
+                <label className="block text-xs font-bold text-neutral-200 mb-1.5">
+                  Deine Nachricht an {seller.username} *
+                </label>
+                <textarea
+                  rows={4}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder={`Hallo ${seller.username}, ich interessiere mich für deine Karte "${slabTitle.cleanName}". Hast du Zeit für eine kurze Absprache?`}
+                  className="w-full bg-[#111624] border border-white/15 focus:border-sky-500 rounded-xl p-3 text-white text-xs placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  required
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setContactModalOpen(false)}
+                  className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-300 font-bold text-xs min-h-[44px] cursor-pointer"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  disabled={!contactMessage.trim() || isSendingContact}
+                  onClick={async () => {
+                    if (!currentUser) {
+                      openAuthModal("login");
+                      return;
+                    }
+                    setIsSendingContact(true);
+                    try {
+                      await createDeal(
+                        {
+                          ...card,
+                          description: `Nachricht von ${currentUser.username}: ${contactMessage.trim()}`,
+                        },
+                        currentUser
+                      );
+                      alert(`Deine Nachricht wurde erfolgreich an ${seller.username} übermittelt!`);
+                      setContactModalOpen(false);
+                      setContactMessage("");
+                    } catch (err) {
+                      console.error("Fehler beim Senden der Nachricht:", err);
+                      alert("Fehler beim Senden der Nachricht.");
+                    } finally {
+                      setIsSendingContact(false);
+                    }
+                  }}
+                  className={cn(
+                    "flex-1 py-3 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all min-h-[44px] cursor-pointer",
+                    (!contactMessage.trim() || isSendingContact) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSendingContact ? "Wird gesendet..." : "Nachricht senden"}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1037,7 +1221,7 @@ export function CollectorSlabCard({
       )}
 
       {/* ==================================================================== */}
-      {/* HOLD-TO-CONFIRM DELETE MODAL (2 Sekunden gedrückt halten)            */}
+      {/* HOLD-TO-CONFIRM DELETE MODAL (Smooth fill, confirmation animation)   */}
       {/* ==================================================================== */}
       {deleteModalOpen && (
         <div
@@ -1094,7 +1278,7 @@ export function CollectorSlabCard({
                 </div>
               </div>
 
-              {/* 2-Second Hold Button */}
+              {/* Hold to Delete Button (fills from left to right) */}
               <div className="space-y-2.5 pt-1">
                 <div
                   onMouseDown={startDeleteHold}
@@ -1103,27 +1287,38 @@ export function CollectorSlabCard({
                   onTouchStart={startDeleteHold}
                   onTouchEnd={cancelDeleteHold}
                   onTouchCancel={cancelDeleteHold}
-                  className="relative overflow-hidden w-full min-h-[52px] rounded-2xl border border-rose-500/40 bg-neutral-950 flex items-center justify-center select-none cursor-pointer active:scale-[0.99] transition-transform shadow-lg shadow-rose-950/50"
+                  className={cn(
+                    "relative overflow-hidden w-full min-h-[52px] rounded-2xl border border-rose-500/40 bg-neutral-950 flex items-center justify-center select-none cursor-pointer active:scale-[0.99] transition-all shadow-lg shadow-rose-950/50",
+                    isDeletedSuccess && "border-emerald-500/60 bg-emerald-950/80 scale-[1.02]"
+                  )}
                 >
-                  {/* Progress bar fill */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 transition-[width] ease-linear"
-                    style={{ width: `${deleteHoldProgress}%` }}
-                  />
+                  {/* Progress bar fill (red from left to right) */}
+                  {!isDeletedSuccess && (
+                    <div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-600 to-red-600 transition-[width] ease-linear pointer-events-none"
+                      style={{ width: `${deleteHoldProgress}%` }}
+                    />
+                  )}
 
-                  {/* Button text */}
-                  <div className="relative z-10 font-black text-xs sm:text-sm text-white flex items-center justify-center gap-2 px-4">
-                    <Trash2 className={cn("w-4 h-4 text-white", deleteHoldProgress > 0 && "animate-pulse")} />
-                    <span>
-                      {deleteHoldProgress > 0
-                        ? `Gedrückt halten... (${((2000 - (deleteHoldProgress / 100) * 2000) / 1000).toFixed(1)}s)`
-                        : "2 Sekunden gedrückt halten zum Löschen"}
-                    </span>
+                  {/* Button text / Confirmation Animation */}
+                  <div className="relative z-10 font-black text-xs sm:text-sm text-white flex items-center justify-center gap-2 px-4 transition-all">
+                    {isDeletedSuccess ? (
+                      <div className="flex items-center gap-2 text-emerald-300 animate-in zoom-in-95 duration-200">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400 animate-bounce" />
+                        <span className="text-sm font-black">Erfolgreich gelöscht!</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Trash2 className={cn("w-4 h-4 text-white", deleteHoldProgress > 0 && "animate-pulse")} />
+                        <span>Gedrückt halten zum Löschen</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 <button
                   type="button"
+                  disabled={isDeletedSuccess}
                   onClick={() => {
                     cancelDeleteHold();
                     setDeleteModalOpen(false);

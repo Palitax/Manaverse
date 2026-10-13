@@ -101,8 +101,8 @@ export default function LookingForPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Target className="w-4 h-4" /> Cyber Kopfgeld-Radar • Wanted Board
+          <div className="flex items-center gap-2 text-orange-400 text-xs font-bold uppercase tracking-wider mb-1">
+            <Target className="w-4 h-4 text-orange-400" /> Cyber Kopfgeld-Radar • Wanted Board
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white">
             Gesuchte Karten (Bounties)
@@ -146,8 +146,8 @@ export default function LookingForPage() {
       {/* Content */}
       {filteredListings.length === 0 ? (
         <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <BorderBeam size={200} duration={8} colorFrom="#06b6d4" colorTo="#3b82f6" />
-          <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center mx-auto shadow-lg shadow-cyan-500/20">
+          <BorderBeam size={200} duration={8} colorFrom="#f97316" colorTo="#ea580c" />
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/15 text-orange-400 border border-orange-500/30 flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">
             <Target className="w-8 h-8" />
           </div>
           <h3 className="text-xl font-black text-white">Aktuell keine Gesuche</h3>
@@ -157,7 +157,7 @@ export default function LookingForPage() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
             <button
               onClick={handleOpenCreate}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs transition-all min-h-[44px]"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-black text-xs transition-all min-h-[44px] shadow-lg shadow-orange-500/20"
             >
               + Neues Gesuch starten
             </button>

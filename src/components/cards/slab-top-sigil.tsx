@@ -5,20 +5,32 @@ import { cn } from "@/lib/utils";
 
 interface SlabTopSigilProps {
   className?: string;
+  isExpanded?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+  interactive?: boolean;
 }
 
 /**
- * Überhängendes Manaforge-Siegel für Collector Slabs
- * - Sitzt oben mittig mit Überstand über dem Acrylrand
- * - Lebendiges Glimmen & Magma-Wärmeaura (Smoldering Heat Glow)
- * - Aufsteigende Asche- & Funken-Partikel (Sparks of Ash & Floating Embers)
- * - Taktile 90°-Drehanimation beim Hovern über die Slab
+ * Manaforge-Siegel für Collector Slabs
+ * - Lebendiges Glimmen & Magma-Wärmeaura (Smoldering Heat Glow) dauerhaft aktiv
+ * - Aufsteigende Asche- & Funken-Partikel dauerhaft aktiv
+ * - 90°-Drehanimation beim Ausklappen
  */
-export function SlabTopSigil({ className }: SlabTopSigilProps) {
+export function SlabTopSigil({
+  className,
+  isExpanded = false,
+  onClick,
+  interactive = false,
+}: SlabTopSigilProps) {
   return (
     <div
-      className={cn("slab-top-sigil-wrapper pointer-events-none select-none", className)}
-      aria-hidden="true"
+      onClick={onClick}
+      className={cn(
+        "relative flex items-center justify-center select-none group/sigil-btn",
+        interactive ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
+        className
+      )}
+      title={interactive ? (isExpanded ? "Details einklappen" : "Details & Sammler ausklappen") : undefined}
     >
       {/* 1. Pulsierende Magma-Wärmeaura (Smoldering Heat Core Glow) */}
       <div className="slab-sigil-heat-aura" />
@@ -39,8 +51,13 @@ export function SlabTopSigil({ className }: SlabTopSigilProps) {
         <span className="slab-ash-particle ash-p6" />
       </div>
 
-      {/* 3. Das eigentliche Fels- & Lavasiegel mit 90°-Hover-Drehung & Glut-Flicker */}
-      <div className="slab-top-sigil">
+      {/* 3. Das eigentliche Fels- & Lavasiegel mit 90°-Drehung & Glut-Flicker */}
+      <div
+        className={cn(
+          "slab-top-sigil transition-transform duration-500 ease-out",
+          isExpanded && "rotate-90"
+        )}
+      >
         <img
           src="/manaforge-emblem.png"
           alt="Manaforge Siegel"

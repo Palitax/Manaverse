@@ -970,13 +970,14 @@ body {
   border-radius: 9999px;
   background: radial-gradient(
     circle,
-    rgba(255, 106, 0, 0.65) 0%,
-    rgba(245, 158, 11, 0.35) 40%,
+    rgba(255, 106, 0, 0.75) 0%,
+    rgba(245, 158, 11, 0.45) 40%,
     transparent 75%
   );
   filter: blur(6px);
-  opacity: 0.65;
-  transition: opacity 0.3s ease;
+  opacity: 0.85;
+  animation: sigil-magma-pulse 2s ease-in-out infinite;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
   z-index: -1;
 }
@@ -1001,7 +1002,7 @@ body {
   position: absolute;
   border-radius: 9999px;
   pointer-events: none;
-  opacity: 0;
+  opacity: 0.85;
   transition: opacity 0.2s ease;
 }
 
@@ -1012,6 +1013,7 @@ body {
   left: 22%;
   background: #fde047;
   box-shadow: 0 0 4px #f59e0b;
+  animation: ash-rise-1 2.2s ease-out infinite;
 }
 
 .ash-p2 {
@@ -1021,6 +1023,7 @@ body {
   left: 54%;
   background: #ffedd5;
   box-shadow: 0 0 5px #ff6a00;
+  animation: ash-rise-2 2.6s ease-out infinite 0.3s;
 }
 
 .ash-p3 {
@@ -1030,6 +1033,7 @@ body {
   left: 42%;
   background: #fba919;
   box-shadow: 0 0 4px #ff5500;
+  animation: ash-rise-3 2.4s ease-out infinite 0.6s;
 }
 
 .ash-p4 {
@@ -1039,6 +1043,7 @@ body {
   left: 74%;
   background: #fb923c;
   box-shadow: 0 0 3px #ea580c;
+  animation: ash-rise-4 2.3s ease-out infinite 0.2s;
 }
 
 .ash-p5 {
@@ -1048,6 +1053,7 @@ body {
   left: 36%;
   background: #fdba74;
   box-shadow: 0 0 3px #f97316;
+  animation: ash-rise-5 2.8s ease-out infinite 0.8s;
 }
 
 .ash-p6 {
@@ -1057,11 +1063,12 @@ body {
   left: 64%;
   background: #fef08a;
   box-shadow: 0 0 4px #f59e0b;
+  animation: ash-rise-6 2.5s ease-out infinite 0.5s;
 }
 
 .slab-top-sigil {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   position: relative;
   display: flex;
   align-items: center;
@@ -1072,58 +1079,25 @@ body {
 
 @media (min-width: 640px) {
   .slab-top-sigil {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
   }
 }
 
 .slab-sigil-img {
-  filter: drop-shadow(0 0 4px rgba(255, 106, 0, 0.4));
+  filter: drop-shadow(0 0 6px rgba(255, 106, 0, 0.65));
+  animation: sigil-ember-flicker 2.5s ease-in-out infinite;
   transition: filter 0.3s ease;
 }
 
-/* Hover-only triggers: eliminates idle animations across the card grid */
-.acrylic-display-slab:hover .slab-top-sigil {
-  transform: rotate(90deg);
-}
-
-.acrylic-display-slab:hover .slab-sigil-heat-aura {
+/* Hover accent feedback */
+.group\/sigil-btn:hover .slab-sigil-heat-aura {
   opacity: 1;
-  animation: sigil-magma-pulse 1.8s ease-in-out infinite;
+  transform: scale(1.12);
 }
 
-.acrylic-display-slab:hover .slab-sigil-img {
-  animation: sigil-ember-flicker 2.5s ease-in-out infinite;
-}
-
-.acrylic-display-slab:hover .ash-p1 {
-  opacity: 1;
-  animation: ash-rise-1 2.2s ease-out infinite;
-}
-
-.acrylic-display-slab:hover .ash-p2 {
-  opacity: 1;
-  animation: ash-rise-2 2.6s ease-out infinite 0.3s;
-}
-
-.acrylic-display-slab:hover .ash-p3 {
-  opacity: 1;
-  animation: ash-rise-3 2.4s ease-out infinite 0.6s;
-}
-
-.acrylic-display-slab:hover .ash-p4 {
-  opacity: 1;
-  animation: ash-rise-4 2.3s ease-out infinite 0.2s;
-}
-
-.acrylic-display-slab:hover .ash-p5 {
-  opacity: 1;
-  animation: ash-rise-5 2.8s ease-out infinite 0.8s;
-}
-
-.acrylic-display-slab:hover .ash-p6 {
-  opacity: 1;
-  animation: ash-rise-6 2.5s ease-out infinite 0.5s;
+.group\/sigil-btn:hover .slab-sigil-img {
+  filter: drop-shadow(0 0 10px rgba(255, 120, 0, 0.9));
 }
 
 .slab-header-plate {
