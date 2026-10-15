@@ -43,4 +43,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - Dieses Icon ist vom User ausdrücklich gehasst und darf in keinem Kontext jemals verwendet werden.
   - Wenn ein Status, Highlight oder eine Aktion visuell untermalt werden soll, nutze klare, passende Alternativen (z. B. `CheckCircle2`, `Tag`, `ShieldCheck`, `Crown`, `Zap`, `Flame` oder schlichte typografische Badges) – aber unter keinen Umständen `Sparkles`.
 
-
+## 🎨 Design-Exzellenz & Gründlichkeit vor Geschwindigkeit (STRIKTE REGEL)
+- **Qualität vor Tempo:** Liefere NIEMALS vorschnelle oder oberflächliche Ergebnisse ab, nur um schnell zu antworten (außer der User verlangt ausdrücklich eine schnelle Umsetzung). Nimm dir trotz hoher Modellgeschwindigkeit bewusst Zeit für tiefgehende Überlegungen, saubere Konzeption und gestalterische Sorgfalt.
+- **Bewusste Design-Analyse vor der Umsetzung:** Bevor du UI-, UX- oder Grafik-/Layout-Entscheidungen triffst und Code schreibst, halte inne und prüfe im Detail:
+  - **Passung zum Gesamtkonzept:** Fügt sich das Design grafisch, farblich und atmosphärisch nahtlos in das bestehende Projekt und Designsystem ein? Inspiziere vorab angrenzende Komponenten und Seiten, um die exakt gleiche Designsprache zu sprechen.
+  - **Visuelle Hierarchie & Harmonie:** Sind Proportionen, Weißraum (Spacing/Padding), Typografie-Abstufungen, Linienführungen und Kontraste sauber ausbalanciert, sodass das Auge des Nutzers natürlich geführt wird?
+  - **Gestalterischer Feinschliff statt Standard-Look:** Vermeide lieblose oder generische Standard-Layouts. Achte auf hochwertige Details wie stimmige Karten- und Container-Strukturen, subtile Rahmen/Schatten, saubere Zustandsübergänge (Hover, Focus, Active, Loading, Empty States) und eine aufgeräumte Informationsdichte.
+  - **Selbstkritische Reflexion:** Hinterfrage deinen ersten Design-Impuls immer kritisch ("Ist das wirklich die beste gestalterische Lösung oder nur die erstbeste?"). Wenn ein Ansatz unruhig, überladen oder unpassend wirkt, überarbeite das Konzept gedanklich, bevor du es implementierst.
