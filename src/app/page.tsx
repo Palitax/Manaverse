@@ -193,7 +193,7 @@ export default function HomePage() {
             height={270}
             priority
             fetchPriority="high"
-            className="w-[145px] min-[390px]:w-[165px] sm:w-[210px] md:w-[250px] lg:w-[290px] xl:w-[330px] 2xl:w-[360px] max-w-[85vw] h-auto object-contain filter drop-shadow-[0_3px_20px_rgba(249,115,22,0.6)] drop-shadow-[0_8px_20px_rgba(0,0,0,0.9)] hover:scale-105 transition-all duration-300 select-none"
+            className="w-[290px] min-[390px]:w-[330px] sm:w-[420px] md:w-[500px] lg:w-[580px] xl:w-[660px] 2xl:w-[720px] max-w-[85vw] h-auto object-contain filter drop-shadow-[0_4px_32px_rgba(249,115,22,0.6)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.9)] hover:scale-105 transition-all duration-300 select-none"
           />
         </div>
 
