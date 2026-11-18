@@ -36,7 +36,142 @@ export const TCG_SETS: TcgSet[] = [
   // ==========================================================================
   // --- JAPANISCH (JP) ---
   // ==========================================================================
+  // MEGA Ära (2025–2026)
+  {
+    id: "m6a-jp",
+    code: "M6a",
+    name: "30th Celebration",
+    nameOriginal: "30th CELEBRATION",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 103,
+    aliases: ["M6a", "30th Celebration"],
+  },
+  {
+    id: "m6-jp",
+    code: "M6",
+    name: "Storm Emeralda",
+    nameOriginal: "ストームエメラルダ",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 76,
+    aliases: ["M6", "Storm Emeralda", "ストームエメラルダ"],
+  },
+  {
+    id: "m5-jp",
+    code: "M5",
+    name: "Abyss Eye",
+    nameOriginal: "アビスアイ",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 81,
+    aliases: ["M5", "Abyss Eye", "アビスアイ"],
+  },
+  {
+    id: "m4-jp",
+    code: "M4",
+    name: "Ninja Spinner",
+    nameOriginal: "ニンジャスピナー",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 83,
+    aliases: ["M4", "Ninja Spinner", "ニンジャスピナー"],
+  },
+  {
+    id: "m3-jp",
+    code: "M3",
+    name: "Munikis Zero",
+    nameOriginal: "ムニキスゼロ",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 80,
+    aliases: ["M3", "Munikis Zero", "ムニキスゼロ"],
+  },
+  {
+    id: "m2a-jp",
+    code: "M2a",
+    name: "MEGA Dream ex",
+    nameOriginal: "MEGAドリームex",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2025,
+    totalCards: 193,
+    aliases: ["M2a", "MEGA Dream ex", "MEGAドリームex"],
+  },
+  {
+    id: "m2-jp",
+    code: "M2",
+    name: "Inferno X",
+    nameOriginal: "インフェルノX",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2025,
+    totalCards: 80,
+    aliases: ["M2", "Inferno X", "インフェルノX"],
+  },
+  {
+    id: "m1s-jp",
+    code: "M1S",
+    name: "Mega Symphonia",
+    nameOriginal: "メガシンフォニア",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2025,
+    totalCards: 63,
+    aliases: ["M1S", "Mega Symphonia", "メガシンフォニア"],
+  },
+  {
+    id: "m1l-jp",
+    code: "M1L",
+    name: "Mega Brave",
+    nameOriginal: "メガブレイブ",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2025,
+    totalCards: 63,
+    aliases: ["M1L", "Mega Brave", "メガブレイブ"],
+  },
   // Scarlet & Violet (SV) Ära
+  {
+    id: "sv11w-jp",
+    code: "SV11W",
+    name: "White Flare",
+    nameOriginal: "ホワイトフレア",
+    language: "JP",
+    series: "Scarlet & Violet",
+    releaseYear: 2025,
+    totalCards: 86,
+    aliases: ["SV11W", "White Flare", "ホワイトフレア"],
+  },
+  {
+    id: "sv11b-jp",
+    code: "SV11B",
+    name: "Black Bolt",
+    nameOriginal: "ブラックボルト",
+    language: "JP",
+    series: "Scarlet & Violet",
+    releaseYear: 2025,
+    totalCards: 86,
+    aliases: ["SV11B", "Black Bolt", "ブラックボルト"],
+  },
+  {
+    id: "sv10-jp",
+    code: "SV10",
+    name: "The Glory of Team Rocket",
+    nameOriginal: "ロケット団の栄光",
+    language: "JP",
+    series: "Scarlet & Violet",
+    releaseYear: 2025,
+    totalCards: 98,
+    equivalentCode: "DRI",
+    equivalentName: "Destined Rivals / Ewige Rivalen (EN/DE)",
+    aliases: ["SV10", "Glory of Team Rocket", "ロケット団の栄光"],
+  },
   {
     id: "sv9a-jp",
     code: "SV9a",
@@ -753,6 +888,291 @@ export const TCG_SETS: TcgSet[] = [
     equivalentCode: "HIF",
     equivalentName: "Hidden Fates / Verborgenes Schicksal (EN/DE)",
     aliases: ["SM8b", "GX Ultra Shiny", "ウルトラシャイニー"],
+  },
+
+  // Japanische Promo-Serien & Spezial-Sets (1996–2026)
+  {
+    id: "m-p-jp",
+    code: "M-P",
+    name: "MEGA Promotional Cards",
+    nameOriginal: "M-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2025,
+    totalCards: 156,
+    aliases: ["M-P", "MP", "MEGA Promo"],
+  },
+  {
+    id: "sv-p-jp",
+    code: "SV-P",
+    name: "SV-P Promotional Cards",
+    nameOriginal: "SV-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2023,
+    totalCards: 332,
+    aliases: ["SV-P", "SVP", "Scarlet & Violet Promos JP"],
+  },
+  {
+    id: "wcs23-jp",
+    code: "WCS23",
+    name: "Yokohama Deck Pikachu (WCS23)",
+    nameOriginal: "横浜 記念デッキ「ピカチュウ」",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2023,
+    totalCards: 30,
+    aliases: ["WCS23", "Yokohama Deck"],
+  },
+  {
+    id: "s-p-jp",
+    code: "S-P",
+    name: "S-P Promotional Cards",
+    nameOriginal: "S-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2020,
+    totalCards: 334,
+    aliases: ["S-P", "SP", "Sword & Shield Promos JP", "Stamp Box"],
+  },
+  {
+    id: "s8a-p-jp",
+    code: "S8a-P",
+    name: "25th Anniversary Promo Pack",
+    nameOriginal: "プロモカードパック 25th ANNIVERSARY edition",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2021,
+    totalCards: 25,
+    aliases: ["S8a-P", "25th Promo JP"],
+  },
+  {
+    id: "sgg-jp",
+    code: "SGG",
+    name: "High-Class Deck Gengar VMAX",
+    nameOriginal: "ハイクラスデッキ ゲンガーVMAX",
+    language: "JP",
+    series: "Sword & Shield",
+    releaseYear: 2021,
+    totalCards: 20,
+    aliases: ["SGG", "Gengar High Class Deck"],
+  },
+  {
+    id: "sm-p-jp",
+    code: "SM-P",
+    name: "SM-P Promotional Cards",
+    nameOriginal: "SM-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2017,
+    totalCards: 445,
+    aliases: ["SM-P", "SMP", "Sun & Moon Promos JP", "Munch Promo"],
+  },
+  {
+    id: "xy-p-jp",
+    code: "XY-P",
+    name: "XY-P Promotional Cards",
+    nameOriginal: "XY-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2014,
+    totalCards: 481,
+    aliases: ["XY-P", "XYP", "XY Promos JP", "Poncho Pikachu", "Pikachu Outbreak"],
+  },
+  {
+    id: "xy-best-jp",
+    code: "XY",
+    name: "The Best of XY",
+    nameOriginal: "THE BEST OF XY",
+    language: "JP",
+    series: "XY",
+    releaseYear: 2017,
+    totalCards: 171,
+    aliases: ["THE BEST OF XY", "Best of XY"],
+  },
+  {
+    id: "cp6-jp",
+    code: "CP6",
+    name: "Expansion Pack 20th Anniversary",
+    nameOriginal: "拡張パック 20th Anniversary",
+    language: "JP",
+    series: "XY",
+    releaseYear: 2016,
+    totalCards: 87,
+    equivalentCode: "EVO",
+    equivalentName: "Evolutions (EN/DE)",
+    aliases: ["CP6", "20th Anniversary"],
+  },
+  {
+    id: "cp3-jp",
+    code: "CP3",
+    name: "PokéKyun Collection",
+    nameOriginal: "ポケキュンコレクション",
+    language: "JP",
+    series: "XY",
+    releaseYear: 2016,
+    totalCards: 32,
+    aliases: ["CP3", "PokeKyun", "ポケキュン"],
+  },
+  {
+    id: "bw-p-jp",
+    code: "BW-P",
+    name: "BW-P Promotional Cards",
+    nameOriginal: "BW-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2010,
+    totalCards: 246,
+    aliases: ["BW-P", "BWP"],
+  },
+  {
+    id: "l-p-jp",
+    code: "L-P",
+    name: "L-P Promotional Cards",
+    nameOriginal: "L-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2009,
+    totalCards: 80,
+    aliases: ["L-P", "LP", "LEGEND Promos"],
+  },
+  {
+    id: "dpt-p-jp",
+    code: "DPt-P",
+    name: "DPt-P Promotional Cards",
+    nameOriginal: "DPt-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2008,
+    totalCards: 51,
+    aliases: ["DPt-P", "DPtP"],
+  },
+  {
+    id: "dp-p-jp",
+    code: "DP-P",
+    name: "DP-P Promotional Cards",
+    nameOriginal: "DP-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2006,
+    totalCards: 123,
+    aliases: ["DP-P", "DPP"],
+  },
+  {
+    id: "pcg-p-jp",
+    code: "PCG-P",
+    name: "PCG-P Promotional Cards",
+    nameOriginal: "PCG-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2004,
+    totalCards: 154,
+    aliases: ["PCG-P", "PCGP"],
+  },
+  {
+    id: "play-jp",
+    code: "PLAY",
+    name: "Pokémon Players Club Promos",
+    nameOriginal: "PLAY プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2003,
+    totalCards: 32,
+    aliases: ["PLAY", "Players Promo"],
+  },
+  {
+    id: "adv-p-jp",
+    code: "ADV-P",
+    name: "ADV-P Promotional Cards",
+    nameOriginal: "ADV-P プロモカード",
+    language: "JP",
+    series: "Promos JP",
+    releaseYear: 2003,
+    totalCards: 64,
+    aliases: ["ADV-P", "ADVP"],
+  },
+  {
+    id: "old-p-jp",
+    code: "OLD-P",
+    name: "Vintage Unnumbered Promos (1996–2005)",
+    nameOriginal: "旧裏・プロモカード (コロコロ・通信進化)",
+    language: "JP",
+    series: "Vintage JP",
+    releaseYear: 1998,
+    totalCards: 220,
+    aliases: ["OLD-P", "CoroCoro Promo", "Masaki Promo", "CD Promo"],
+  },
+  {
+    id: "vend-jp",
+    code: "VEND",
+    name: "Vending Machine Series (I–III)",
+    nameOriginal: "拡張シート (青・赤・緑)",
+    language: "JP",
+    series: "Vintage JP",
+    releaseYear: 1998,
+    totalCards: 108,
+    aliases: ["VEND", "Vending Series", "拡張シート"],
+  },
+  {
+    id: "vs1-jp",
+    code: "VS1",
+    name: "Pokémon Card★VS",
+    nameOriginal: "ポケモンカード★VS",
+    language: "JP",
+    series: "Vintage JP",
+    releaseYear: 2001,
+    totalCards: 142,
+    aliases: ["VS1", "VS", "Pokemon VS"],
+  },
+  {
+    id: "web1-jp",
+    code: "web1",
+    name: "Pokémon Card★web",
+    nameOriginal: "ポケモンカード★web",
+    language: "JP",
+    series: "Vintage JP",
+    releaseYear: 2001,
+    totalCards: 48,
+    aliases: ["web1", "Pokemon web"],
+  },
+  {
+    id: "e5-jp",
+    code: "E5",
+    name: "Mysterious Mountains (e-Card 5)",
+    nameOriginal: "神秘なる山",
+    language: "JP",
+    series: "e-Card JP",
+    releaseYear: 2002,
+    totalCards: 88,
+    equivalentCode: "SKR",
+    equivalentName: "Skyridge (EN/DE)",
+    aliases: ["E5", "神秘なる山", "Skyridge JP"],
+  },
+  {
+    id: "neo4-jp",
+    code: "neo4",
+    name: "Darkness, and to Light... (Neo 4)",
+    nameOriginal: "闇、そして光へ...",
+    language: "JP",
+    series: "Neo JP",
+    releaseYear: 2001,
+    totalCards: 113,
+    equivalentCode: "N4",
+    equivalentName: "Neo Destiny (EN/DE)",
+    aliases: ["neo4", "闇、そして光へ", "Neo Destiny JP"],
+  },
+  {
+    id: "pmcg1-jp",
+    code: "PMCG1",
+    name: "Expansion Pack (1996 Base Set JP)",
+    nameOriginal: "第1弾 拡張パック (旧裏)",
+    language: "JP",
+    series: "Vintage JP",
+    releaseYear: 1996,
+    totalCards: 102,
+    equivalentCode: "BASE",
+    equivalentName: "Grundset / Base Set (DE/EN)",
+    aliases: ["PMCG1", "Base Set JP", "第1弾", "Old Back"],
   },
 
   // ==========================================================================
@@ -1866,18 +2286,32 @@ export const TCG_CARDS: TcgCard[] = [
     imageUrl: "https://images.pokemontcg.io/base1/58_hires.png",
   },
   {
-    id: "pikachu-sv8-122-jp",
+    id: "pikachu-xyp-070-jp",
+    name: "Pikachu",
+    nameOriginal: "ピカチュウ",
+    nameEn: "Pikachu (Outbreak! Yokohama)",
+    nameDe: "Pikachu (Outbreak! Yokohama)",
+    pokemon: "Pikachu",
+    setCode: "XY-P",
+    setName: "XY-P Promotional Cards • Pikachu Outbreak! Yokohama",
+    number: "070/XY-P",
+    language: "JP",
+    rarity: "Promo",
+    imageUrl: "https://www.pokemon-card.com/assets/images/card_images/large/XYP/030601_P_PIKACHUU.jpg",
+  },
+  {
+    id: "pikachu-sv8-132-jp",
     name: "Pikachu ex",
-    nameOriginal: "ピカチュウ ex",
+    nameOriginal: "ピカチュウex",
     nameEn: "Pikachu ex",
     nameDe: "Pikachu ex",
     pokemon: "Pikachu",
     setCode: "SV8",
     setName: "Super Electric Breaker",
-    number: "122/106",
+    number: "132/106",
     language: "JP",
     rarity: "SAR (Special Art Rare)",
-    imageUrl: "https://images.pokemontcg.io/base1/58_hires.png",
+    imageUrl: "https://www.pokemon-card.com/assets/images/card_images/large/SV8/046910_P_PIKACHIXYUUEX.jpg",
   },
   {
     id: "pikachu-base-58-de",
@@ -1910,15 +2344,15 @@ export const TCG_CARDS: TcgCard[] = [
     imageUrl: "https://images.pokemontcg.io/swsh8/271_hires.png",
   },
   {
-    id: "gengar-s8-020-jp",
+    id: "gengar-sgg-020-jp",
     name: "Gengar VMAX",
-    nameOriginal: "ゲンガー VMAX",
+    nameOriginal: "ゲンガーVMAX",
     nameEn: "Gengar VMAX",
     nameDe: "Gengar VMAX",
     pokemon: "Gengar",
-    setCode: "S8",
-    setName: "Fusion Arts",
-    number: "020/100",
+    setCode: "SGG",
+    setName: "High-Class Deck Gengar VMAX",
+    number: "020/019",
     language: "JP",
     rarity: "SA (Special Art)",
     imageUrl: "https://images.pokemontcg.io/swsh8/271_hires.png",
@@ -2118,7 +2552,11 @@ export function getTcgSets(languageFilter?: CardLanguage | "ALL"): TcgSet[] {
  */
 export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
   if (!codeOrAlias) return undefined;
-  const target = codeOrAlias.trim().toLowerCase();
+
+  // Extract bracketed code if formatted like "XY-P Promotional Cards [XY-P]"
+  const bracketMatch = codeOrAlias.match(/\[([A-Za-z0-9+-]+)\]/);
+  const cleanedInput = (bracketMatch ? bracketMatch[1] : codeOrAlias).trim();
+  const target = cleanedInput.toLowerCase();
 
   // 1. Direct match in static registry
   const exact = TCG_SETS.find(
@@ -2129,7 +2567,7 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
   );
   if (exact) return exact;
 
-  const upper = codeOrAlias.trim().toUpperCase();
+  const upper = cleanedInput.toUpperCase();
 
   // 2. Korean dynamic pattern (e.g. SV1S-KR, S6a-KR)
   if (target.endsWith("-kr") || target.endsWith("kr")) {
@@ -2137,7 +2575,7 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
     return {
       id: `${cleanCode.toLowerCase()}`,
       code: cleanCode,
-      name: `${cleanCode} (Korean Edition)`,
+      name: `${cleanCode} (Koreanische Edition)`,
       language: "KR",
       series: cleanCode.startsWith("SV") ? "Scarlet & Violet" : "Sword & Shield",
       releaseYear: 2024,
@@ -2146,8 +2584,8 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
     };
   }
 
-  // 3. Chinese dynamic pattern (e.g. CS1, CSV1, AC1, AS5)
-  if (/^(CS|CSV|AC|AS)\d+[A-Z]?$/i.test(target)) {
+  // 3. Chinese dynamic pattern (e.g. CS1, CSV1, AC1, AS5, CBB1)
+  if (/^(CS|CSV|AC|AS|CBB)\d+[A-Z.]*$/i.test(target)) {
     return {
       id: `${target.toLowerCase()}-cn`,
       code: upper,
@@ -2160,22 +2598,40 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
     };
   }
 
-  // 4. Japanese dynamic pattern: SV1S, SV1V, SV2a, S6a, S12a, SM12a, CP6, etc.
-  if (/^(SV\d+[A-Za-z]?|S\d+[A-Za-z]?|SM\d+[A-Za-z]?|CP\d+)$/i.test(target)) {
-    const series = upper.startsWith("SV")
+  // 4. Japanese Promo & Expansion dynamic pattern (covers ALL 1996–2026 JP sets & promos!)
+  const isJapaneseCode =
+    /^(XY-?P|SM-?P|S-?P|SV-?P|M-?P|BW-?P|DP-?P|DPT-?P|L-?P|PCG-?P|ADV-?P|OLD-?P|PLAY|PPP|PW|P|J|T|S8A-P|S8A-G|WCS23|20TH|VEND|MCD-E|WCP|EBB|LL|MC)$/i.test(
+      target
+    ) ||
+    /^(M\d+[A-Za-z]?|SV\d+[A-Za-z+]?|S\d+[A-Za-z+]?|SM\d+[A-Za-z+]?|XY\d+[A-Za-z-]*|CP[0-9A-Za-z]+|BW\d+[A-Za-z-]*|L\d+[A-Za-z-]*|DPt?\d*[A-Za-z-]*|PCG\d+|ADV\d+|E[1-5]|VS1|WEB1|NEO[1-4]|PMCG[1-6]|CL[FKL]|SV[A-Z]{1,2}\d*)$/i.test(
+      target
+    );
+
+  if (isJapaneseCode) {
+    const series = upper.endsWith("-P") || upper.endsWith("P") && upper.length <= 4
+      ? "Promos JP"
+      : upper.startsWith("M")
+      ? "MEGA"
+      : upper.startsWith("SV")
       ? "Scarlet & Violet"
-      : upper.startsWith("S")
+      : upper.startsWith("S") && !upper.startsWith("SM")
       ? "Sword & Shield"
-      : "Sun & Moon";
+      : upper.startsWith("SM")
+      ? "Sun & Moon"
+      : upper.startsWith("XY") || upper.startsWith("CP")
+      ? "XY"
+      : upper.startsWith("BW")
+      ? "Black & White"
+      : "Pokémon Card Game JP";
     return {
       id: `${target.toLowerCase()}-jp`,
-      code: upper,
-      name: `${upper} (Japanische Edition)`,
+      code: cleanedInput,
+      name: `${cleanedInput} (Japanische Edition)`,
       language: "JP",
       series,
       releaseYear: 2024,
       totalCards: 100,
-      aliases: [upper, target],
+      aliases: [cleanedInput, upper, target],
     };
   }
 
@@ -2184,7 +2640,7 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
     return {
       id: `${target.toLowerCase()}-de`,
       code: upper,
-      name: `${upper} (Western Set)`,
+      name: `${upper} (Westliches Set)`,
       language: "DE",
       series: "Pokémon TCG",
       releaseYear: 2024,
@@ -2198,7 +2654,7 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
 
 /**
  * Detects the native language of a given set code or name.
- * e.g. "SV1S" -> "JP", "SV2a" -> "JP", "JTG" -> "DE"/"EN", "CS1" -> "CN", "SV1S-KR" -> "KR"
+ * e.g. "XY-P" -> "JP", "SV1S" -> "JP", "SV2a" -> "JP", "JTG" -> "DE"/"EN", "CS1" -> "CN", "SV1S-KR" -> "KR"
  */
 export function detectSetLanguage(codeOrName: string): CardLanguage | null {
   if (!codeOrName) return null;
@@ -2212,6 +2668,14 @@ export function detectSetLanguage(codeOrName: string): CardLanguage | null {
     return "KR";
   }
 
+  // Japanese Kana check BEFORE Hanzi (since Japanese names can contain Kanji + Kana!)
+  if (
+    /[\u3040-\u309F\u30A0-\u30FF]/.test(codeOrName) ||
+    /\b(xy-p|sm-p|s-p|sv-p|m-p|bw-p|dp-p|l-p|pcg-p|adv-p|xyp|smp|bwp|dpp)\b/i.test(lower)
+  ) {
+    return "JP";
+  }
+
   // Chinese
   if (
     lower.startsWith("cs") ||
@@ -2220,14 +2684,6 @@ export function detectSetLanguage(codeOrName: string): CardLanguage | null {
     /[\u4E00-\u9FFF]/.test(codeOrName)
   ) {
     return "CN";
-  }
-
-  // Japanese
-  if (
-    /^(sv\d+[a-z]?|s\d+[a-z]?|sm\d+[a-z]?|cp\d+)$/i.test(lower) ||
-    /[\u3040-\u309F\u30A0-\u30FF]/.test(codeOrName)
-  ) {
-    return "JP";
   }
 
   // Western

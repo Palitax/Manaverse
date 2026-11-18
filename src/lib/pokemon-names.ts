@@ -1,4 +1,5 @@
 import { CardLanguage } from "@/types";
+import speciesI18n from "@/data/pokemon-species-i18n.json";
 
 // Comprehensive English <-> German Pokémon Name Dictionary
 export const EN_TO_DE_POKEMON: Record<string, string> = {
@@ -402,52 +403,31 @@ export const EN_TO_DE_POKEMON: Record<string, string> = {
   Terapagos: "Terapagos",
 };
 
+// Hydrate complete 1,025-species Pokédex (EN <-> DE & JA)
+export const EN_TO_JA_POKEMON: Record<string, string> = {};
+for (const [en, tuple] of Object.entries(
+  speciesI18n as Record<string, string[]>
+)) {
+  const [de, ja] = tuple;
+  if (!EN_TO_DE_POKEMON[en] && de) {
+    EN_TO_DE_POKEMON[en] = de;
+  }
+  if (ja) {
+    EN_TO_JA_POKEMON[en] = ja;
+  }
+}
+
 // Build inverted German -> English map
 export const DE_TO_EN_POKEMON: Record<string, string> = {};
 for (const [en, de] of Object.entries(EN_TO_DE_POKEMON)) {
   DE_TO_EN_POKEMON[de] = en;
 }
 
-// Japanese Pokémon Names (Katakana / Kanji)
-export const EN_TO_JA_POKEMON: Record<string, string> = {
-  Charizard: "リザードン",
-  Pikachu: "ピカチュウ",
-  Umbreon: "ブラッキー",
-  Mewtwo: "ミュウツー",
-  Mew: "ミュウ",
-  Rayquaza: "レックウザ",
-  Gengar: "ゲンガー",
-  Greninja: "ゲッコウガ",
-  Lugia: "ルギア",
-  Venusaur: "フシギバナ",
-  Blastoise: "カメックス",
-  Eevee: "イーブイ",
-  Sylveon: "ニンフィア",
-  Giratina: "ギラティナ",
-  Dialga: "ディアルガ",
-  Palkia: "パルキア",
-  Arceus: "アルセウス",
-  Lucario: "ルカリオ",
-  Gardevoir: "サーナイト",
-  Dragonite: "カイリュー",
-  Snorlax: "カビゴン",
-  Zapdos: "サンダー",
-  Articuno: "フリーザー",
-  Moltres: "ファイヤー",
-  Garchomp: "ガブリアス",
-  Tyranitar: "バンギラス",
-  Latios: "ラティオス",
-  Latias: "ラティアス",
-  Mimikyu: "ミミッキュ",
-  Terapagos: "テラパゴス",
-  Koraidon: "コライドン",
-  Miraidon: "ミライドン",
-  "Roaring Moon": "トドロクツキ",
-  "Iron Valiant": "テツノブジン",
-  Bulbasaur: "フシギダネ",
-  Charmander: "ヒトカゲ",
-  Squirtle: "ゼニガメ",
-};
+// Sorted Japanese -> English species list (longest Kana first so リザードン matches before リザード)
+const JA_TO_EN_SORTED: Array<[string, string]> = Object.entries(EN_TO_JA_POKEMON)
+  .filter(([, ja]) => Boolean(ja))
+  .map(([en, ja]) => [ja, en] as [string, string])
+  .sort((a, b) => b[0].length - a[0].length);
 
 // Korean Pokémon Names (Hangul)
 export const EN_TO_KO_POKEMON: Record<string, string> = {
@@ -614,11 +594,27 @@ export function resolveCardTitles(
     // If not found in German, check English dictionary
     if (!foundEn) {
       for (const [en, de] of Object.entries(EN_TO_DE_POKEMON)) {
-        const regex = new RegExp(`\\b${en}\\b`, "i");
+        const safeEn = en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`\\b${safeEn}\\b`, "i");
         if (regex.test(fullName)) {
           foundEn = en;
           enCandidate = fullName;
           deCandidate = fullName.replace(regex, de);
+          break;
+        }
+      }
+    }
+
+    // If input is in Japanese Kana/Kanji (e.g. "リザードンex", "ピカチュウ"), resolve EN & DE
+    if (!foundEn && /[\u3040-\u30ff\u4e00-\u9faf]/.test(fullName)) {
+      for (const [ja, en] of JA_TO_EN_SORTED) {
+        if (fullName.includes(ja)) {
+          foundEn = en;
+          basePokemonEn = en;
+          originalScriptCandidate = fullName;
+          const de = EN_TO_DE_POKEMON[en] || en;
+          enCandidate = fullName.replace(ja, `${en} `).replace(/\s+/g, " ").trim();
+          deCandidate = fullName.replace(ja, `${de} `).replace(/\s+/g, " ").trim();
           break;
         }
       }
@@ -631,16 +627,17 @@ export function resolveCardTitles(
   }
 
   // Find original script if Asian language
-  if (basePokemonEn) {
+  if (basePokemonEn && !originalScriptCandidate) {
+    const safeBase = basePokemonEn.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     if (isJapaneseListing && EN_TO_JA_POKEMON[basePokemonEn]) {
       const jaName = EN_TO_JA_POKEMON[basePokemonEn];
-      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), jaName);
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${safeBase}\\b`, "i"), jaName);
     } else if (isKoreanListing && EN_TO_KO_POKEMON[basePokemonEn]) {
       const koName = EN_TO_KO_POKEMON[basePokemonEn];
-      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), koName);
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${safeBase}\\b`, "i"), koName);
     } else if (isChineseListing && EN_TO_ZH_POKEMON[basePokemonEn]) {
       const zhName = EN_TO_ZH_POKEMON[basePokemonEn];
-      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${basePokemonEn}\\b`, "i"), zhName);
+      originalScriptCandidate = enCandidate.replace(new RegExp(`\\b${safeBase}\\b`, "i"), zhName);
     }
   }
 
@@ -734,8 +731,8 @@ export function formatSlabTitle(
     // 2. Remove parenthesized text e.g. "(Moonbreon)", "(Alternative Art)", "(Secret Rare)"
     baseName = baseName.replace(/\s*\([^)]*\)/g, "").trim();
 
-    // 3. Remove trailing dash or set additions e.g. "– Evolving Skies"
-    baseName = baseName.replace(/\s*[-–—]\s*.*$/, "").trim();
+    // 3. Remove trailing dash or set additions e.g. " – Evolving Skies" (require spaces so Ho-Oh / Porygon-Z stay intact)
+    baseName = baseName.replace(/\s+[-–—]\s+.*$/, "").trim();
 
     // 4. If name still contains slashes like "Umbreon VMAX / Nachtara VMAX", select language-appropriate side
     if (baseName.includes("/")) {

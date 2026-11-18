@@ -303,6 +303,7 @@ export function CardForgeStudio({
   // Set & Language cross-validation and auto-detection
   const handleSetChange = (val: string) => {
     setSetNameText(val);
+    if (!val.trim()) return;
     const matched = findSetByCode(val);
     if (matched) {
       setLanguage(matched.language);
@@ -314,19 +315,35 @@ export function CardForgeStudio({
     }
   };
 
+  // Auto-detect promo set code from card number e.g. "070/XY-P", "227/S-P", "288/SM-P"
+  const handleCardNumberChange = (val: string) => {
+    setCardNumber(val);
+    if (val.includes("/")) {
+      const suffix = val.split("/")[1]?.trim() || "";
+      if (/[A-Za-z]/.test(suffix)) {
+        const promoSet = findSetByCode(suffix);
+        if (promoSet) {
+          if (!setNameText.trim()) setSetNameText(promoSet.code);
+          setLanguage(promoSet.language);
+        }
+      }
+    }
+  };
+
   const setValidation = React.useMemo(() => {
     if (!setNameText.trim()) return { isValid: true, detectedLang: null };
     return validateSetWithLanguage(setNameText, language);
   }, [setNameText, language]);
 
   const handleSelectApiCard = (card: PokemonApiCard) => {
-    setName(card.name);
+    const chosenName = card.language === "DE" && card.nameDe ? card.nameDe : card.name;
+    setName(chosenName);
     if (card.set?.id) {
       setSetNameText(card.set.id);
     } else if (card.set?.name) {
       setSetNameText(card.set.name);
     }
-    if (card.number) setCardNumber(card.number);
+    if (card.number !== undefined) setCardNumber(card.number);
     if (card.language) {
       setLanguage(card.language);
     } else {
@@ -334,7 +351,7 @@ export function CardForgeStudio({
       if (detected) setLanguage(detected);
     }
     // Only replace photo if no custom photo uploaded yet
-    if (!photos[0] || photos[0].startsWith("http")) {
+    if (!photos[0] || photos[0].startsWith("http") || photos[0].startsWith("/")) {
       if (card.images?.large) {
         setPhotos([card.images.large]);
       } else if (card.images?.small) {
@@ -751,7 +768,7 @@ export function CardForgeStudio({
               {step === 1 && "📸 Foto-Upload & KI-Scan"}
               {step === 2 && "🔍 Kartendetails & Identität"}
               {step === 3 && (isSell ? "💰 Verkaufspreis" : isTrade ? "🔄 Tauschwert & Wünsche" : "🎯 Dein Budget")}
-              {step === 4 && "✨ Vorschau & Veröffentlichen"}
+              {step === 4 && "Vorschau & Veröffentlichen"}
             </span>
           </div>
           <span className="text-xs font-mono font-bold text-neutral-400">
@@ -953,10 +970,12 @@ export function CardForgeStudio({
                 onChange={setName}
                 onSelectCard={handleSelectApiCard}
                 language={language}
-                placeholder="z.B. Glurak, Charizard VMAX, Moonbreon..."
+                setHint={setNameText}
+                keepCleanNameOnSelect
+                placeholder="z.B. Pikachu 070/XY-P, Glurak ex, リザードン, Moonbreon..."
               />
               <p className="text-[11px] text-neutral-400">
-                Tippe für Vorschläge aus dem offiziellen mehrsprachigen TCG-Index.
+                Durchsucht den kompletten japanischen (27.000+ Karten) & internationalen TCG-Index nach Name, Nummer oder Set.
               </p>
             </div>
 
@@ -971,8 +990,8 @@ export function CardForgeStudio({
                     type="text"
                     value={setNameText}
                     onChange={(e) => handleSetChange(e.target.value)}
-                    placeholder="z.B. SV2a, JTG, MEW, 151"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors"
+                    placeholder="z.B. XY-P, SV2a, S6a, JTG, MEW"
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors min-h-[44px]"
                   />
                 </div>
 
@@ -983,9 +1002,9 @@ export function CardForgeStudio({
                   <input
                     type="text"
                     value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="z.B. 201/165 oder 103/078"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors"
+                    onChange={(e) => handleCardNumberChange(e.target.value)}
+                    placeholder="z.B. 070/XY-P oder 201/165"
+                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors min-h-[44px]"
                   />
                 </div>
               </div>

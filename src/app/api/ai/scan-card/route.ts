@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
-import { findSetByCode, detectSetLanguage, searchTcgCards, TCG_SETS } from "@/lib/tcg-index-data";
+import { findSetByCode, detectSetLanguage, searchTcgCards } from "@/lib/tcg-index-data";
+import { searchFullJapaneseIndex } from "@/lib/jp-card-index.server";
 import { CardLanguage } from "@/types";
 
 // Supported Gemini models in priority order
@@ -23,9 +24,9 @@ CRITICAL RULES FOR POKÉMON CARDS:
 - "card_name_original": The native name printed on the card face in its original language (e.g. "リザードンex", "皮卡丘", "Glurak ex", "Charizard ex").
 - "card_name_de": The official German Pokémon name (e.g. "Glurak-ex", "Pikachu", "Nachtara", "Mewtu").
 - "card_name_en": The official English Pokémon name (e.g. "Charizard ex", "Pikachu", "Umbreon", "Mewtwo").
-- "set_code": Look at the bottom-left corner rectangle box or footer (e.g. "SV2a", "SV1S", "JTG", "MEW", "OBF", "PAF", "151", "S6a", "s12a", "CBB4C", "CS1a").
-- "set_name": Expansion name if identifiable (e.g. "Pokémon Card 151", "Scarlet & Violet", "Terastal Festival", "Stürzende Funken").
-- "set_number": Card number fraction printed at bottom (e.g. "201/165", "103/078", "006/165", "130/170").
+- "set_code": Look at the bottom-left corner rectangle box or promo suffix in the bottom-right number (e.g. "SV2a", "SV1S", "XY-P", "SM-P", "S-P", "SV-P", "M-P", "JTG", "MEW", "OBF", "PAF", "S6a", "s12a", "CS1a").
+- "set_name": Expansion or promo event name if identifiable (e.g. "Pokémon Card 151", "XY-P Promotional Cards", "Terastal Festival", "Stürzende Funken").
+- "set_number": Card number fraction printed at bottom (e.g. "070/XY-P", "201/165", "103/078", "227/S-P", "288/SM-P").
 - "rarity": Printed rarity symbol or letters (e.g. "SAR", "AR", "SR", "UR", "RR", "R", "U", "C", "Double Rare", "Illustration Rare", "Ultra Rare").
 - "language": Detect the card language accurately:
     * "JP": If card text contains Japanese Katakana / Hiragana (e.g. リザードン, たね, グッズ, サポート).
@@ -261,8 +262,20 @@ export async function POST(request: Request) {
     }
 
     // --------------------------------------------------------------------------
-    // Cross-reference with our TCG Index Sets & Cards for 100% Accuracy
+    // Cross-reference with our TCG Index Sets & Full 27,200+ Card Japanese Index
     // --------------------------------------------------------------------------
+    if (!detectedSetCode && detectedNumber.includes("/")) {
+      const rightPart = detectedNumber.split("/")[1]?.trim() || "";
+      if (/[A-Za-z]/.test(rightPart)) {
+        const promoSet = findSetByCode(rightPart);
+        if (promoSet) {
+          detectedSetCode = promoSet.code;
+          detectedSetName = detectedSetName || promoSet.name;
+          detectedLang = promoSet.language;
+        }
+      }
+    }
+
     if (detectedSetCode) {
       const setMatch = findSetByCode(detectedSetCode);
       if (setMatch) {
@@ -274,8 +287,31 @@ export async function POST(request: Request) {
       }
     }
 
-    // If card number is present (e.g. "201/165" or "201"), search local cards
-    if (detectedNumber) {
+    // Search full 27,200+ card Japanese index first when language is JP
+    if (detectedLang === "JP" && (detectedNumber || detectedOriginalName || detectedEnName)) {
+      const jpQuery = [
+        detectedEnName || detectedOriginalName || detectedName,
+        detectedNumber,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const jpLookup = searchFullJapaneseIndex({
+        query: jpQuery,
+        setCode: detectedSetCode || undefined,
+        limit: 5,
+      });
+      const topJp = jpLookup.cards[0];
+      if (topJp) {
+        detectedName = topJp.nameEn || topJp.name;
+        detectedOriginalName = topJp.nameOriginal || detectedOriginalName;
+        detectedDeName = topJp.nameDe || detectedDeName;
+        detectedEnName = topJp.nameEn || detectedEnName;
+        detectedSetCode = topJp.set.id || detectedSetCode;
+        detectedSetName = topJp.set.name || detectedSetName;
+        detectedNumber = topJp.number || detectedNumber;
+        detectedRarity = topJp.rarity || detectedRarity;
+      }
+    } else if (detectedNumber) {
       const numOnly = detectedNumber.split("/")[0].replace(/^0+/, "");
       const matchedCards = searchTcgCards(numOnly, detectedLang);
       const exactCard = matchedCards.find((c) => {
@@ -287,16 +323,12 @@ export async function POST(request: Request) {
       });
 
       if (exactCard) {
-        if (detectedLang === "JP") {
-          detectedName = exactCard.nameOriginal || exactCard.name;
-          detectedOriginalName = exactCard.nameOriginal;
-          detectedDeName = exactCard.nameDe;
-          detectedEnName = exactCard.nameEn;
-        } else if (detectedLang === "DE") {
+        if (detectedLang === "DE") {
           detectedName = exactCard.nameDe || exactCard.name;
         } else {
           detectedName = exactCard.nameEn || exactCard.name;
         }
+        detectedOriginalName = exactCard.nameOriginal || detectedOriginalName;
         detectedSetName = exactCard.setName;
         detectedSetCode = exactCard.setCode;
         detectedNumber = exactCard.number;
