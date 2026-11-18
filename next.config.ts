@@ -62,6 +62,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "assets.tcgdex.net",
       },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.discordapp.com",
+      },
     ],
   },
   async headers() {

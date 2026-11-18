@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import {
   UserProfile,
   UserRole,
@@ -18,6 +18,7 @@ import {
   INITIAL_BULK_SUBMISSIONS,
 } from "./mock-data";
 import { supabase, isSupabaseConfigured } from "./supabase/client";
+import { ensureHostedCardPhoto } from "./supabase/storage";
 import confetti from "canvas-confetti";
 import {
   rollBoosterReward,
@@ -71,6 +72,20 @@ function setLocalBoosterStats(userId: string, stats: Partial<LocalBoosterStats>)
   }
 }
 
+function persistLightweightListingsCache(items: CardListing[]) {
+  if (typeof window === "undefined") return;
+  try {
+    // Speichere keine riesigen unkomprimierten Base64-Strings im 5MB-localStorage
+    const compact = items.slice(0, 100).map((item) => ({
+      ...item,
+      photos: (item.photos || []).map((p) => (p.length > 150_000 ? "" : p)).filter(Boolean),
+    }));
+    localStorage.setItem("manaforge_listings", JSON.stringify(compact));
+  } catch {
+    // Quota-Überschreitung im Offline-Cache ignorieren
+  }
+}
+
 interface StoreContextType {
   currentUser: UserProfile | null;
   sessionUser: UserProfile | null;
@@ -95,11 +110,11 @@ interface StoreContextType {
   logout: () => Promise<void>;
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status"> & { status?: CardListing["status"] }) => Promise<CardListing>;
   updateListingStatus: (listingId: string, status: CardListing["status"]) => Promise<void>;
-  addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => void;
+  addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => Promise<void>;
   addBulkSubmission: (submission: { cards: BulkSubmission["cards"]; askingPrice?: number; notes?: string }) => Promise<void>;
-  confirmDeal: (dealId: string, asRole: "seller" | "buyer") => void;
-  createDeal: (listing: CardListing, buyer: UserProfile) => void;
-  deleteListing: (listingId: string) => void;
+  confirmDeal: (dealId: string, asRole: "seller" | "buyer") => Promise<void>;
+  createDeal: (listing: CardListing, buyer: UserProfile) => Promise<void>;
+  deleteListing: (listingId: string) => Promise<void>;
   // Booster Arena & Mana System
   manaPoints: number;
   availableBoosters: number;
@@ -115,8 +130,78 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-function mapDBListingToCardListing(item: any): CardListing {
-  const u = item.user || {};
+const DEFAULT_AVATAR =
+  "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80";
+const LUFFY_AVATAR =
+  "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80";
+
+function mapDBProfileToUserProfile(p: any, email?: string): UserProfile {
+  const isLuffy =
+    p?.discord_username?.toLowerCase().includes("freakyfamous") ||
+    p?.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+    p?.username?.toLowerCase() === "all_out_luffy";
+  const role: UserRole =
+    p?.role === "founder"
+      ? "founder"
+      : isLuffy
+      ? "admin"
+      : p?.role || "member";
+
+  const localStats = p?.id ? getLocalBoosterStats(p.id) : {
+    manaPoints: 0,
+    boosterPacks: 0,
+    lastDailyBoosterClaimedAt: null,
+    hasReceivedDiscordWelcomePack: false,
+    openedBoostersCount: 0,
+  };
+  const manaPoints = p?.mana_points ?? localStats.manaPoints ?? 0;
+  const boosterPacks = p?.booster_packs ?? localStats.boosterPacks ?? 0;
+  const lastDailyBoosterClaimedAt = p?.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null;
+  const hasReceivedDiscordWelcomePack = Boolean(
+    p?.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack
+  );
+  const openedBoostersCount = p?.opened_boosters_count ?? localStats.openedBoostersCount ?? 0;
+
+  return {
+    id: p.id,
+    username: p.username || (isLuffy ? "all_out_luffy" : "Sammler"),
+    avatarUrl: p.avatar_url || (isLuffy ? LUFFY_AVATAR : DEFAULT_AVATAR),
+    role,
+    verified: isLuffy ? true : Boolean(p.verified),
+    dealsCount: p.deals_count || (isLuffy ? 18 : 0),
+    whatnotUsername: p.whatnot_username || (isLuffy ? "all_out_luffy" : undefined),
+    discordUsername: p.discord_username || (isLuffy ? "freakyfamous#0" : undefined),
+    bio:
+      p.bio ||
+      (isLuffy
+        ? "Manaforge Administrator 🔥 • Whatnot: all_out_luffy • Discord: @freakyfamous#0"
+        : undefined),
+    createdAt: p.created_at || new Date().toISOString(),
+    email,
+    manaPoints,
+    boosterPacks,
+    lastDailyBoosterClaimedAt,
+    hasReceivedDiscordWelcomePack,
+    openedBoostersCount,
+  };
+}
+
+function mapDBListingToCardListing(
+  item: any,
+  profilesById?: Map<string, UserProfile>
+): CardListing {
+  const joinedProfile = item.user && item.user.id ? mapDBProfileToUserProfile(item.user) : null;
+  const fallbackProfile = profilesById?.get(item.user_id) || null;
+  const resolvedUser: UserProfile = joinedProfile || fallbackProfile || {
+    id: item.user_id,
+    username: "Sammler",
+    avatarUrl: DEFAULT_AVATAR,
+    role: "member",
+    verified: false,
+    dealsCount: 0,
+    createdAt: item.created_at || new Date().toISOString(),
+  };
+
   return {
     id: item.id,
     userId: item.user_id,
@@ -126,30 +211,22 @@ function mapDBListingToCardListing(item: any): CardListing {
     cardNumber: item.card_number || undefined,
     language: item.language,
     condition: item.condition,
-    photos: Array.isArray(item.photos) ? item.photos : [],
+    photos: Array.isArray(item.photos) ? item.photos.filter(Boolean) : [],
     videoUrl: item.video_url || undefined,
     description: item.description || "",
     price: item.price !== null && item.price !== undefined ? Number(item.price) : undefined,
     priceRange: item.price_range || undefined,
-    estimatedTradeValue: item.estimated_trade_value !== null && item.estimated_trade_value !== undefined ? Number(item.estimated_trade_value) : undefined,
+    estimatedTradeValue:
+      item.estimated_trade_value !== null && item.estimated_trade_value !== undefined
+        ? Number(item.estimated_trade_value)
+        : undefined,
     lookingForWants: item.looking_for_wants || undefined,
     allowOffers: item.allow_offers ?? true,
     postToDiscord: item.post_to_discord ?? true,
     showDiscordName: item.show_discord_name ?? true,
     status: item.status || "active",
     createdAt: item.created_at,
-    user: {
-      id: u.id || item.user_id,
-      username: u.username || "Sammler",
-      avatarUrl: u.avatar_url || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80",
-      role: (u.discord_username?.toLowerCase().includes("freakyfamous") || u.username?.toLowerCase() === "all_out_luffy" || u.whatnot_username?.toLowerCase() === "all_out_luffy") && u.role !== "founder" ? "admin" : (u.role || "member"),
-      verified: Boolean(u.verified),
-      dealsCount: u.deals_count || 0,
-      whatnotUsername: u.whatnot_username || undefined,
-      discordUsername: u.discord_username || undefined,
-      bio: u.bio || undefined,
-      createdAt: u.created_at || item.created_at,
-    },
+    user: resolvedUser,
   };
 }
 
@@ -166,6 +243,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [bulkSubmissions, setBulkSubmissions] = useState<BulkSubmission[]>(INITIAL_BULK_SUBMISSIONS);
   const [tradeOffers, setTradeOffers] = useState<TradeOffer[]>([]);
 
+  const recoveredUserIdsRef = useRef<Set<string>>(new Set());
+  const lastRefreshAtRef = useRef<number>(0);
+
   const openAuthModal = (mode: AuthModalMode = "register") => {
     setAuthModalMode(mode);
     setAuthModalOpen(true);
@@ -174,6 +254,303 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const closeAuthModal = () => {
     setAuthModalOpen(false);
   };
+
+  // Stellt sicher, dass für einen authentifizierten Supabase-Benutzer ein Profil-Datensatz existiert
+  const ensureProfileForAuthUser = useCallback(async (user: any): Promise<any | null> => {
+    if (!isSupabaseConfigured || !supabase || !user?.id) return null;
+
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return existingProfile;
+    }
+
+    const rawMeta = user.user_metadata || {};
+    const baseName = (
+      rawMeta.username ||
+      rawMeta.user_name ||
+      rawMeta.full_name ||
+      (user.email ? user.email.split("@")[0] : "Trainer")
+    )
+      .toString()
+      .trim()
+      .replace(/\s+/g, "_");
+
+    const avatar = rawMeta.avatar_url || rawMeta.picture || DEFAULT_AVATAR;
+    const disc =
+      rawMeta.custom_claims?.discord_tag ||
+      rawMeta.discord_username ||
+      (user.app_metadata?.provider === "discord" ? baseName : null);
+
+    const isLuffyAdmin =
+      disc?.toLowerCase().includes("freakyfamous") ||
+      baseName?.toLowerCase().includes("freakyfamous") ||
+      baseName?.toLowerCase() === "all_out_luffy" ||
+      rawMeta.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+      rawMeta.full_name?.toLowerCase().includes("freakyfamous") ||
+      rawMeta.user_name?.toLowerCase().includes("freakyfamous");
+
+    const assignedRole: UserRole =
+      user.email === "levin@rohde-media.de" || baseName === "Levin_Mana"
+        ? "founder"
+        : isLuffyAdmin
+        ? "admin"
+        : "member";
+
+    const tryUpsert = async (candidateUsername: string) =>
+      supabase!
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          username: candidateUsername,
+          avatar_url: avatar,
+          role: assignedRole,
+          verified: assignedRole === "founder" || assignedRole === "admin",
+          deals_count: 0,
+          discord_username: disc,
+        })
+        .select("*")
+        .maybeSingle();
+
+    const firstAttempt = await tryUpsert(baseName || `Trainer_${user.id.slice(0, 6)}`);
+    if (!firstAttempt.error && firstAttempt.data) {
+      return firstAttempt.data;
+    }
+
+    // Falls der Benutzername bereits belegt ist (23505), eindeutigen Suffix anhängen
+    const fallbackName = `${baseName || "Trainer"}_${user.id.slice(0, 4)}`;
+    const secondAttempt = await tryUpsert(fallbackName);
+    return secondAttempt.data || null;
+  }, []);
+
+  // Zentrale Synchronisation aller Marktplatz-Daten (Inserate, Profile, Tauschangebote, Deals & Ankäufe)
+  const refreshMarketplaceData = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      try {
+        localStorage.removeItem("manaverse_listings");
+        const savedListings = localStorage.getItem("manaforge_listings");
+        if (savedListings) {
+          const parsed = JSON.parse(savedListings);
+          if (Array.isArray(parsed)) {
+            setListings(parsed.filter((l: CardListing) => l && l.id && !l.id.startsWith("list-mock")));
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("LocalStorage fallback error:", e);
+      }
+      setListings([]);
+      return;
+    }
+
+    try {
+      lastRefreshAtRef.current = Date.now();
+
+      // 1. Profile laden
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*");
+
+      // Falls ein abgelaufenes/ungültiges JWT alle Anfragen blockiert, bereinigen & neu versuchen
+      if (
+        profilesError &&
+        (profilesError.code === "PGRST301" ||
+          profilesError.message?.toLowerCase().includes("jwt"))
+      ) {
+        await supabase.auth.signOut();
+      }
+
+      const profilesById = new Map<string, UserProfile>();
+      if (profilesData && profilesData.length > 0) {
+        const mappedProfiles: UserProfile[] = profilesData.map((p: any) => {
+          const isLuffy =
+            p.discord_username?.toLowerCase().includes("freakyfamous") ||
+            p.whatnot_username?.toLowerCase() === "all_out_luffy" ||
+            p.username?.toLowerCase() === "all_out_luffy";
+          if (isLuffy && p.role !== "admin" && p.role !== "founder" && supabase) {
+            supabase.from("profiles").update({ role: "admin" }).eq("id", p.id).then();
+          }
+
+          const mapped = mapDBProfileToUserProfile(p);
+          if (p.booster_packs !== undefined && p.booster_packs !== null) {
+            setLocalBoosterStats(p.id, {
+              manaPoints: mapped.manaPoints,
+              boosterPacks: mapped.boosterPacks,
+              lastDailyBoosterClaimedAt: mapped.lastDailyBoosterClaimedAt,
+              hasReceivedDiscordWelcomePack: mapped.hasReceivedDiscordWelcomePack,
+              openedBoostersCount: mapped.openedBoostersCount,
+            });
+          }
+          profilesById.set(mapped.id, mapped);
+          return mapped;
+        });
+
+        const missingSeeds = MOCK_USERS.filter(
+          (m) =>
+            !mappedProfiles.some(
+              (f) =>
+                f.username.toLowerCase() === m.username.toLowerCase() ||
+                (f.discordUsername &&
+                  m.discordUsername &&
+                  f.discordUsername.toLowerCase() === m.discordUsername.toLowerCase())
+            )
+        ).map((m) => {
+          const localStats = getLocalBoosterStats(m.id);
+          return {
+            ...m,
+            manaPoints: localStats.manaPoints || m.manaPoints || 0,
+            boosterPacks: localStats.boosterPacks ?? (m.boosterPacks !== undefined ? m.boosterPacks : 0),
+            lastDailyBoosterClaimedAt: localStats.lastDailyBoosterClaimedAt || m.lastDailyBoosterClaimedAt || null,
+            hasReceivedDiscordWelcomePack: localStats.hasReceivedDiscordWelcomePack || Boolean(m.hasReceivedDiscordWelcomePack),
+            openedBoostersCount: localStats.openedBoostersCount || m.openedBoostersCount || 0,
+          };
+        });
+
+        setUsers([...mappedProfiles, ...missingSeeds]);
+      }
+
+      // 2. Inserate (alle Sektionen: Kaufen/Verkaufen, Tauschen, Gesucht, Entwürfe) laden
+      let { data: listingsData, error: listingsError } = await supabase
+        .from("listings")
+        .select("*, user:profiles(*)")
+        .order("created_at", { ascending: false });
+
+      if (listingsError) {
+        console.warn("Joined listings query warning, retrying plain select:", listingsError.message);
+        const fallbackRes = await supabase
+          .from("listings")
+          .select("*")
+          .order("created_at", { ascending: false });
+        listingsData = fallbackRes.data;
+        listingsError = fallbackRes.error;
+      }
+
+      let mappedListings: CardListing[] = [];
+      if (!listingsError && listingsData) {
+        mappedListings = listingsData.map((row: any) =>
+          mapDBListingToCardListing(row, profilesById)
+        );
+        setListings(mappedListings);
+        persistLightweightListingsCache(mappedListings);
+      }
+
+      const listingsById = new Map<string, CardListing>(
+        mappedListings.map((l) => [l.id, l])
+      );
+
+      // 3. Tauschangebote, Deals & Sammlungs-Ankäufe parallel laden
+      const [offersRes, dealsRes, bulkRes] = await Promise.all([
+        supabase
+          .from("trade_offers")
+          .select("*, from_user:profiles!trade_offers_from_user_id_fkey(*)")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("deals")
+          .select("*, seller:profiles!deals_seller_id_fkey(username), buyer:profiles!deals_buyer_id_fkey(username)")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("bulk_submissions")
+          .select("*, user:profiles(*)")
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (!offersRes.error && offersRes.data) {
+        const mappedOffers: TradeOffer[] = offersRes.data
+          .map((row: any) => {
+            const targetListing = listingsById.get(row.listing_id);
+            if (!targetListing) return null;
+            const fromUser = row.from_user
+              ? mapDBProfileToUserProfile(row.from_user)
+              : profilesById.get(row.from_user_id) || {
+                  id: row.from_user_id,
+                  username: "Sammler",
+                  avatarUrl: DEFAULT_AVATAR,
+                  role: "member" as UserRole,
+                  verified: false,
+                  dealsCount: 0,
+                  createdAt: row.created_at,
+                };
+            return {
+              id: row.id,
+              listingId: row.listing_id,
+              listing: targetListing,
+              fromUserId: row.from_user_id,
+              fromUser,
+              offeredCardsDescription: row.offered_cards_description,
+              offeredImages: Array.isArray(row.offered_images) ? row.offered_images : [],
+              estimatedValue: Number(row.estimated_value || 0),
+              message: row.message || undefined,
+              status: row.status || "pending",
+              createdAt: row.created_at,
+            } as TradeOffer;
+          })
+          .filter(Boolean) as TradeOffer[];
+        setTradeOffers(mappedOffers);
+      }
+
+      if (!dealsRes.error && dealsRes.data) {
+        const mappedDeals: DealConfirmation[] = dealsRes.data.map((row: any) => ({
+          id: row.id,
+          listingId: row.listing_id || "",
+          listingTitle: row.listing_title,
+          listingType: row.listing_type,
+          priceOrValue:
+            row.price_or_value !== null && row.price_or_value !== undefined
+              ? Number(row.price_or_value)
+              : undefined,
+          sellerId: row.seller_id,
+          sellerUsername:
+            row.seller?.username || profilesById.get(row.seller_id)?.username || "Verkäufer",
+          buyerId: row.buyer_id,
+          buyerUsername:
+            row.buyer?.username || profilesById.get(row.buyer_id)?.username || "Käufer",
+          sellerConfirmed: Boolean(row.seller_confirmed),
+          buyerConfirmed: Boolean(row.buyer_confirmed),
+          status: row.status || "pending",
+          createdAt: row.created_at,
+          completedAt: row.completed_at || undefined,
+        }));
+        setDeals(mappedDeals);
+      }
+
+      if (!bulkRes.error && bulkRes.data) {
+        const mappedBulk: BulkSubmission[] = bulkRes.data.map((row: any) => {
+          const submitter = row.user
+            ? mapDBProfileToUserProfile(row.user)
+            : profilesById.get(row.user_id) || {
+                id: row.user_id,
+                username: "Sammler",
+                avatarUrl: DEFAULT_AVATAR,
+                role: "member" as UserRole,
+                verified: false,
+                dealsCount: 0,
+                createdAt: row.created_at,
+              };
+          return {
+            id: row.id,
+            userId: row.user_id,
+            user: submitter,
+            totalCards: Number(row.total_cards || 0),
+            cards: Array.isArray(row.cards_data) ? row.cards_data : [],
+            askingPrice:
+              row.asking_price !== null && row.asking_price !== undefined
+                ? Number(row.asking_price)
+                : undefined,
+            notes: row.notes || undefined,
+            status: row.status || "pending",
+            createdAt: row.created_at,
+          };
+        });
+        setBulkSubmissions(mappedBulk);
+      }
+    } catch (e) {
+      console.error("Supabase Synchronisationsfehler:", e);
+    }
+  }, []);
 
   const loginWithDiscord = async (): Promise<{ error?: string }> => {
     if (!isSupabaseConfigured || !supabase) {
@@ -245,7 +622,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Das Passwort muss mindestens 6 Zeichen lang sein." };
     }
 
-    // Vorab-Prüfung auf bereits vergebenen Benutzernamen
     const { data: existingUser } = await supabase
       .from("profiles")
       .select("id")
@@ -307,68 +683,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Synchronisiere Session mit dem Benutzerprofil
-  const syncSessionUser = async (user: any) => {
+  const syncSessionUser = useCallback(async (user: any) => {
     if (!isSupabaseConfigured || !supabase) {
       setIsLoadingAuth(false);
       return;
     }
     try {
-      let { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!profile) {
-        const rawMeta = user.user_metadata || {};
-        const candidateName =
-          rawMeta.username ||
-          rawMeta.user_name ||
-          rawMeta.full_name ||
-          (user.email ? user.email.split("@")[0] : "Trainer");
-
-        const avatar =
-          rawMeta.avatar_url ||
-          "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80";
-
-        const disc =
-          rawMeta.custom_claims?.discord_tag ||
-          rawMeta.discord_username ||
-          (user.app_metadata?.provider === "discord" ? candidateName : null);
-
-        const isLuffyAdmin =
-          disc?.toLowerCase().includes("freakyfamous") ||
-          candidateName?.toLowerCase().includes("freakyfamous") ||
-          candidateName?.toLowerCase() === "all_out_luffy" ||
-          rawMeta.whatnot_username?.toLowerCase() === "all_out_luffy" ||
-          rawMeta.full_name?.toLowerCase().includes("freakyfamous") ||
-          rawMeta.user_name?.toLowerCase().includes("freakyfamous");
-
-        const assignedRole: UserRole =
-          user.email === "levin@rohde-media.de" || candidateName === "Levin_Mana"
-            ? "founder"
-            : isLuffyAdmin
-            ? "admin"
-            : "member";
-
-        const { data: newProfile } = await supabase
-          .from("profiles")
-          .upsert({
-            id: user.id,
-            username: candidateName,
-            avatar_url: avatar,
-            role: assignedRole,
-            verified: assignedRole === "founder" || assignedRole === "admin",
-            deals_count: 0,
-            discord_username: disc,
-          })
-          .select()
-          .maybeSingle();
-
-        if (newProfile) {
-          profile = newProfile;
-        }
-      }
+      const profile = await ensureProfileForAuthUser(user);
 
       if (profile) {
         const isLuffyAdmin =
@@ -385,7 +706,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             ? "admin"
             : profile.role || "member";
 
-        if (isLuffyAdmin && profile.role !== "admin" && profile.role !== "founder" && isSupabaseConfigured && supabase) {
+        if (isLuffyAdmin && profile.role !== "admin" && profile.role !== "founder") {
           supabase.from("profiles").update({ role: "admin" }).eq("id", profile.id).then();
         }
 
@@ -393,16 +714,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const manaPoints = profile.mana_points ?? localStats.manaPoints ?? 0;
         let boosterPacks = profile.booster_packs ?? localStats.boosterPacks ?? 0;
         const lastDailyBoosterClaimedAt = profile.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null;
-        let hasReceivedDiscordWelcomePack = Boolean(profile.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack);
+        let hasReceivedDiscordWelcomePack = Boolean(
+          profile.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack
+        );
         const openedBoostersCount = profile.opened_boosters_count ?? localStats.openedBoostersCount ?? 0;
 
         const isDiscordUser = Boolean(
           user.app_metadata?.provider === "discord" ||
-          profile.discord_username ||
-          (typeof window !== "undefined" && sessionStorage.getItem("manaforge_discord_welcome") === "true")
+            profile.discord_username ||
+            (typeof window !== "undefined" && sessionStorage.getItem("manaforge_discord_welcome") === "true")
         );
 
-        // Discord Willkommens-Booster vergeben, falls noch nicht erhalten
         if (isDiscordUser && !hasReceivedDiscordWelcomePack) {
           boosterPacks += 1;
           hasReceivedDiscordWelcomePack = true;
@@ -410,16 +732,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             boosterPacks,
             hasReceivedDiscordWelcomePack: true,
           });
-          if (isSupabaseConfigured && supabase) {
-            supabase
-              .from("profiles")
-              .update({
-                booster_packs: boosterPacks,
-                has_received_discord_welcome_pack: true,
-              })
-              .eq("id", profile.id)
-              .then();
-          }
+          supabase
+            .from("profiles")
+            .update({
+              booster_packs: boosterPacks,
+              has_received_discord_welcome_pack: true,
+            })
+            .eq("id", profile.id)
+            .then();
         }
 
         setLocalBoosterStats(profile.id, {
@@ -431,17 +751,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         });
 
         const authUser: UserProfile = {
-          id: profile.id,
-          username: profile.username || user.user_metadata?.full_name || user.user_metadata?.user_name || (isLuffyAdmin ? "all_out_luffy" : "Trainer"),
-          avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url || (isLuffyAdmin ? "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80"),
+          ...mapDBProfileToUserProfile(profile, user.email),
           role: effectiveRole,
-          verified: isLuffyAdmin ? true : Boolean(profile.verified),
-          dealsCount: profile.deals_count || (isLuffyAdmin ? 18 : 0),
-          whatnotUsername: profile.whatnot_username || (isLuffyAdmin ? "all_out_luffy" : undefined),
-          discordUsername: profile.discord_username || user.user_metadata?.custom_claims?.discord_tag || user.user_metadata?.user_name || (isLuffyAdmin ? "freakyfamous#0" : undefined),
-          bio: profile.bio || (isLuffyAdmin ? "Manaforge Administrator 🔥 • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
-          createdAt: profile.created_at || new Date().toISOString(),
-          email: user.email,
           manaPoints,
           boosterPacks,
           lastDailyBoosterClaimedAt,
@@ -462,7 +773,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoadingAuth(false);
     }
-  };
+  }, [ensureProfileForAuthUser]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -491,131 +802,121 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [syncSessionUser]);
 
-  // Load from Supabase on mount (with localStorage fallback)
+  // Initialer & Session-abhängiger Marktplatz-Abruf + Echtzeit-Synchronisation über Supabase Realtime
   useEffect(() => {
-    async function loadData() {
-      if (isSupabaseConfigured && supabase) {
-        try {
-          // 1. Load profiles
-          const { data: profilesData } = await supabase.from("profiles").select("*");
-          if (profilesData && profilesData.length > 0) {
-            const mappedProfiles: UserProfile[] = profilesData.map((p: any) => {
-              const isLuffy =
-                p.discord_username?.toLowerCase().includes("freakyfamous") ||
-                p.whatnot_username?.toLowerCase() === "all_out_luffy" ||
-                p.username?.toLowerCase() === "all_out_luffy";
-              const role: UserRole = isLuffy && p.role !== "founder" ? "admin" : (p.role || "member");
+    refreshMarketplaceData();
 
-              if (isLuffy && p.role !== "admin" && p.role !== "founder" && isSupabaseConfigured && supabase) {
-                supabase.from("profiles").update({ role: "admin" }).eq("id", p.id).then();
-              }
+    const client = supabase;
+    if (!isSupabaseConfigured || !client) return;
 
-              const localStats = getLocalBoosterStats(p.id);
-              const boosterPacks = p.booster_packs ?? localStats.boosterPacks ?? 0;
-              const manaPoints = p.mana_points ?? localStats.manaPoints ?? 0;
-              if (p.booster_packs !== undefined && p.booster_packs !== null) {
-                setLocalBoosterStats(p.id, {
-                  manaPoints,
-                  boosterPacks,
-                  lastDailyBoosterClaimedAt: p.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null,
-                  hasReceivedDiscordWelcomePack: Boolean(p.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack),
-                  openedBoostersCount: p.opened_boosters_count ?? localStats.openedBoostersCount ?? 0,
-                });
-              }
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleRefresh = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        refreshMarketplaceData();
+      }, 250);
+    };
 
-              return {
-                id: p.id,
-                username: p.username,
-                avatarUrl: p.avatar_url || (isLuffy ? "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80"),
-                role: role,
-                verified: isLuffy ? true : Boolean(p.verified),
-                dealsCount: p.deals_count || (isLuffy ? 18 : 0),
-                whatnotUsername: p.whatnot_username || (isLuffy ? "all_out_luffy" : undefined),
-                discordUsername: p.discord_username || (isLuffy ? "freakyfamous#0" : undefined),
-                bio: p.bio || (isLuffy ? "Manaforge Administrator 🔥 • Whatnot: all_out_luffy • Discord: @freakyfamous#0" : undefined),
-                createdAt: p.created_at,
-                manaPoints,
-                boosterPacks,
-                lastDailyBoosterClaimedAt: p.last_daily_booster_at ?? localStats.lastDailyBoosterClaimedAt ?? null,
-                hasReceivedDiscordWelcomePack: Boolean(p.has_received_discord_welcome_pack || localStats.hasReceivedDiscordWelcomePack),
-                openedBoostersCount: p.opened_boosters_count ?? localStats.openedBoostersCount ?? 0,
-              };
-            });
+    const channel = client
+      .channel(`manaforge-live-sync-${sessionUser?.id || "anon"}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "listings" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "trade_offers" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bulk_submissions" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, scheduleRefresh)
+      .subscribe();
 
-            // Ensure predefined seed users from MOCK_USERS (like all_out_luffy) are present
-            const missingSeeds = MOCK_USERS.filter(
-              (m) =>
-                !mappedProfiles.some(
-                  (f) =>
-                    f.username.toLowerCase() === m.username.toLowerCase() ||
-                    (f.discordUsername && m.discordUsername && f.discordUsername.toLowerCase() === m.discordUsername.toLowerCase())
-                )
-            ).map((m) => {
-              const localStats = getLocalBoosterStats(m.id);
-              return {
-                ...m,
-                manaPoints: localStats.manaPoints || m.manaPoints || 0,
-                boosterPacks: localStats.boosterPacks ?? (m.boosterPacks !== undefined ? m.boosterPacks : 0),
-                lastDailyBoosterClaimedAt: localStats.lastDailyBoosterClaimedAt || m.lastDailyBoosterClaimedAt || null,
-                hasReceivedDiscordWelcomePack: localStats.hasReceivedDiscordWelcomePack || Boolean(m.hasReceivedDiscordWelcomePack),
-                openedBoostersCount: localStats.openedBoostersCount || m.openedBoostersCount || 0,
-              };
-            });
-
-            setUsers([...mappedProfiles, ...missingSeeds]);
-          } else {
-            const mappedMocks = MOCK_USERS.map((m) => {
-              const localStats = getLocalBoosterStats(m.id);
-              return {
-                ...m,
-                manaPoints: localStats.manaPoints || m.manaPoints || 0,
-                boosterPacks: localStats.boosterPacks ?? (m.boosterPacks !== undefined ? m.boosterPacks : 0),
-                lastDailyBoosterClaimedAt: localStats.lastDailyBoosterClaimedAt || m.lastDailyBoosterClaimedAt || null,
-                hasReceivedDiscordWelcomePack: localStats.hasReceivedDiscordWelcomePack || Boolean(m.hasReceivedDiscordWelcomePack),
-                openedBoostersCount: localStats.openedBoostersCount || m.openedBoostersCount || 0,
-              };
-            });
-            setUsers(mappedMocks);
-          }
-
-          // 2. Load listings with joined profile
-          const { data: listingsData, error: listingsError } = await supabase
-            .from("listings")
-            .select("*, user:profiles(*)")
-            .order("created_at", { ascending: false });
-
-          if (!listingsError && listingsData) {
-            const mapped = listingsData.map(mapDBListingToCardListing);
-            setListings(mapped);
-            return;
-          }
-        } catch (e) {
-          console.error("Supabase fetch failed, falling back to local storage:", e);
-        }
+    const handleVisibilityOrFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      if (Date.now() - lastRefreshAtRef.current > 8_000) {
+        refreshMarketplaceData();
       }
+    };
 
-      // LocalStorage fallback
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      client.removeChannel(channel);
+    };
+  }, [refreshMarketplaceData, sessionUser?.id]);
+
+  // Einmalige automatische Wiederherstellung lokal zwischengespeicherter Inserate ("list-...") in Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase || !sessionUser?.id) return;
+    if (recoveredUserIdsRef.current.has(sessionUser.id)) return;
+    recoveredUserIdsRef.current.add(sessionUser.id);
+
+    const migrateLocalPending = async () => {
       try {
-        localStorage.removeItem("manaverse_listings");
-        const savedListings = localStorage.getItem("manaforge_listings");
-        if (savedListings) {
-          const parsed = JSON.parse(savedListings);
-          if (Array.isArray(parsed)) {
-            const clean = parsed.filter((l: CardListing) => l && l.id && !l.id.startsWith("list-mock"));
-            setListings(clean);
-            return;
+        const raw = localStorage.getItem("manaforge_listings");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+
+        const unsyncedMine = parsed.filter(
+          (item: any) =>
+            item &&
+            typeof item.id === "string" &&
+            item.id.startsWith("list-") &&
+            !item.id.startsWith("list-mock") &&
+            item.name &&
+            (item.userId === sessionUser.id ||
+              (sessionUser.username &&
+                item.user?.username?.toLowerCase() === sessionUser.username.toLowerCase()))
+        );
+
+        if (unsyncedMine.length === 0) return;
+
+        let migratedCount = 0;
+        for (const pending of unsyncedMine) {
+          const hostedPhotos = await Promise.all(
+            (Array.isArray(pending.photos) ? pending.photos : [])
+              .filter((p: string) => typeof p === "string" && p.trim() !== "")
+              .map((p: string) => ensureHostedCardPhoto(p, sessionUser.id))
+          );
+
+          const { error } = await supabase!.from("listings").insert({
+            user_id: sessionUser.id,
+            type: pending.type || "sell",
+            name: pending.name,
+            set_name: pending.set || null,
+            card_number: pending.cardNumber || null,
+            language: pending.language || "DE",
+            condition: pending.condition || "NM",
+            photos: hostedPhotos,
+            video_url: pending.videoUrl || null,
+            description: pending.description || "",
+            price: pending.price ?? null,
+            price_range: pending.priceRange || null,
+            estimated_trade_value: pending.estimatedTradeValue ?? null,
+            looking_for_wants: pending.lookingForWants || null,
+            allow_offers: pending.allowOffers ?? true,
+            post_to_discord: false,
+            show_discord_name: pending.showDiscordName ?? true,
+            status: pending.status || "active",
+          });
+
+          if (!error) {
+            migratedCount += 1;
           }
         }
-      } catch (e) {
-        console.error("LocalStorage fallback error:", e);
-      }
-      setListings([]);
-    }
 
-    loadData();
-  }, []);
+        if (migratedCount > 0) {
+          await refreshMarketplaceData();
+        }
+      } catch (err) {
+        console.warn("Lokale Inserat-Synchronisierung übersprungen:", err);
+      }
+    };
+
+    migrateLocalPending();
+  }, [sessionUser, refreshMarketplaceData]);
 
   const currentUser: UserProfile | null =
     sessionUser || (currentUserId ? users.find((u) => u.id === currentUserId) || null : null);
@@ -630,7 +931,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [dailyBoosterCountdown, setDailyBoosterCountdown] = useState<string>("Bereit!");
   const [canClaimDailyBooster, setCanClaimDailyBooster] = useState<boolean>(true);
 
-  // Live timer for 24h daily booster countdown
   useEffect(() => {
     const updateCountdown = () => {
       if (!currentUser) {
@@ -680,7 +980,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         await supabase.from("profiles").update(payload).eq("id", userId);
       } catch (err) {
-        console.warn("Supabase Booster-Aktualisierung übersprungen (Lokaler Speicher aktiv):", err);
+        console.warn("Supabase Booster-Aktualisierung übersprungen:", err);
       }
     }
   };
@@ -696,7 +996,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     const nowIso = new Date().toISOString();
-    // Tägliche Booster können nicht angesammelt werden: maximal 1 Booster verfügbar
     const newPacks = Math.max(1, (currentUser.boosterPacks ?? 0) > 0 ? currentUser.boosterPacks! : 1);
 
     await updateUserBoosterData(currentUser.id, {
@@ -744,7 +1043,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!currentUser) return;
 
-    // Benutzernamen immer ohne Leerzeichen (Unterstriche) abspeichern
     if (data.username) {
       data.username = data.username.replace(/\s+/g, "_");
     }
@@ -756,7 +1054,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setSessionUser((prev) => (prev ? { ...prev, ...data } : null));
     }
 
-    // Synchronize all user's listings immediately so avatar & name update across all slabs
     setListings((prev) => {
       const updated = prev.map((item) => {
         if (
@@ -779,11 +1076,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
         return item;
       });
-      try {
-        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
-      } catch (e) {
-        console.error("Failed to save updated listings to localStorage:", e);
-      }
+      persistLightweightListingsCache(updated);
       return updated;
     });
 
@@ -809,22 +1102,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     userId: string,
     newRole: UserRole
   ): Promise<{ success: boolean; error?: string }> => {
-    // Only founder or admin can assign roles
     if (!currentUser || (currentUser.role !== "founder" && currentUser.role !== "admin")) {
       return { success: false, error: "Nur Administratoren dürfen Rollen zuweisen." };
     }
 
-    // Update users array in local state
     setUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
     );
 
-    // If updating current user / session user
     if (sessionUser && sessionUser.id === userId) {
       setSessionUser((prev) => (prev ? { ...prev, role: newRole } : null));
     }
 
-    // Also update any listings created by this user so their avatar frame reflects instantly
     setListings((prev) =>
       prev.map((l) =>
         l.userId === userId
@@ -833,7 +1122,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       )
     );
 
-    // Update in Supabase if configured
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase
@@ -854,7 +1142,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return { success: true };
   };
 
-  // Dispatch through secure server proxy - client NEVER sees raw webhook URLs
   const dispatchDiscordWebhook = async (listing: CardListing) => {
     let channel: "sell" | "trade" | "looking_for" = "sell";
     let embedColor = 0x10b981;
@@ -862,15 +1149,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     if (listing.type === "sell") {
       channel = "sell";
-      embedColor = 0x10b981; // Green
+      embedColor = 0x10b981;
       typeLabel = "VERKAUF";
     } else if (listing.type === "trade") {
       channel = "trade";
-      embedColor = 0xa855f7; // Royal Purple
+      embedColor = 0xa855f7;
       typeLabel = "TAUSCH";
     } else if (listing.type === "looking_for") {
       channel = "looking_for";
-      embedColor = 0x06b6d4; // Cyan
+      embedColor = 0x06b6d4;
       typeLabel = "GESUCH";
     }
 
@@ -900,11 +1187,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
+    const discordDisplay =
+      listing.showDiscordName === false
+        ? "Auf Anfrage"
+        : listing.user.discordUsername
+        ? `@${listing.user.discordUsername}`
+        : "Nicht hinterlegt";
+
     fields.push({
       name: listing.type === "looking_for" ? "Gesucht von" : "Anbieter",
-      value: `${listing.user.username} (Discord: ${listing.user.discordUsername ? `@${listing.user.discordUsername}` : "Nicht hinterlegt"})`,
+      value: `${listing.user.username} (Discord: ${discordDisplay})`,
       inline: false,
     });
+
+    const firstHttpPhoto = listing.photos.find((p) => p.startsWith("http"));
 
     try {
       await fetch("/api/discord", {
@@ -917,7 +1213,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             description: listing.description || "Neues Angebot auf Manaforge eingestellt.",
             color: embedColor,
             fields,
-            image: listing.photos[0] ? { url: listing.photos[0] } : undefined,
+            image: firstHttpPhoto ? { url: firstHttpPhoto } : undefined,
           },
           slabData: {
             name: listing.name,
@@ -930,7 +1226,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             estimatedTradeValue: listing.estimatedTradeValue,
             photoUrl: listing.photos[0],
             username: listing.user?.username || "Manaforge Trainer",
-            discordUsername: listing.user?.discordUsername,
+            discordUsername:
+              listing.showDiscordName === false ? undefined : listing.user?.discordUsername,
             avatarUrl: listing.user?.avatarUrl,
             dealsCount: listing.user?.dealsCount || 0,
             allowOffers: listing.allowOffers ?? true,
@@ -950,60 +1247,83 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Bitte melde dich an, um eine Karte anzubieten.");
     }
 
-    let newListing: CardListing;
     const initialStatus = listingData.status || "active";
+    let newListing: CardListing;
 
     if (isSupabaseConfigured && supabase) {
-      try {
-        const { data, error } = await supabase
+      // 1. Echte authentifizierte Sitzung verifizieren, damit RLS & Foreign Keys garantiert passen
+      const {
+        data: { user: authUser },
+        error: authErr,
+      } = await supabase.auth.getUser();
+
+      if (authErr || !authUser) {
+        openAuthModal("login");
+        throw new Error(
+          "Deine Anmeldung ist abgelaufen. Bitte melde dich kurz erneut an, um dein Inserat zu veröffentlichen."
+        );
+      }
+
+      // 2. Sicherstellen, dass das öffentliche Profil in public.profiles existiert
+      await ensureProfileForAuthUser(authUser);
+
+      // 3. Fotos komprimieren & in den öffentlichen Supabase Storage Bucket 'card-photos' hochladen
+      const hostedPhotos = await Promise.all(
+        (listingData.photos || [])
+          .filter((p) => p && p.trim() !== "")
+          .map((p) => ensureHostedCardPhoto(p, authUser.id))
+      );
+
+      const insertPayload: Record<string, unknown> = {
+        user_id: authUser.id,
+        type: listingData.type,
+        name: listingData.name,
+        set_name: listingData.set || null,
+        card_number: listingData.cardNumber || null,
+        language: listingData.language,
+        condition: listingData.condition,
+        photos: hostedPhotos,
+        video_url: listingData.videoUrl || null,
+        description: listingData.description || "",
+        price: listingData.price ?? null,
+        price_range: listingData.priceRange || null,
+        estimated_trade_value: listingData.estimatedTradeValue ?? null,
+        looking_for_wants: listingData.lookingForWants || null,
+        allow_offers: listingData.allowOffers ?? true,
+        post_to_discord: listingData.postToDiscord ?? true,
+        show_discord_name: listingData.showDiscordName ?? true,
+        status: initialStatus,
+      };
+
+      let { data, error } = await supabase
+        .from("listings")
+        .insert(insertPayload)
+        .select("*, user:profiles(*)")
+        .single();
+
+      // Defensiver Fallback, falls eine optionale Spalte im Schema-Cache noch nicht geladen ist
+      if (error && error.message?.includes("show_discord_name")) {
+        const { show_discord_name: _ignored, ...fallbackPayload } = insertPayload;
+        const retry = await supabase
           .from("listings")
-          .insert({
-            user_id: currentUser.id,
-            type: listingData.type,
-            name: listingData.name,
-            set_name: listingData.set || null,
-            card_number: listingData.cardNumber || null,
-            language: listingData.language,
-            condition: listingData.condition,
-            photos: listingData.photos || [],
-            video_url: listingData.videoUrl || null,
-            description: listingData.description || "",
-            price: listingData.price || null,
-            price_range: listingData.priceRange || null,
-            estimated_trade_value: listingData.estimatedTradeValue || null,
-            looking_for_wants: listingData.lookingForWants || null,
-            allow_offers: listingData.allowOffers ?? true,
-            post_to_discord: listingData.postToDiscord ?? true,
-            show_discord_name: listingData.showDiscordName ?? true,
-            status: initialStatus,
-          })
+          .insert(fallbackPayload)
           .select("*, user:profiles(*)")
           .single();
-
-        if (!error && data) {
-          newListing = mapDBListingToCardListing(data);
-        } else {
-          console.error("Supabase addListing error, fallback local:", error);
-          newListing = {
-            ...listingData,
-            id: `list-${Date.now()}`,
-            userId: currentUser.id,
-            user: currentUser,
-            status: initialStatus,
-            createdAt: new Date().toISOString(),
-          };
-        }
-      } catch (err) {
-        console.error("Supabase addListing failed:", err);
-        newListing = {
-          ...listingData,
-          id: `list-${Date.now()}`,
-          userId: currentUser.id,
-          user: currentUser,
-          status: initialStatus,
-          createdAt: new Date().toISOString(),
-        };
+        data = retry.data;
+        error = retry.error;
       }
+
+      if (error || !data) {
+        console.error("Supabase addListing Fehler:", error);
+        throw new Error(
+          `Inserat konnte nicht in der Datenbank gespeichert werden: ${
+            error?.message || "Unbekannter Datenbankfehler"
+          }`
+        );
+      }
+
+      const profilesById = new Map(users.map((u) => [u.id, u]));
+      newListing = mapDBListingToCardListing(data, profilesById);
     } else {
       newListing = {
         ...listingData,
@@ -1016,13 +1336,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     setListings((prev) => {
-      const updated = [newListing, ...prev];
-      try {
-        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
-      } catch (e) {
-        console.error(e);
-      }
-      return updated;
+      const deduplicated = [newListing, ...prev.filter((l) => l.id !== newListing.id)];
+      persistLightweightListingsCache(deduplicated);
+      return deduplicated;
     });
 
     if (newListing.postToDiscord && newListing.status === "active") {
@@ -1043,23 +1359,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
         return l;
       });
-      try {
-        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
-      } catch (e) {
-        console.error(e);
-      }
+      persistLightweightListingsCache(updated);
       return updated;
     });
 
     if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from("listings").update({ status: newStatus }).eq("id", listingId);
-      } catch (err) {
-        console.error("Supabase updateListingStatus error:", err);
+      const { error } = await supabase
+        .from("listings")
+        .update({ status: newStatus })
+        .eq("id", listingId);
+
+      if (error) {
+        console.error("Supabase updateListingStatus error:", error);
+        await refreshMarketplaceData();
+        return;
       }
     }
 
-    // When publishing from draft to active, send webhook to Discord if postToDiscord is enabled
     if (newStatus === "active" && updatedListing?.postToDiscord) {
       await dispatchDiscordWebhook(updatedListing);
     }
@@ -1068,19 +1384,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteListing = async (listingId: string) => {
     setListings((prev) => {
       const updated = prev.filter((l) => l.id !== listingId);
-      try {
-        localStorage.setItem("manaforge_listings", JSON.stringify(updated));
-      } catch (e) {
-        console.error(e);
-      }
+      persistLightweightListingsCache(updated);
       return updated;
     });
 
     if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from("listings").delete().eq("id", listingId);
-      } catch (err) {
-        console.error("Supabase deleteListing error:", err);
+      const { error } = await supabase.from("listings").delete().eq("id", listingId);
+      if (error) {
+        console.error("Supabase deleteListing error:", error);
+        await refreshMarketplaceData();
       }
     }
   };
@@ -1103,16 +1415,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (!listing) return;
 
     let offerId = `offer-${Date.now()}`;
+    let hostedImages = offerData.offeredImages;
 
     if (isSupabaseConfigured && supabase) {
       try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        const uid = authUser?.id || currentUser.id;
+        if (authUser) {
+          await ensureProfileForAuthUser(authUser);
+        }
+
+        hostedImages = await Promise.all(
+          (offerData.offeredImages || [])
+            .filter(Boolean)
+            .map((img) => ensureHostedCardPhoto(img, uid))
+        );
+
         const { data, error } = await supabase
           .from("trade_offers")
           .insert({
             listing_id: listingId,
-            from_user_id: currentUser.id,
+            from_user_id: uid,
             offered_cards_description: offerData.offeredCardsDescription,
-            offered_images: offerData.offeredImages,
+            offered_images: hostedImages,
             estimated_value: offerData.estimatedValue,
             message: offerData.message || null,
             status: "pending",
@@ -1122,9 +1449,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data) {
           offerId = data.id;
+        } else if (error) {
+          console.error("Supabase addTradeOffer error:", error);
         }
       } catch (err) {
-        console.error("Supabase addTradeOffer error:", err);
+        console.error("Supabase addTradeOffer exception:", err);
       }
     }
 
@@ -1135,11 +1464,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       fromUserId: currentUser.id,
       fromUser: currentUser,
       ...offerData,
+      offeredImages: hostedImages,
       status: "pending",
       createdAt: new Date().toISOString(),
     };
 
-    setTradeOffers((prev) => [newOffer, ...prev]);
+    setTradeOffers((prev) => [newOffer, ...prev.filter((o) => o.id !== newOffer.id)]);
   };
 
   const addBulkSubmission = async (submissionData: {
@@ -1153,16 +1483,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     let submissionId = `bulk-${Date.now()}`;
+    let hostedCards = submissionData.cards;
 
     if (isSupabaseConfigured && supabase) {
       try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        const uid = authUser?.id || currentUser.id;
+        if (authUser) {
+          await ensureProfileForAuthUser(authUser);
+        }
+
+        hostedCards = await Promise.all(
+          submissionData.cards.map(async (c) => ({
+            ...c,
+            image: c.image ? await ensureHostedCardPhoto(c.image, uid) : c.image,
+          }))
+        );
+
         const { data, error } = await supabase
           .from("bulk_submissions")
           .insert({
-            user_id: currentUser.id,
-            total_cards: submissionData.cards.length,
-            cards: submissionData.cards,
-            asking_price: submissionData.askingPrice || null,
+            user_id: uid,
+            total_cards: hostedCards.length,
+            cards_data: hostedCards,
+            asking_price: submissionData.askingPrice ?? null,
             notes: submissionData.notes || null,
             status: "pending",
           })
@@ -1171,9 +1517,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data) {
           submissionId = data.id;
+        } else if (error) {
+          console.error("Supabase addBulkSubmission error:", error);
         }
       } catch (err) {
-        console.error("Supabase addBulkSubmission error:", err);
+        console.error("Supabase addBulkSubmission exception:", err);
       }
     }
 
@@ -1181,17 +1529,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       id: submissionId,
       userId: currentUser.id,
       user: currentUser,
-      totalCards: submissionData.cards.length,
-      cards: submissionData.cards,
+      totalCards: hostedCards.length,
+      cards: hostedCards,
       askingPrice: submissionData.askingPrice,
       notes: submissionData.notes,
       status: "pending",
       createdAt: new Date().toISOString(),
     };
 
-    setBulkSubmissions((prev) => [newSubmission, ...prev]);
+    setBulkSubmissions((prev) => [
+      newSubmission,
+      ...prev.filter((s) => s.id !== newSubmission.id),
+    ]);
 
-    // Send discord webhook securely through server
     try {
       await fetch("/api/discord", {
         method: "POST",
@@ -1207,7 +1557,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               value: `Zustand: ${c.condition} | Sprache: ${c.language}${c.estimatedValue ? ` | Wert: ${c.estimatedValue} €` : ""}`,
               inline: true,
             })),
-            image: newSubmission.cards[0]?.image ? { url: newSubmission.cards[0].image } : undefined,
+            image:
+              newSubmission.cards[0]?.image && newSubmission.cards[0].image.startsWith("http")
+                ? { url: newSubmission.cards[0].image }
+                : undefined,
           },
           slabData: {
             name: `Sammlung (${newSubmission.totalCards} Karten)`,
@@ -1244,7 +1597,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase
           .from("deals")
           .insert({
-            listing_id: listing.id,
+            listing_id: listing.id.startsWith("list-") ? null : listing.id,
             listing_title: listing.name,
             listing_type: listing.type,
             price_or_value: listing.price || listing.estimatedTradeValue || null,
@@ -1259,9 +1612,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data) {
           dealId = data.id;
+        } else if (error) {
+          console.error("Supabase createDeal error:", error);
         }
       } catch (err) {
-        console.error("Supabase createDeal error:", err);
+        console.error("Supabase createDeal exception:", err);
       }
     }
 
@@ -1281,62 +1636,62 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
-    setDeals((prev) => [newDeal, ...prev]);
+    setDeals((prev) => [newDeal, ...prev.filter((d) => d.id !== newDeal.id)]);
   };
 
   const confirmDeal = async (dealId: string, asRole: "seller" | "buyer") => {
+    const targetDeal = deals.find((d) => d.id === dealId);
+    if (!targetDeal) return;
+
+    const nextSellerConfirmed = asRole === "seller" ? true : targetDeal.sellerConfirmed;
+    const nextBuyerConfirmed = asRole === "buyer" ? true : targetDeal.buyerConfirmed;
+    const isNowCompleted =
+      nextSellerConfirmed && nextBuyerConfirmed && targetDeal.status !== "completed";
+    const completedIso = isNowCompleted ? new Date().toISOString() : targetDeal.completedAt;
+
     setDeals((prev) =>
       prev.map((deal) => {
         if (deal.id !== dealId) return deal;
-
-        const updated = {
+        return {
           ...deal,
-          sellerConfirmed: asRole === "seller" ? true : deal.sellerConfirmed,
-          buyerConfirmed: asRole === "buyer" ? true : deal.buyerConfirmed,
+          sellerConfirmed: nextSellerConfirmed,
+          buyerConfirmed: nextBuyerConfirmed,
+          status: isNowCompleted ? "completed" : deal.status,
+          completedAt: completedIso,
         };
-
-        if (updated.sellerConfirmed && updated.buyerConfirmed && deal.status !== "completed") {
-          updated.status = "completed";
-          updated.completedAt = new Date().toISOString();
-
-          setUsers((uList) =>
-            uList.map((u) => {
-              if (u.id === deal.sellerId || u.id === deal.buyerId) {
-                const newCount = u.dealsCount + 1;
-                const becomesVerified = newCount >= 3;
-
-                if (becomesVerified && !u.verified) {
-                  try {
-                    confetti({
-                      particleCount: 100,
-                      spread: 70,
-                      origin: { y: 0.6 },
-                    });
-                  } catch (e) {
-                    console.error(e);
-                  }
-                }
-
-                return {
-                  ...u,
-                  dealsCount: newCount,
-                  verified: becomesVerified,
-                };
-              }
-              return u;
-            })
-          );
-        }
-
-        return updated;
       })
     );
 
+    if (isNowCompleted) {
+      setUsers((uList) =>
+        uList.map((u) => {
+          if (u.id === targetDeal.sellerId || u.id === targetDeal.buyerId) {
+            const newCount = u.dealsCount + 1;
+            const becomesVerified = u.verified || newCount >= 3;
+            if (becomesVerified && !u.verified) {
+              try {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            return { ...u, dealsCount: newCount, verified: becomesVerified };
+          }
+          return u;
+        })
+      );
+    }
+
     if (isSupabaseConfigured && supabase) {
       try {
-        const updatePayload: any = {};
-        if (asRole === "seller") updatePayload.seller_confirmed = true;
-        if (asRole === "buyer") updatePayload.buyer_confirmed = true;
+        const updatePayload: Record<string, unknown> = {
+          seller_confirmed: nextSellerConfirmed,
+          buyer_confirmed: nextBuyerConfirmed,
+        };
+        if (isNowCompleted) {
+          updatePayload.status = "completed";
+          updatePayload.completed_at = completedIso;
+        }
         await supabase.from("deals").update(updatePayload).eq("id", dealId);
       } catch (err) {
         console.error("Supabase confirmDeal error:", err);
@@ -1379,7 +1734,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         availableBoosters: currentUser?.boosterPacks ?? 0,
         openedBoostersCount: currentUser?.openedBoostersCount ?? 0,
         canClaimDailyBooster,
-        dailyBoosterCountdown: dailyBoosterCountdown,
+        dailyBoosterCountdown,
         isBoosterModalOpen,
         openBoosterModal,
         closeBoosterModal,

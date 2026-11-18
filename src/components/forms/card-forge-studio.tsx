@@ -8,6 +8,7 @@ import {
   PokemonApiCard,
 } from "@/types";
 import { useStore } from "@/lib/store";
+import { compressCardImage, uploadCardPhoto } from "@/lib/supabase/storage";
 import { PokemonSearchInput } from "./pokemon-search-input";
 import { formatSlabTitle } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -236,64 +237,92 @@ export function CardForgeStudio({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const dataUrl = e.target?.result as string;
-      if (!dataUrl) return;
+    let previewDataUrl = "";
+    let uploadBlob: Blob | File = file;
 
-      // Immediately display image in slab
-      setPhotos([dataUrl]);
-      setIsScanning(true);
-      setScanMessage("KI-Kartenanalyse läuft... Lese Pokémon, Set-Kürzel & Nummer...");
-      setDetectedSummary(null);
+    try {
+      const compressed = await compressCardImage(file);
+      previewDataUrl = compressed.dataUrl;
+      uploadBlob = compressed.blob;
+    } catch {
+      previewDataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve((ev.target?.result as string) || "");
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(file);
+      });
+    }
 
-      try {
-        const storedKey = typeof window !== "undefined" ? localStorage.getItem("manaverse_gemini_api_key") || "" : "";
-        const res = await fetch("/api/ai/scan-card", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: dataUrl,
-            apiKey: storedKey,
-            filename: file.name,
-          }),
-        });
+    if (!previewDataUrl) return;
 
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data) {
-            const d = json.data;
-            if (d.name) setName(d.name);
-            if (d.setCode) setSetNameText(d.setCode);
-            if (d.cardNumber) setCardNumber(d.cardNumber);
-            if (d.language) setLanguage(d.language);
-            if (d.condition) setCondition(d.condition);
+    // Sofortige Vorschau im Slab anzeigen
+    setPhotos([previewDataUrl]);
+    setSubmitError(null);
+    setIsScanning(true);
+    setScanMessage("KI-Kartenanalyse läuft... Lese Pokémon, Set-Kürzel & Nummer...");
+    setDetectedSummary(null);
 
-            if (json.isAiDetected) {
-              const summary = `${d.name} (${d.setCode || "Set"} • #${d.cardNumber || "—"} • ${d.language || "DE"})`;
-              setDetectedSummary(summary);
-              setScanMessage(`✓ Karte erfolgreich per KI erkannt!`);
-            } else {
-              setScanMessage("Foto geladen! Du kannst die Details in Schritt 2 kurz prüfen.");
-            }
+    // Parallel im Hintergrund in Supabase Storage ('card-photos') hochladen, falls angemeldet
+    if (currentUser?.id) {
+      uploadCardPhoto(uploadBlob, currentUser.id)
+        .then((publicUrl) => {
+          if (publicUrl) {
+            setPhotos((prev) =>
+              prev[0] === previewDataUrl ? [publicUrl, ...prev.slice(1)] : prev
+            );
           }
-        } else {
-          setScanMessage("Foto geladen! Bitte passe den Kartennamen kurz in Schritt 2 an.");
+        })
+        .catch(() => {
+          // Wird beim Veröffentlichen erneut versucht oder nutzt das komprimierte Bild
+        });
+    }
+
+    try {
+      const storedKey = typeof window !== "undefined" ? localStorage.getItem("manaverse_gemini_api_key") || "" : "";
+      const res = await fetch("/api/ai/scan-card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: previewDataUrl,
+          apiKey: storedKey,
+          filename: file.name,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          const d = json.data;
+          if (d.name) setName(d.name);
+          if (d.setCode) setSetNameText(d.setCode);
+          if (d.cardNumber) setCardNumber(d.cardNumber);
+          if (d.language) setLanguage(d.language);
+          if (d.condition) setCondition(d.condition);
+
+          if (json.isAiDetected) {
+            const summary = `${d.name} (${d.setCode || "Set"} • #${d.cardNumber || "—"} • ${d.language || "DE"})`;
+            setDetectedSummary(summary);
+            setScanMessage(`✓ Karte erfolgreich per KI erkannt!`);
+          } else {
+            setScanMessage("Foto geladen! Du kannst die Details in Schritt 2 kurz prüfen.");
+          }
         }
-      } catch (err) {
-        console.warn("AI card scan error:", err);
-        setScanMessage("Foto geladen! Bitte wähle den Kartennamen kurz im TCG-Index.");
-      } finally {
-        setIsScanning(false);
+      } else {
+        setScanMessage("Foto geladen! Bitte passe den Kartennamen kurz in Schritt 2 an.");
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn("AI card scan error:", err);
+      setScanMessage("Foto geladen! Bitte wähle den Kartennamen kurz im TCG-Index.");
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   // UX State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDraftSaved, setIsDraftSaved] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const activeCondition =
     CONDITIONS.find((c) => c.value === condition) || CONDITIONS[0];
@@ -393,6 +422,7 @@ export function CardForgeStudio({
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
     const validPhotos = photos.filter((p) => p.trim() !== "");
 
     try {
@@ -427,6 +457,11 @@ export function CardForgeStudio({
       }
     } catch (err) {
       console.error("Fehler beim Erstellen der Karte:", err);
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : "Das Inserat konnte nicht veröffentlicht werden. Bitte versuche es erneut."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -1388,6 +1423,12 @@ export function CardForgeStudio({
 
             {/* Final Action Buttons */}
             <div className="space-y-3 pt-4 border-t border-white/10">
+              {submitError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                  <span>{submitError}</span>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"

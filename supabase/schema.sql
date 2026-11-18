@@ -28,9 +28,29 @@ alter table public.profiles enable row level security;
 create policy "Public profiles are viewable by everyone" 
   on public.profiles for select using (true);
 
--- Users can only modify their own profile
+-- Users can create their own profile row
+create policy "Users can insert own profile"
+  on public.profiles for insert with check (auth.uid() = id);
+
+-- Helper function to check Admin / Founder role safely without RLS recursion
+create or replace function public.is_admin_or_founder()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and role in ('admin', 'founder')
+  );
+$$;
+
+-- Users can modify their own profile, or admins/founders can manage roles
 create policy "Users can update own profile" 
-  on public.profiles for update using (auth.uid() = id);
+  on public.profiles for update using (auth.uid() = id or public.is_admin_or_founder());
 
 -- Trigger to auto-create public profile upon auth signup (NO sensitive email stored in public table)
 create or replace function public.handle_new_user() 
@@ -121,23 +141,27 @@ create table if not exists public.listings (
   allow_offers boolean default true,
   post_to_discord boolean default true,
   show_discord_name boolean default true,
-  status text default 'active' check (status in ('active', 'reserved', 'completed')),
+  status text default 'active' check (status in ('active', 'reserved', 'completed', 'sold', 'draft')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 alter table public.listings enable row level security;
 
 create policy "Listings are viewable by everyone" 
-  on public.listings for select using (true);
+  on public.listings for select using (
+    coalesce(status, 'active') <> 'draft'
+    or auth.uid() = user_id
+    or public.is_admin_or_founder()
+  );
 
 create policy "Users can insert own listings" 
   on public.listings for insert with check (auth.uid() = user_id);
 
 create policy "Users can update own listings" 
-  on public.listings for update using (auth.uid() = user_id);
+  on public.listings for update using (auth.uid() = user_id or public.is_admin_or_founder());
 
 create policy "Users can delete own listings" 
-  on public.listings for delete using (auth.uid() = user_id);
+  on public.listings for delete using (auth.uid() = user_id or public.is_admin_or_founder());
 
 -- 3. TRADE OFFERS
 create table if not exists public.trade_offers (
@@ -209,12 +233,17 @@ alter table public.deals enable row level security;
 -- Only deal participants can view the deal
 create policy "Deals viewable by deal participants only"
   on public.deals for select using (
-    auth.uid() = seller_id or auth.uid() = buyer_id
+    auth.uid() = seller_id or auth.uid() = buyer_id or public.is_admin_or_founder()
+  );
+
+create policy "Authenticated users can create deals"
+  on public.deals for insert with check (
+    auth.uid() = buyer_id or auth.uid() = seller_id
   );
 
 create policy "Participants can update deal confirmations"
   on public.deals for update using (
-    auth.uid() = seller_id or auth.uid() = buyer_id
+    auth.uid() = seller_id or auth.uid() = buyer_id or public.is_admin_or_founder()
   );
 
 -- ==============================================================================
