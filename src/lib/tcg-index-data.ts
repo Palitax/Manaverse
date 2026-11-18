@@ -38,6 +38,28 @@ export const TCG_SETS: TcgSet[] = [
   // ==========================================================================
   // MEGA Ära (2025–2026)
   {
+    id: "m7-jp",
+    code: "M7",
+    name: "Aura Seeker",
+    nameOriginal: "ハドウシーカー",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 78,
+    aliases: ["M7", "Aura Seeker", "ハドウシーカー"],
+  },
+  {
+    id: "mg-deck-jp",
+    code: "MG",
+    name: "Special Deck Set MEGA (Mega Feraligatr / Dragonite / Gengar)",
+    nameOriginal: "スペシャルデッキセットMEGA",
+    language: "JP",
+    series: "MEGA",
+    releaseYear: 2026,
+    totalCards: 38,
+    aliases: ["MG", "Special Deck Set MEGA"],
+  },
+  {
     id: "m6a-jp",
     code: "M6a",
     name: "30th Celebration",
@@ -923,6 +945,39 @@ export const TCG_SETS: TcgSet[] = [
     releaseYear: 2023,
     totalCards: 30,
     aliases: ["WCS23", "Yokohama Deck"],
+  },
+  {
+    id: "cll-jp",
+    code: "CLL",
+    name: "Pokémon Card Game Classic (Charizard & Ho-Oh ex)",
+    nameOriginal: "ポケモンカードゲーム Classic (リザードン)",
+    language: "JP",
+    series: "Classic JP",
+    releaseYear: 2023,
+    totalCards: 34,
+    aliases: ["CLL", "Pokemon Classic Charizard", "Classic CLL"],
+  },
+  {
+    id: "clf-jp",
+    code: "CLF",
+    name: "Pokémon Card Game Classic (Venusaur & Lugia ex)",
+    nameOriginal: "ポケモンカードゲーム Classic (フシギバナ)",
+    language: "JP",
+    series: "Classic JP",
+    releaseYear: 2023,
+    totalCards: 34,
+    aliases: ["CLF", "Pokemon Classic Venusaur", "Classic CLF"],
+  },
+  {
+    id: "clk-jp",
+    code: "CLK",
+    name: "Pokémon Card Game Classic (Blastoise & Suicune ex)",
+    nameOriginal: "ポケモンカードゲーム Classic (カメックス)",
+    language: "JP",
+    series: "Classic JP",
+    releaseYear: 2023,
+    totalCards: 34,
+    aliases: ["CLK", "Pokemon Classic Blastoise", "Classic CLK"],
   },
   {
     id: "s-p-jp",
@@ -2598,12 +2653,12 @@ export function findSetByCode(codeOrAlias: string): TcgSet | undefined {
     };
   }
 
-  // 4. Japanese Promo & Expansion dynamic pattern (covers ALL 1996–2026 JP sets & promos!)
+  // 4. Japanese Promo & Expansion dynamic pattern (covers ALL 1996–2026 JP sets, Classic & Special Decks!)
   const isJapaneseCode =
-    /^(XY-?P|SM-?P|S-?P|SV-?P|M-?P|BW-?P|DP-?P|DPT-?P|L-?P|PCG-?P|ADV-?P|OLD-?P|PLAY|PPP|PW|P|J|T|S8A-P|S8A-G|WCS23|20TH|VEND|MCD-E|WCP|EBB|LL|MC)$/i.test(
+    /^(XY-?P|SM-?P|S-?P|SV-?P|M-?P|BW-?P|DP-?P|DPT-?P|L-?P|PCG-?P|ADV-?P|OLD-?P|PLAY|PPP|PW|P|J|T|S8A-P|S8A-G|WCS23|20TH|VEND|MCD-E|WCP|EBB|LL|MC|MG|PPF|PPB|GB-ML|GB-EM|QSGS|INTRO|INTRO-N|NEO-PF|TVS|MVS|GYM-DECK|ADV-DECK|PCG-DECK)$/i.test(
       target
     ) ||
-    /^(M\d+[A-Za-z]?|SV\d+[A-Za-z+]?|S\d+[A-Za-z+]?|SM\d+[A-Za-z+]?|XY\d+[A-Za-z-]*|CP[0-9A-Za-z]+|BW\d+[A-Za-z-]*|L\d+[A-Za-z-]*|DPt?\d*[A-Za-z-]*|PCG\d+|ADV\d+|E[1-5]|VS1|WEB1|NEO[1-4]|PMCG[1-6]|CL[FKL]|SV[A-Z]{1,2}\d*)$/i.test(
+    /^(M\d+[A-Za-z]?|SV\d+[A-Za-z+]?|S\d+[A-Za-z+]?|SM\d+[A-Za-z+]?|XY\d+[A-Za-z-]*|CP[0-9A-Za-z]+|BW\d+[A-Za-z-]*|L\d+[A-Za-z-]*|DPt?\d*[A-Za-z-]*|PCG\d+|ADV\d+|E[1-5]|E-SD|VS1|WEB1|NEO[1-4]|PMCG[1-6]|CL[FKL]|SV[A-Z]{1,2}\d*)$/i.test(
       target
     );
 

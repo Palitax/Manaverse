@@ -144,15 +144,27 @@ export function kanaToRomaji(input: string): string {
 function computeCollectorBoost(rarity: string, note: string, setCode: string): number {
   let b = 0;
   const r = rarity.toUpperCase();
-  if (r.includes("SAR") || r === "MUR") b += 26;
+  if (r.includes("GOLD STAR") || r.includes("☆")) b += 28;
+  else if (r.includes("SAR") || r === "MUR") b += 26;
   else if (r.includes("AR") || r.includes("CSR") || r.includes("HR") || r.includes("UR")) b += 22;
+  else if (r.includes("CLASSIC HOLO")) b += 21;
   else if (r.includes("SR") || r.includes("CHR") || r.includes("SSR") || r.includes("SHINING")) b += 19;
   else if (r === "PROMO") b += 20;
   else if (r.includes("MASTER BALL") || r.includes("MIRROR")) b += 16;
   else if (r.includes("HOLO") || r === "RR" || r === "MA" || r === "S") b += 10;
 
   if (note && !note.endsWith("Variant")) b += 8;
-  if (setCode === "SV2a" || setCode === "S6a" || setCode === "SV8a" || setCode === "S12a") b += 4;
+  if (
+    setCode === "SV2a" ||
+    setCode === "S6a" ||
+    setCode === "SV8a" ||
+    setCode === "S12a" ||
+    setCode === "CLL" ||
+    setCode === "CLF" ||
+    setCode === "CLK"
+  ) {
+    b += 5;
+  }
   return b;
 }
 
@@ -228,6 +240,7 @@ function getJpIndex(): CachedJpIndex {
       numLeft = number.toLowerCase().trim();
     }
     const numLeftTrim = numLeft.replace(/^0+(?=\d)/, "");
+    numRightNorm = numRightNorm.replace(/^0+(?=\d)/, "");
 
     const romaji = kanaToRomaji(jaName);
     let extraAliases = "";
@@ -410,7 +423,7 @@ export function searchFullJapaneseIndex({
       if (tok.includes("/")) {
         const [qL, qR] = tok.split("/");
         const qLTrim = (qL || "").replace(/^0+(?=\d)/, "");
-        const qRNorm = (qR || "").replace(/[^a-z0-9]/g, "");
+        const qRNorm = (qR || "").replace(/[^a-z0-9]/g, "").replace(/^0+(?=\d)/, "");
 
         const leftOk = !qL || c.numLeft === qL || c.numLeftTrim === qLTrim;
         const rightOk =

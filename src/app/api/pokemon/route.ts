@@ -223,10 +223,17 @@ export async function GET(request: Request) {
         : [];
 
     // Detect if query explicitly specifies a card number, Japanese promo/set code, or Kana
+    const queryWords = query.split(/[\s/#]+/).filter((w) => w.length >= 2);
+    const hasJpSetToken = queryWords.some((w) => {
+      const matched = findSetByCode(w);
+      return matched?.language === "JP";
+    });
+
     const hasSpecificNumberOrJpHint =
+      hasJpSetToken ||
       /\b\d{1,3}(\/[A-Za-z0-9-]+)?\b/.test(query) ||
       /[\u3040-\u30ff\u4e00-\u9faf]/.test(query) ||
-      /\b(xy-?p|sm-?p|s-?p|sv-?p|m-?p|bw-?p|dp-?p|l-?p|play|sv\d+[a-z]?|s\d+[a-z]?|sm\d+[a-z]?|pmcg|vs1|poncho|munch|yokohama|kanazawa|nagaba|outbreak|stamp)\b/i.test(
+      /\b(xy-?p|sm-?p|s-?p|sv-?p|m-?p|bw-?p|dp-?p|l-?p|play|cll|clf|clk|classic|pokepark|sv\d+[a-z]?|s\d+[a-z]?|sm\d+[a-z]?|pmcg|vs1|poncho|munch|yokohama|kanazawa|nagaba|outbreak|stamp)\b/i.test(
         query
       ) ||
       langParam === "JP";

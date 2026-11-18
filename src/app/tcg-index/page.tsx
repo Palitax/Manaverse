@@ -57,7 +57,7 @@ export default function TcgIndexPage() {
   const [cards, setCards] = useState<PokemonApiCard[]>(() =>
     TCG_CARDS.slice(0, PAGE_SIZE).map(localTcgToApiCard)
   );
-  const [totalCards, setTotalCards] = useState<number>(27240);
+  const [totalCards, setTotalCards] = useState<number>(29265);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [offset, setOffset] = useState<number>(0);
@@ -170,7 +170,7 @@ export default function TcgIndexPage() {
         <div className="relative z-10 text-center max-w-3xl mx-auto space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-neutral-300 backdrop-blur-md">
             <Database className="w-4 h-4 text-amber-400" />
-            <span>Vollständiger Pokémon TCG-Index (27.200+ japanische & internationale Karten)</span>
+            <span>Vollständiger Pokémon TCG-Index (29.200+ japanische & internationale Karten)</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
