@@ -262,7 +262,7 @@ export default function SellPage() {
               href="/buy"
               className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 transition-all min-h-[44px] flex items-center justify-center"
             >
-              Karten kaufen
+              {counts.sell > 0 ? `Community-Marktplatz (${counts.sell})` : "Karten kaufen"}
             </Link>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function SellPage() {
               href="/buy"
               className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 transition-all min-h-[44px] flex items-center justify-center"
             >
-              Karten kaufen
+              {counts.sell > 0 ? `Community-Marktplatz (${counts.sell})` : "Karten kaufen"}
             </Link>
           </div>
         </div>

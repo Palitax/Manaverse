@@ -97,6 +97,11 @@ export function AuthModal() {
         const res = await registerWithEmail(email, password, username);
         if (!res.success) {
           setErrorMsg(res.error || "Registrierung fehlgeschlagen.");
+        } else if (res.requiresEmailConfirmation) {
+          setTab("login");
+          setSuccessMsg(
+            "Fast geschafft! Wir haben dir eine Bestätigungs-E-Mail gesendet. Bitte klicke kurz auf den Link in der E-Mail und melde dich danach hier an (oder nutze oben die sofortige Discord-Anmeldung)."
+          );
         } else {
           setSuccessMsg("Konto erfolgreich erstellt! Du bist jetzt eingeloggt.");
           setTimeout(() => closeAuthModal(), 1200);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 
 export default function AuthCallbackPage() {
@@ -15,8 +16,44 @@ export default function AuthCallbackPage() {
       return;
     }
 
+    const finalizeRedirect = (session: any) => {
+      if (typeof window !== "undefined") {
+        if (session?.user?.app_metadata?.provider === "discord") {
+          sessionStorage.setItem("manaforge_discord_welcome", "true");
+          router.replace("/?discord_welcome=1");
+          return;
+        }
+      }
+      router.replace("/");
+    };
+
     const handleCallback = async () => {
       try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get("code");
+          const tokenHash = params.get("token_hash");
+          const otpType = params.get("type") as EmailOtpType | null;
+
+          if (code) {
+            const { data: exchanged, error: exchangeErr } =
+              await client.auth.exchangeCodeForSession(code);
+            if (!exchangeErr && exchanged?.session) {
+              finalizeRedirect(exchanged.session);
+              return;
+            }
+          } else if (tokenHash && otpType) {
+            const { data: verified, error: verifyErr } = await client.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: otpType,
+            });
+            if (!verifyErr && verified?.session) {
+              finalizeRedirect(verified.session);
+              return;
+            }
+          }
+        }
+
         const { data, error } = await client.auth.getSession();
         if (error) {
           console.error("Auth callback getSession error:", error);
@@ -25,28 +62,17 @@ export default function AuthCallbackPage() {
         }
 
         if (data?.session) {
-          if (typeof window !== "undefined") {
-            sessionStorage.setItem("manaforge_discord_welcome", "true");
-          }
-          router.replace("/?discord_welcome=1");
+          finalizeRedirect(data.session);
         } else {
-          // If no session found yet, wait for onAuthStateChange
-          const { data: authListener } = client.auth.onAuthStateChange((event, session) => {
+          const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
             if (session) {
               authListener.subscription.unsubscribe();
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("manaforge_discord_welcome", "true");
-              }
-              router.replace("/?discord_welcome=1");
+              finalizeRedirect(session);
             }
           });
 
-          // Timeout fallback
           setTimeout(() => {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem("manaforge_discord_welcome", "true");
-            }
-            router.replace("/?discord_welcome=1");
+            router.replace("/");
           }, 2500);
         }
       } catch (e) {
@@ -70,7 +96,7 @@ export default function AuthCallbackPage() {
             <p className="text-xs text-neutral-400">{errorMsg}</p>
             <button
               onClick={() => router.replace("/")}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all min-h-[44px] cursor-pointer"
             >
               Zurück zur Startseite
             </button>
@@ -78,7 +104,7 @@ export default function AuthCallbackPage() {
         ) : (
           <>
             <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <h2 className="text-lg font-black text-white">Discord-Anmeldung läuft...</h2>
+            <h2 className="text-lg font-black text-white">Anmeldung wird abgeschlossen...</h2>
             <p className="text-xs text-neutral-400">
               Dein Profil wird mit Manaforge synchronisiert. Du wirst gleich weitergeleitet.
             </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import {
   UserProfile,
   UserRole,
@@ -72,9 +73,52 @@ function setLocalBoosterStats(userId: string, stats: Partial<LocalBoosterStats>)
   }
 }
 
+const UNSYNCED_STORAGE_KEY = "manaforge_unsynced_listings";
+
+function stageUnsyncedListing(pendingItem: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+  try {
+    const existingRaw = localStorage.getItem(UNSYNCED_STORAGE_KEY);
+    const existing = existingRaw ? JSON.parse(existingRaw) : [];
+    const list = Array.isArray(existing) ? existing : [];
+    const deduped = [
+      pendingItem,
+      ...list.filter((x: any) => x && x.id !== pendingItem.id),
+    ].slice(0, 30);
+    localStorage.setItem(UNSYNCED_STORAGE_KEY, JSON.stringify(deduped));
+  } catch {
+    // Speicher-Limit ignorieren
+  }
+}
+
+function rescueLegacyLocalListingsBeforeOverwrite() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem("manaforge_listings");
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+
+    const unsynced = parsed.filter(
+      (item: any) =>
+        item &&
+        typeof item.id === "string" &&
+        item.id.startsWith("list-") &&
+        !item.id.startsWith("list-mock") &&
+        item.name
+    );
+    for (const item of unsynced) {
+      stageUnsyncedListing(item);
+    }
+  } catch {
+    // Ungültiges JSON ignorieren
+  }
+}
+
 function persistLightweightListingsCache(items: CardListing[]) {
   if (typeof window === "undefined") return;
   try {
+    rescueLegacyLocalListingsBeforeOverwrite();
     // Speichere keine riesigen unkomprimierten Base64-Strings im 5MB-localStorage
     const compact = items.slice(0, 100).map((item) => ({
       ...item,
@@ -105,7 +149,7 @@ interface StoreContextType {
   assignUserRole: (userId: string, newRole: UserRole) => Promise<{ success: boolean; error?: string }>;
   loginWithDiscord: () => Promise<{ error?: string }>;
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  registerWithEmail: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
+  registerWithEmail: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string; requiresEmailConfirmation?: boolean }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status"> & { status?: CardListing["status"] }) => Promise<CardListing>;
@@ -231,6 +275,7 @@ function mapDBListingToCardListing(
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
   const [sessionUser, setSessionUser] = useState<UserProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -610,7 +655,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     username: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; error?: string; requiresEmailConfirmation?: boolean }> => {
     if (!isSupabaseConfigured || !supabase) {
       return { success: false, error: "Supabase ist nicht konfiguriert." };
     }
@@ -632,10 +677,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Dieser Benutzername ist leider bereits vergeben." };
     }
 
+    const redirectUrl =
+      typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           username: cleanUsername,
           full_name: cleanUsername,
@@ -654,11 +703,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: deError };
     }
 
-    if (data?.user) {
-      await syncSessionUser(data.user);
+    // Wichtig: Nur einloggen, wenn Supabase tatsächlich eine aktive Session zurückgibt!
+    // Wenn E-Mail-Bestätigung aktiv ist (data.session === null), niemals im Ghost-Zustand einloggen.
+    if (data?.session?.user) {
+      await syncSessionUser(data.session.user);
+      closeAuthModal();
+      return { success: true };
     }
-    closeAuthModal();
-    return { success: true };
+
+    return {
+      success: true,
+      requiresEmailConfirmation: true,
+    };
   };
 
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
@@ -830,59 +886,76 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     const handleVisibilityOrFocus = () => {
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-      if (Date.now() - lastRefreshAtRef.current > 8_000) {
+      if (Date.now() - lastRefreshAtRef.current > 4_000) {
         refreshMarketplaceData();
       }
     };
+
+    // Fallback-Intervall (alle 15s bei aktivem Tab), falls Mobile-Browser/Firewalls WebSockets drosseln
+    const pollInterval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      refreshMarketplaceData();
+    }, 15_000);
 
     window.addEventListener("focus", handleVisibilityOrFocus);
     document.addEventListener("visibilitychange", handleVisibilityOrFocus);
 
     return () => {
       if (debounceTimer) clearTimeout(debounceTimer);
+      clearInterval(pollInterval);
       window.removeEventListener("focus", handleVisibilityOrFocus);
       document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
       client.removeChannel(channel);
     };
   }, [refreshMarketplaceData, sessionUser?.id]);
 
-  // Einmalige automatische Wiederherstellung lokal zwischengespeicherter Inserate ("list-...") in Supabase
+  // Bei jedem Seitenwechsel (/buy, /sell, /trade, /looking-for, /profile) frisch synchronisieren
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase || !sessionUser?.id) return;
+    if (!isSupabaseConfigured || !supabase) return;
+    if (Date.now() - lastRefreshAtRef.current > 2_000) {
+      refreshMarketplaceData();
+    }
+  }, [pathname, refreshMarketplaceData]);
+
+  // Automatische Synchronisierung zwischengespeicherter lokaler Inserate in Supabase, sobald eine echte Session besteht
+  useEffect(() => {
+    const client = supabase;
+    if (!isSupabaseConfigured || !client || !sessionUser?.id) return;
     if (recoveredUserIdsRef.current.has(sessionUser.id)) return;
-    recoveredUserIdsRef.current.add(sessionUser.id);
 
     const migrateLocalPending = async () => {
       try {
-        const raw = localStorage.getItem("manaforge_listings");
-        if (!raw) return;
+        rescueLegacyLocalListingsBeforeOverwrite();
+        const raw = localStorage.getItem(UNSYNCED_STORAGE_KEY);
+        if (!raw) {
+          recoveredUserIdsRef.current.add(sessionUser.id);
+          return;
+        }
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return;
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          recoveredUserIdsRef.current.add(sessionUser.id);
+          return;
+        }
 
-        const unsyncedMine = parsed.filter(
-          (item: any) =>
-            item &&
-            typeof item.id === "string" &&
-            item.id.startsWith("list-") &&
-            !item.id.startsWith("list-mock") &&
-            item.name &&
-            (item.userId === sessionUser.id ||
-              (sessionUser.username &&
-                item.user?.username?.toLowerCase() === sessionUser.username.toLowerCase()))
-        );
+        const { data: sessionData } = await client.auth.getSession();
+        const activeAuthUser = sessionData?.session?.user;
+        if (!activeAuthUser) return;
 
-        if (unsyncedMine.length === 0) return;
+        await ensureProfileForAuthUser(activeAuthUser);
 
+        const remaining: any[] = [];
         let migratedCount = 0;
-        for (const pending of unsyncedMine) {
+
+        for (const pending of parsed) {
+          if (!pending || !pending.name) continue;
           const hostedPhotos = await Promise.all(
             (Array.isArray(pending.photos) ? pending.photos : [])
               .filter((p: string) => typeof p === "string" && p.trim() !== "")
-              .map((p: string) => ensureHostedCardPhoto(p, sessionUser.id))
+              .map((p: string) => ensureHostedCardPhoto(p, activeAuthUser.id))
           );
 
-          const { error } = await supabase!.from("listings").insert({
-            user_id: sessionUser.id,
+          const { error } = await client.from("listings").insert({
+            user_id: activeAuthUser.id,
             type: pending.type || "sell",
             name: pending.name,
             set_name: pending.set || null,
@@ -904,8 +977,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
           if (!error) {
             migratedCount += 1;
+          } else {
+            remaining.push(pending);
           }
         }
+
+        if (remaining.length === 0) {
+          localStorage.removeItem(UNSYNCED_STORAGE_KEY);
+        } else {
+          localStorage.setItem(UNSYNCED_STORAGE_KEY, JSON.stringify(remaining));
+        }
+
+        recoveredUserIdsRef.current.add(sessionUser.id);
 
         if (migratedCount > 0) {
           await refreshMarketplaceData();
@@ -916,7 +999,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
 
     migrateLocalPending();
-  }, [sessionUser, refreshMarketplaceData]);
+  }, [sessionUser, ensureProfileForAuthUser, refreshMarketplaceData]);
 
   const currentUser: UserProfile | null =
     sessionUser || (currentUserId ? users.find((u) => u.id === currentUserId) || null : null);
@@ -1251,16 +1334,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let newListing: CardListing;
 
     if (isSupabaseConfigured && supabase) {
-      // 1. Echte authentifizierte Sitzung verifizieren, damit RLS & Foreign Keys garantiert passen
-      const {
-        data: { user: authUser },
-        error: authErr,
-      } = await supabase.auth.getUser();
+      // 1. Echte authentifizierte Sitzung verifizieren (inkl. automatischem Token-Refresh nach >1h Tab-Laufzeit)
+      let authUser = (await supabase.auth.getSession()).data?.session?.user || null;
+      if (!authUser) {
+        const refreshed = await supabase.auth.refreshSession();
+        authUser = refreshed.data?.session?.user || null;
+      }
+      if (!authUser) {
+        authUser = (await supabase.auth.getUser()).data?.user || null;
+      }
 
-      if (authErr || !authUser) {
+      if (!authUser) {
+        // Karte sicher zwischenspeichern, damit sie nach dem Login sofort automatisch veröffentlicht wird
+        stageUnsyncedListing({
+          ...listingData,
+          id: `list-${Date.now()}`,
+          status: initialStatus,
+        });
+        setSessionUser(null);
+        setCurrentUserId(null);
         openAuthModal("login");
         throw new Error(
-          "Deine Anmeldung ist abgelaufen. Bitte melde dich kurz erneut an, um dein Inserat zu veröffentlichen."
+          "Deine Sitzung ist nicht aktiv (z. B. E-Mail noch unbestätigt oder Anmeldung abgelaufen). Deine Eingaben wurden gesichert – bitte melde dich kurz an, dann wird die Karte automatisch veröffentlicht!"
         );
       }
 
