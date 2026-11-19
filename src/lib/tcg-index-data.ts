@@ -2799,17 +2799,17 @@ export function validateSetWithLanguage(
       detectedLang,
       matchedSet,
       suggestedEquivalent,
-      warningMessage: `Set "${matchedSet.code}" (${matchedSet.name}) ist ein ${
+      warningMessage: `Set „${matchedSet.code}“ (${matchedSet.name}) ist ein ${
         matchedSet.language === "JP"
-          ? "japanisches 🇯🇵"
+          ? "japanisches"
           : matchedSet.language === "KR"
-          ? "koreanisches 🇰🇷"
+          ? "koreanisches"
           : matchedSet.language === "CN"
-          ? "chinesisches 🇨🇳"
+          ? "chinesisches"
           : matchedSet.language === "EN"
-          ? "englisches 🇬🇧"
-          : "deutsches 🇩🇪"
-      } Set, deine Karte ist jedoch als "${selectedLanguage}" markiert.`,
+          ? "englisches"
+          : "deutsches"
+      } Set, deine Karte ist jedoch als „${selectedLanguage}“ markiert.`,
     };
   }
 

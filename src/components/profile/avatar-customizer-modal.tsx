@@ -302,7 +302,7 @@ export function AvatarCustomizerModal({
   const frameOptions = [
     {
       id: "admin" as UserRole,
-      label: "Admin 🔥",
+      label: "Admin",
       sublabel: "Molten Lava Flammen",
       icon: <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-400" />,
       isLocked: userRole !== "admin" && userRole !== "founder",
@@ -491,7 +491,7 @@ export function AvatarCustomizerModal({
               </div>
 
               <p className="text-[10px] text-neutral-400 text-center font-medium">
-                💡 Ziehe das Bild direkt im Rahmen, um den Ausschnitt anzupassen.
+                Ziehe das Bild direkt im Rahmen, um den Ausschnitt anzupassen.
               </p>
             </div>
 
@@ -500,17 +500,17 @@ export function AvatarCustomizerModal({
               <span>{username}</span>
               {selectedRole === "admin" && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 font-black">
-                  Admin 🔥
+                  <Flame className="w-3 h-3 inline -mt-0.5 mr-0.5" /> Admin
                 </span>
               )}
               {selectedRole === "founder" && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                  Founder 👑
+                  <Crown className="w-3 h-3 inline -mt-0.5 mr-0.5" /> Founder
                 </span>
               )}
               {selectedRole === "beta" && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                  Beta ⚡
+                  <Zap className="w-3 h-3 inline -mt-0.5 mr-0.5" /> Beta
                 </span>
               )}
             </span>

@@ -9,6 +9,9 @@ import {
 } from "@/types";
 import { useStore } from "@/lib/store";
 import { compressCardImage, uploadCardPhoto } from "@/lib/supabase/storage";
+import { studioTheme, listingTheme, BTN_SECONDARY } from "@/lib/design-system";
+import { FlagSwatch, getLanguageCode } from "@/components/ui/language-tag";
+import { toast } from "@/components/ui/toast";
 import { PokemonSearchInput } from "./pokemon-search-input";
 import { formatSlabTitle } from "@/lib/pokemon-names";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -35,6 +38,10 @@ import {
   Scale,
   Key,
   Layers,
+  Camera,
+  Coins,
+  Send,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlabTopSigil } from "../cards/slab-top-sigil";
@@ -128,14 +135,14 @@ const CONDITIONS: {
   },
 ];
 
-const LANGUAGES: { value: CardLanguage; label: string; flag: string }[] = [
-  { value: "DE", label: "Deutsch", flag: "🇩🇪" },
-  { value: "EN", label: "Englisch", flag: "🇬🇧" },
-  { value: "JP", label: "Japanisch", flag: "🇯🇵" },
-  { value: "KR", label: "Koreanisch", flag: "🇰🇷" },
-  { value: "CN", label: "Chinesisch", flag: "🇨🇳" },
-  { value: "Egal", label: "Beliebig", flag: "🌐" },
-  { value: "OTHER", label: "Sonstige", flag: "🌍" },
+const LANGUAGES: { value: CardLanguage; label: string }[] = [
+  { value: "DE", label: "Deutsch" },
+  { value: "EN", label: "Englisch" },
+  { value: "JP", label: "Japanisch" },
+  { value: "KR", label: "Koreanisch" },
+  { value: "CN", label: "Chinesisch" },
+  { value: "Egal", label: "Beliebig" },
+  { value: "OTHER", label: "Sonstige" },
 ];
 
 const QUICK_BUDGETS = ["15 €", "35 €", "65 €", "120 €", "250 €", "VB", "Marktwert"];
@@ -233,7 +240,7 @@ export function CardForgeStudio({
   // Core File Upload & AI Vision Scan Handler
   const handlePhotoUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Bitte lade eine Bilddatei (PNG, JPG, WEBP) hoch.");
+      toast.error("Bitte lade eine Bilddatei hoch", "Unterstützt werden PNG, JPG und WEBP.");
       return;
     }
 
@@ -302,7 +309,7 @@ export function CardForgeStudio({
           if (json.isAiDetected) {
             const summary = `${d.name} (${d.setCode || "Set"} • #${d.cardNumber || "—"} • ${d.language || "DE"})`;
             setDetectedSummary(summary);
-            setScanMessage(`✓ Karte erfolgreich per KI erkannt!`);
+            setScanMessage("Karte erfolgreich per KI erkannt");
           } else {
             setScanMessage("Foto geladen! Du kannst die Details in Schritt 2 kurz prüfen.");
           }
@@ -472,36 +479,23 @@ export function CardForgeStudio({
   const isTrade = type === "trade";
   const isLookingFor = type === "looking_for";
 
-  const themeAccentBg = isSell
-    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-    : isTrade
-    ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-    : "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-
-  const themeGlow = isSell
-    ? "shadow-[0_0_50px_rgba(16,185,129,0.15)]"
-    : isTrade
-    ? "shadow-[0_0_50px_rgba(168,85,247,0.15)]"
-    : "shadow-[0_0_50px_rgba(6,182,212,0.15)]";
-
-  const themePrimaryButton = isSell
-    ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black shadow-emerald-500/30 hover:shadow-emerald-500/50"
-    : isTrade
-    ? "bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 text-white shadow-purple-500/30 hover:shadow-purple-500/50"
-    : "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-black shadow-cyan-500/30 hover:shadow-cyan-500/50";
+  // Einheitliches Mode-System (Verkaufen = Smaragd, Tauschen = Violett, Gesucht = Orange)
+  const theme = studioTheme(type);
+  const previewTheme = listingTheme(type);
+  const themeAccentBg = theme.soft;
+  const themePrimaryButton = cn(theme.solid, theme.shadow);
+  const inputFocus = theme.focus;
 
   if (isSuccess) {
     return (
       <div className={cn(
-        "w-full p-8 sm:p-12 rounded-3xl bg-[#0b0f1a] border text-center space-y-4 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-300",
-        isDraftSaved ? "border-amber-500/40" : "border-emerald-500/40"
+        "w-full p-8 sm:p-12 rounded-3xl bg-surface-1 border border-hairline-strong text-center space-y-4 shadow-2xl relative overflow-hidden panel-rise"
       )}>
-        <BorderBeam size={280} duration={6} colorFrom={isDraftSaved ? "#f59e0b" : "#10b981"} colorTo="#06b6d4" />
         <div className={cn(
           "w-20 h-20 rounded-full border flex items-center justify-center mx-auto",
           isDraftSaved
-            ? "bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.4)]"
-            : "bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.4)]"
+            ? "bg-white/[0.04] text-ink border-hairline-strong"
+            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
         )}>
           <CheckCircle2 className="w-10 h-10" />
         </div>
@@ -515,8 +509,8 @@ export function CardForgeStudio({
             </>
           ) : (
             <>
-              Dein Inserat für <strong className="text-white">{name}</strong> ist ab sofort live im Manaverse Marktplatz
-              {postToDiscord && " und wurde per Webhook im Discord #marktplatz gepostet"}.
+              Dein Inserat für <strong className="text-white">{name}</strong> ist ab sofort live im Manaforge-Marktplatz
+              {postToDiscord && " und wurde im Discord gepostet"}.
             </>
           )}
         </p>
@@ -532,14 +526,14 @@ export function CardForgeStudio({
               setPriceRange("");
               setStep(1);
             }}
-            className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all shadow-lg shadow-emerald-500/20 min-h-[44px] cursor-pointer"
+            className={cn("px-6 py-3 rounded-xl font-black text-xs transition-colors min-h-[44px] cursor-pointer inline-flex items-center gap-1.5", theme.solid)}
           >
-            + Weiteres Inserat erstellen
+            <Plus className="w-4 h-4" /> Weiteres Inserat erstellen
           </button>
           {onCancel && (
             <button
               onClick={onCancel}
-              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-all min-h-[44px] cursor-pointer"
+              className={cn("px-5 py-3 rounded-xl font-bold text-xs min-h-[44px] cursor-pointer", BTN_SECONDARY)}
             >
               Schließen
             </button>
@@ -571,7 +565,7 @@ export function CardForgeStudio({
               </div>
 
               <span className="foil-badge font-bold tracking-wide flex-shrink-0">
-                {activeCondition.label.toUpperCase()} • {activeLanguage.flag}
+                {activeCondition.label.toUpperCase()} · {getLanguageCode(language)}
               </span>
             </div>
             <div className="plate-main-row">
@@ -624,7 +618,7 @@ export function CardForgeStudio({
             className={cn(
               "slab-card-window relative overflow-hidden transition-all",
               interactiveUpload && "cursor-pointer",
-              isDragging && "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black scale-[1.01]"
+              isDragging && "ring-2 ring-white/60 ring-offset-2 ring-offset-black scale-[1.01]"
             )}
             title={interactiveUpload ? "Klicken oder Bild hier ablegen zum Hochladen & Scannen" : undefined}
           >
@@ -633,12 +627,12 @@ export function CardForgeStudio({
               <>
                 <div className="ai-scan-laser-beam" />
                 <div className="ai-scan-grid-overlay" />
-                <div className="absolute inset-0 bg-cyan-950/40 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center p-4 text-center space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 animate-pulse">
+                <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center p-4 text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-white/10 border border-white/25 flex items-center justify-center text-white animate-pulse">
                     <Zap className="w-5 h-5" />
                   </div>
                   <p className="text-xs font-black text-white">KI-Scan läuft...</p>
-                  <p className="text-[10px] text-cyan-200/90 leading-tight">
+                  <p className="text-[10px] text-white/75 leading-tight">
                     Pokémon, Set-Kürzel & Nummer werden analysiert
                   </p>
                 </div>
@@ -652,9 +646,9 @@ export function CardForgeStudio({
                 className="card-img aspect-[2.5/3.5] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
               />
             ) : (
-              <div className="aspect-[2.5/3.5] flex flex-col items-center justify-center text-neutral-400 gap-3 bg-black/60 rounded-lg p-4 text-center border-2 border-dashed border-white/20 hover:border-cyan-400/50 transition-colors">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400">
-                  <Upload className="w-6 h-6" />
+              <div className="aspect-[2.5/3.5] flex flex-col items-center justify-center text-neutral-400 gap-3 bg-black/60 rounded-lg p-4 text-center border-2 border-dashed border-white/20 hover:border-white/40 transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-ink">
+                  <Camera className="w-6 h-6" />
                 </div>
                 <div>
                   <span className="text-xs font-bold text-white block">Foto hier ablegen</span>
@@ -677,7 +671,7 @@ export function CardForgeStudio({
                     {isTrade ? "Tauschwert (ETV)" : "Gesuch-Budget"}
                   </span>
                 )}
-                <span className="text-base font-black text-white truncate block">
+                <span className={cn("text-base font-black truncate block tabular-nums", previewTheme.text)}>
                   {isSell
                     ? price
                       ? `${Number(price).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`
@@ -691,12 +685,14 @@ export function CardForgeStudio({
               </div>
               <button
                 type="button"
+                tabIndex={-1}
                 className={cn(
-                  "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border cursor-pointer active:scale-95 transition-all shadow-sm",
-                  isSell ? "bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-400" : themeAccentBg
+                  "text-[10px] font-black px-2.5 py-1.5 rounded-lg cursor-default inline-flex items-center gap-1",
+                  previewTheme.solid
                 )}
               >
-                {isSell ? "Kaufen" : isTrade ? "Tausch" : "Gesuch"}
+                {isSell ? <Zap className="w-3 h-3" /> : isTrade ? <Scale className="w-3 h-3" /> : <Target className="w-3 h-3" />}
+                {isSell ? "Kaufen" : isTrade ? "Tauschen" : "Habe ich"}
               </button>
             </div>
 
@@ -704,12 +700,13 @@ export function CardForgeStudio({
             {isSell && (
               <div className="space-y-1.5 pt-0.5">
                 {allowOffers && (
-                  <div className="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] text-center shadow-sm">
+                  <div className={cn("w-full py-1.5 px-3 rounded-xl border font-bold text-[11px] text-center flex items-center justify-center gap-1.5", previewTheme.soft)}>
+                    <Tag className="w-3 h-3" />
                     Angebot machen
                   </div>
                 )}
-                <div className="w-full py-1.5 px-3 rounded-xl bg-white/5 border border-white/15 text-neutral-300 font-bold text-[11px] text-center shadow-sm flex items-center justify-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                <div className={cn("w-full py-1.5 px-3 rounded-xl font-bold text-[11px] text-center flex items-center justify-center gap-1.5", BTN_SECONDARY)}>
+                  <MessageSquare className="w-3.5 h-3.5" />
                   <span>Verkäufer kontaktieren</span>
                 </div>
               </div>
@@ -733,37 +730,19 @@ export function CardForgeStudio({
   return (
     <div
       className={cn(
-        "relative w-full rounded-3xl border border-white/15 bg-[#090d16]/95 backdrop-blur-2xl overflow-hidden transition-all duration-300",
-        themeGlow,
+        "relative w-full rounded-3xl border border-hairline-strong bg-surface-1/95 backdrop-blur-2xl overflow-hidden transition-all duration-300",
         mode === "inline" ? "p-4 sm:p-7 my-6" : "p-4 sm:p-8 lg:p-10",
         className
       )}
     >
-      {/* Decorative ambient background glows */}
-      <div
-        className={cn(
-          "absolute -top-40 -left-40 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-25",
-          isSell ? "bg-emerald-500" : isTrade ? "bg-purple-600" : "bg-cyan-500"
-        )}
-      />
-      <div
-        className={cn(
-          "absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-20",
-          isSell ? "bg-cyan-500" : isTrade ? "bg-pink-600" : "bg-blue-600"
-        )}
-      />
+      {/* Akzent-Hairline im aktiven Bereichston */}
+      <div className={cn("absolute inset-x-0 top-0 h-px opacity-70", theme.fill)} />
 
       {/* Top Header Bar */}
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10 mb-6">
         <div className="flex items-center gap-3">
-          <div className={cn("p-3 rounded-2xl border shadow-lg flex-shrink-0", themeAccentBg)}>
-            {isSell ? (
-              <Tag className="w-6 h-6 text-emerald-400" />
-            ) : isTrade ? (
-              <ArrowLeftRight className="w-6 h-6 text-purple-400" />
-            ) : (
-              <Target className="w-6 h-6 text-cyan-400" />
-            )}
+          <div className={cn("w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0", themeAccentBg)}>
+            <theme.icon className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white">
@@ -773,8 +752,8 @@ export function CardForgeStudio({
                 ? "Karte zum Tausch anbieten"
                 : "Gesuch aufgeben"}
             </h2>
-            <p className="text-xs text-neutral-400 mt-0.5">
-              Geführter 4-Schritte-Assistent mit automatischer KI-Kartenerkennung
+            <p className="text-xs text-ink-subtle mt-0.5">
+              In 4 Schritten zum Inserat – mit automatischer KI-Kartenerkennung
             </p>
           </div>
         </div>
@@ -785,7 +764,7 @@ export function CardForgeStudio({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all min-h-[44px] cursor-pointer"
+              className={cn("px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 min-h-[44px] cursor-pointer", BTN_SECONDARY)}
             >
               <X className="w-4 h-4" />
               <span>Schließen</span>
@@ -795,33 +774,32 @@ export function CardForgeStudio({
       </div>
 
       {/* Step Progress Indicator Bar (Steps 1 to 4) */}
-      <div className="relative z-10 mb-6 p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+      <div className="relative z-10 mb-6 p-3 sm:p-4 rounded-2xl bg-surface-2 border border-hairline">
         <div className="flex items-center justify-between gap-2 text-xs mb-2">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-white">Schritt {step} von 4:</span>
-            <span className="text-neutral-300 font-semibold truncate">
-              {step === 1 && "📸 Foto-Upload & KI-Scan"}
-              {step === 2 && "🔍 Kartendetails & Identität"}
-              {step === 3 && (isSell ? "💰 Verkaufspreis" : isTrade ? "🔄 Tauschwert & Wünsche" : "🎯 Dein Budget")}
-              {step === 4 && "Vorschau & Veröffentlichen"}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={cn("w-6 h-6 rounded-lg border flex items-center justify-center flex-shrink-0", themeAccentBg)}>
+              {step === 1 && <Camera className="w-3.5 h-3.5" />}
+              {step === 2 && <Search className="w-3.5 h-3.5" />}
+              {step === 3 && (isSell ? <Coins className="w-3.5 h-3.5" /> : isTrade ? <Scale className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />)}
+              {step === 4 && <Send className="w-3.5 h-3.5" />}
+            </span>
+            <span className="font-black text-ink whitespace-nowrap">Schritt {step} von 4</span>
+            <span className="text-ink-subtle font-semibold truncate hidden sm:inline">
+              {step === 1 && "· Foto & KI-Scan"}
+              {step === 2 && "· Kartendetails"}
+              {step === 3 && (isSell ? "· Verkaufspreis" : isTrade ? "· Tauschwert & Wünsche" : "· Dein Budget")}
+              {step === 4 && "· Vorschau & Veröffentlichen"}
             </span>
           </div>
-          <span className="text-xs font-mono font-bold text-neutral-400">
+          <span className="text-xs font-mono font-bold text-ink-subtle tabular-nums">
             {Math.round((step / 4) * 100)}%
           </span>
         </div>
 
         {/* Stepper Progress Bar */}
-        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden flex">
+        <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden flex">
           <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              isSell
-                ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                : isTrade
-                ? "bg-gradient-to-r from-purple-500 to-indigo-400"
-                : "bg-gradient-to-r from-cyan-500 to-sky-400"
-            )}
+            className={cn("h-full rounded-full transition-all duration-300", theme.fill)}
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
@@ -829,10 +807,10 @@ export function CardForgeStudio({
         {/* Interactive Step Chips */}
         <div className="grid grid-cols-4 gap-2 pt-3 text-[11px]">
           {[
-            { num: 1, label: "1. Foto & KI" },
-            { num: 2, label: "2. Details" },
-            { num: 3, label: isSell ? "3. Preis" : isTrade ? "3. Tausch" : "3. Budget" },
-            { num: 4, label: "4. Abschluss" },
+            { num: 1, label: "Foto" },
+            { num: 2, label: "Details" },
+            { num: 3, label: isSell ? "Preis" : isTrade ? "Tausch" : "Budget" },
+            { num: 4, label: "Abschluss" },
           ].map((s) => (
             <button
               key={s.num}
@@ -840,22 +818,23 @@ export function CardForgeStudio({
               disabled={s.num > step && !name.trim() && !photos[0]}
               onClick={() => setStep(s.num)}
               className={cn(
-                "py-1.5 px-2 rounded-lg font-bold text-center transition-all min-h-[36px] flex items-center justify-center truncate cursor-pointer",
+                "py-1.5 px-2 rounded-lg font-semibold text-center transition-colors min-h-[40px] flex items-center justify-center gap-1 truncate cursor-pointer disabled:cursor-not-allowed",
                 step === s.num
-                  ? "bg-white/15 text-white shadow-sm border border-white/20"
+                  ? "bg-white/[0.08] text-ink border border-hairline-strong"
                   : step > s.num
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
-                  : "bg-white/5 text-neutral-500 border border-transparent"
+                  ? "text-ink-muted border border-hairline hover:text-ink"
+                  : "text-ink-subtle border border-transparent"
               )}
             >
-              {s.label}
+              {step > s.num ? <CheckCircle2 className={cn("w-3 h-3 flex-shrink-0", theme.text)} /> : <span className="tabular-nums opacity-60">{s.num}</span>}
+              <span className="truncate">{s.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 📸 SCHRITT 1: FOTO-UPLOAD & KI-SCAN (FOKUS AUF DIE SLAB) */}
+      {/* SCHRITT 1: FOTO-UPLOAD & KI-SCAN (FOKUS AUF DIE SLAB) */}
       {/* ======================================================== */}
       {step === 1 && (
         <div className="relative z-10 max-w-xl mx-auto space-y-6 py-2 text-center animate-in fade-in duration-300">
@@ -883,18 +862,18 @@ export function CardForgeStudio({
               className={cn(
                 "p-3 rounded-2xl text-xs max-w-md mx-auto border transition-all animate-in fade-in flex items-center justify-center gap-2",
                 isScanning
-                  ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                  ? "bg-white/[0.04] border-hairline-strong text-ink-muted"
                   : detectedSummary
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-bold"
-                  : "bg-white/10 border-white/15 text-white"
+                  ? "bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-300 font-bold"
+                  : "bg-white/[0.04] border-hairline text-ink"
               )}
             >
               {isScanning ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-cyan-400 flex-shrink-0" />
+                <RefreshCw className="w-4 h-4 animate-spin text-ink-muted flex-shrink-0" />
               ) : detectedSummary ? (
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               ) : (
-                <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <Camera className="w-4 h-4 text-ink-muted flex-shrink-0" />
               )}
               <span>{scanMessage}</span>
             </div>
@@ -932,7 +911,7 @@ export function CardForgeStudio({
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="text-xs text-neutral-400 hover:text-white font-semibold underline transition-colors cursor-pointer py-1"
+                className="text-xs text-ink-subtle hover:text-ink font-semibold underline underline-offset-4 decoration-white/20 transition-colors cursor-pointer min-h-[44px]"
               >
                 Ohne Foto fortfahren (manuell eingeben) →
               </button>
@@ -960,14 +939,14 @@ export function CardForgeStudio({
                       value={userApiKey}
                       onChange={(e) => saveApiKey(e.target.value)}
                       placeholder="AIzaSy..."
-                      className="flex-1 bg-[#111624] border border-white/15 rounded-xl px-3 py-2 text-white text-xs font-mono"
+                      className="flex-1 bg-surface-2 border border-hairline rounded-xl px-3 py-2 text-white text-xs font-mono"
                     />
                     <button
                       type="button"
-                      onClick={() => alert("API-Key erfolgreich im Browser gespeichert!")}
-                      className="px-3 py-2 rounded-xl bg-white/10 text-white font-bold text-xs"
+                      onClick={() => toast.success("API-Key im Browser gespeichert")}
+                      className={cn("px-3 py-2 rounded-xl font-bold text-xs min-h-[40px]", BTN_SECONDARY)}
                     >
-                      Gespeichert
+                      Speichern
                     </button>
                   </div>
                   <p className="text-[10px] text-neutral-400">
@@ -981,7 +960,7 @@ export function CardForgeStudio({
       )}
 
       {/* ======================================================== */}
-      {/* 🔍 SCHRITT 2: KARTENDETAILS & IDENTITÄT                  */}
+      {/* SCHRITT 2: KARTENDETAILS & IDENTITÄT                  */}
       {/* ======================================================== */}
       {step === 2 && (
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
@@ -996,7 +975,7 @@ export function CardForgeStudio({
           {/* Right Column: Card Details Inputs */}
           <div className="lg:col-span-7 space-y-5">
             {/* Pokémon Card Name Search */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-2">
               <label className="block text-xs font-bold text-white">
                 Pokémon-Kartenname *
               </label>
@@ -1015,7 +994,7 @@ export function CardForgeStudio({
             </div>
 
             {/* Set & Number Identification */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-neutral-300 mb-1">
@@ -1026,7 +1005,7 @@ export function CardForgeStudio({
                     value={setNameText}
                     onChange={(e) => handleSetChange(e.target.value)}
                     placeholder="z.B. XY-P, SV2a, S6a, JTG, MEW"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors min-h-[44px]"
+                    className={"w-full bg-surface-2 border border-hairline rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold outline-none transition-colors min-h-[44px] " + inputFocus}
                   />
                 </div>
 
@@ -1039,7 +1018,7 @@ export function CardForgeStudio({
                     value={cardNumber}
                     onChange={(e) => handleCardNumberChange(e.target.value)}
                     placeholder="z.B. 070/XY-P oder 201/165"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold focus:border-cyan-400 outline-none transition-colors min-h-[44px]"
+                    className={"w-full bg-surface-2 border border-hairline rounded-xl px-3.5 py-2.5 text-white text-xs font-semibold outline-none transition-colors min-h-[44px] " + inputFocus}
                   />
                 </div>
               </div>
@@ -1056,7 +1035,7 @@ export function CardForgeStudio({
                     <button
                       type="button"
                       onClick={() => setLanguage(setValidation.detectedLang!)}
-                      className="mt-1 px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] cursor-pointer"
+                      className="mt-1 px-3 min-h-[36px] rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-black text-[11px] cursor-pointer"
                     >
                       Karte auf {setValidation.detectedLang} setzen
                     </button>
@@ -1066,7 +1045,7 @@ export function CardForgeStudio({
             </div>
 
             {/* Language Selector */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2.5">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-2.5">
               <label className="block text-xs font-bold text-white">
                 Kartensprache
               </label>
@@ -1079,19 +1058,19 @@ export function CardForgeStudio({
                     className={cn(
                       "py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-between border transition-all cursor-pointer min-h-[44px]",
                       language === l.value
-                        ? "bg-white/20 border-cyan-400 text-white shadow-sm"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                        ? "bg-white/[0.08] border-white/40 text-ink"
+                        : "bg-white/[0.02] border-hairline text-ink-subtle hover:text-ink hover:border-hairline-strong"
                     )}
                   >
                     <span>{l.label}</span>
-                    <span className="text-base">{l.flag}</span>
+                    <FlagSwatch lang={l.value} />
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Condition Selector */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2.5">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-2.5">
               <label className="block text-xs font-bold text-white">
                 Zustand der Karte
               </label>
@@ -1104,12 +1083,12 @@ export function CardForgeStudio({
                     className={cn(
                       "p-2.5 rounded-xl border text-left transition-all cursor-pointer min-h-[50px] flex flex-col justify-center",
                       condition === c.value
-                        ? "bg-white/20 border-cyan-400 text-white shadow-sm"
-                        : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                        ? "bg-white/[0.08] border-white/40 text-ink"
+                        : "bg-white/[0.02] border-hairline text-ink-subtle hover:text-ink hover:border-hairline-strong"
                     )}
                   >
                     <span className="text-xs font-black block truncate">{c.label}</span>
-                    <span className="text-[10px] text-amber-400 block">{c.stars}</span>
+                    <span className="text-[10px] text-ink-subtle tracking-[0.1em] block">{c.stars}</span>
                   </button>
                 ))}
               </div>
@@ -1120,7 +1099,7 @@ export function CardForgeStudio({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="min-h-[48px] px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                className={cn("min-h-[48px] px-5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer", BTN_SECONDARY)}
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Zurück zum Foto</span>
@@ -1144,7 +1123,7 @@ export function CardForgeStudio({
       )}
 
       {/* ======================================================== */}
-      {/* 💰 SCHRITT 3: PREIS & TAUSCHKONDITIONEN                  */}
+      {/* SCHRITT 3: PREIS & TAUSCHKONDITIONEN                  */}
       {/* ======================================================== */}
       {step === 3 && (
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
@@ -1157,9 +1136,9 @@ export function CardForgeStudio({
           <div className="lg:col-span-7 space-y-5">
             {/* If Sell: Price Controls */}
             {isSell && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-4">
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-400" /> Kaufpreis festlegen
+                  <Coins className={cn("w-4 h-4", theme.text)} /> Kaufpreis festlegen
                 </h4>
 
                 <div>
@@ -1174,7 +1153,7 @@ export function CardForgeStudio({
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="0.00"
-                      className="w-full bg-[#111624] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black focus:border-emerald-400 outline-none"
+                      className={cn("w-full bg-surface-2 border border-hairline rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black outline-none tabular-nums", inputFocus)}
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">
                       €
@@ -1211,7 +1190,7 @@ export function CardForgeStudio({
                     type="checkbox"
                     checked={allowOffers}
                     onChange={(e) => setAllowOffers(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer min-h-[44px] min-w-[24px]"
+                    className={cn("w-5 h-5 rounded cursor-pointer min-h-[44px] min-w-[24px]", theme.accent)}
                   />
                 </div>
               </div>
@@ -1219,9 +1198,9 @@ export function CardForgeStudio({
 
             {/* If Trade: Trade Value & Wants */}
             {isTrade && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-4">
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-purple-400" /> Tauschwert & Wünsche
+                  <Scale className={cn("w-4 h-4", theme.text)} /> Tauschwert & Wünsche
                 </h4>
 
                 <div>
@@ -1236,7 +1215,7 @@ export function CardForgeStudio({
                       value={estimatedTradeValue}
                       onChange={(e) => setEstimatedTradeValue(e.target.value)}
                       placeholder="z.B. 120"
-                      className="w-full bg-[#111624] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black focus:border-purple-400 outline-none"
+                      className={cn("w-full bg-surface-2 border border-hairline rounded-xl pl-4 pr-10 py-3 text-white text-lg font-black outline-none tabular-nums", inputFocus)}
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">
                       €
@@ -1253,7 +1232,7 @@ export function CardForgeStudio({
                     value={lookingForWants}
                     onChange={(e) => setLookingForWants(e.target.value)}
                     placeholder="z.B. Glurak VMAX, Vintage Holos, Evoli-Entwicklungen..."
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:border-purple-400 outline-none"
+                    className={cn("w-full bg-surface-2 border border-hairline rounded-xl p-3 text-white text-xs outline-none", inputFocus)}
                   />
                 </div>
               </div>
@@ -1261,9 +1240,9 @@ export function CardForgeStudio({
 
             {/* If Looking For: Budget */}
             {isLookingFor && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-4">
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Target className="w-4 h-4 text-cyan-400" /> Dein Wunschbudget
+                  <Target className={cn("w-4 h-4", theme.text)} /> Dein Wunschbudget
                 </h4>
 
                 <div>
@@ -1275,14 +1254,14 @@ export function CardForgeStudio({
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
                     placeholder="z.B. 45 €, bis 100 €, VB"
-                    className="w-full bg-[#111624] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-bold focus:border-cyan-400 outline-none"
+                    className={cn("w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 text-white text-sm font-bold outline-none", inputFocus)}
                   />
                 </div>
               </div>
             )}
 
             {/* Optional Description */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-2">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-2">
               <label className="block text-xs font-bold text-white">
                 Optionale Beschreibung / Besonderheiten
               </label>
@@ -1291,7 +1270,7 @@ export function CardForgeStudio({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="z.B. First Edition, im Toploader gelagert, tierfreier Nichtraucherhaushalt..."
-                className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white text-xs focus:border-cyan-400 outline-none"
+                className={cn("w-full bg-surface-2 border border-hairline rounded-xl p-3 text-white text-xs outline-none", inputFocus)}
               />
             </div>
 
@@ -1300,7 +1279,7 @@ export function CardForgeStudio({
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="min-h-[48px] px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                className={cn("min-h-[48px] px-5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer", BTN_SECONDARY)}
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Zurück zu Details</span>
@@ -1323,7 +1302,7 @@ export function CardForgeStudio({
       )}
 
       {/* ======================================================== */}
-      {/* 🚀 SCHRITT 4: VORSCHAU & VERÖFFENTLICHEN                */}
+      {/* SCHRITT 4: VORSCHAU & VERÖFFENTLICHEN                */}
       {/* ======================================================== */}
       {step === 4 && (
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
@@ -1335,7 +1314,7 @@ export function CardForgeStudio({
           {/* Right Column: Final Settings & Publication */}
           <div className="lg:col-span-7 space-y-5">
             {/* Additional Media (Photos / Video) */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1422] border border-white/10 space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl bg-surface-2 border border-hairline space-y-3">
               <label className="block text-xs font-bold text-white">
                 Weitere Detail-Fotos (optional)
               </label>
@@ -1346,13 +1325,14 @@ export function CardForgeStudio({
                     value={p}
                     onChange={(e) => handleUpdatePhoto(idx, e.target.value)}
                     placeholder={`Bild-URL ${idx + 1}`}
-                    className="flex-1 bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs truncate"
+                    className="flex-1 bg-surface-2 border border-hairline rounded-xl px-3 py-2 text-white text-xs truncate min-h-[40px] outline-none focus:border-hairline-strong"
                   />
                   {photos.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(idx)}
-                      className="p-2 text-rose-400 bg-rose-500/10 rounded-xl"
+                      aria-label="Bild entfernen"
+                      className="min-w-[40px] min-h-[40px] flex items-center justify-center text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1363,7 +1343,7 @@ export function CardForgeStudio({
                 <button
                   type="button"
                   onClick={handleAddPhotoSlot}
-                  className="text-xs text-cyan-400 font-semibold flex items-center gap-1 cursor-pointer"
+                  className={cn("text-xs font-semibold flex items-center gap-1 cursor-pointer min-h-[40px]", theme.text)}
                 >
                   <Plus className="w-3.5 h-3.5" /> Weiteres Bild hinzufügen
                 </button>
@@ -1378,53 +1358,31 @@ export function CardForgeStudio({
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="TikTok, Instagram Reels oder YouTube Shorts URL"
-                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2 text-white text-xs"
+                  className="w-full bg-surface-2 border border-hairline rounded-xl px-3 py-2 text-white text-xs min-h-[40px] outline-none focus:border-hairline-strong"
                 />
               </div>
             </div>
 
-            {/* Discord Alert Switch */}
-            <div className="p-4 rounded-2xl bg-[#5865F2]/15 border border-[#5865F2]/30 flex items-center justify-between">
-              <div className="pr-2">
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-[#5865F2]" />
-                  Discord Bot-Alert aktivieren
-                </p>
-                <p className="text-[10px] text-neutral-300">
-                  Sendet sofort eine Inserat-Meldung in den offiziellen Discord #marktplatz.
-                </p>
-              </div>
-              <input
-                type="checkbox"
+            {/* Discord-Einstellungen */}
+            <div className="rounded-2xl bg-surface-2 border border-hairline divide-y divide-white/[0.06]">
+              <SettingToggle
+                title="Im Discord posten"
+                description="Sendet dein Inserat automatisch in den passenden Manaforge-Discord-Kanal."
                 checked={postToDiscord}
-                onChange={(e) => setPostToDiscord(e.target.checked)}
-                className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
+                onChange={setPostToDiscord}
               />
-            </div>
-
-            {/* Discord Name Switch */}
-            <div className="p-4 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/25 flex items-center justify-between">
-              <div className="pr-2">
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-[#5865F2]" />
-                  Discord-Name auf Inserat anzeigen
-                </p>
-                <p className="text-[10px] text-neutral-300">
-                  Zeigt deinen verknüpften Discord-Tag auf der Karte an, damit Interessenten dich direkt finden.
-                </p>
-              </div>
-              <input
-                type="checkbox"
+              <SettingToggle
+                title="Discord-Namen anzeigen"
+                description="Zeigt deinen Discord-Tag auf der Karte, damit Interessenten dich direkt finden."
                 checked={showDiscordName}
-                onChange={(e) => setShowDiscordName(e.target.checked)}
-                className="w-5 h-5 accent-[#5865F2] rounded cursor-pointer min-h-[44px] min-w-[20px]"
+                onChange={setShowDiscordName}
               />
             </div>
 
             {/* Final Action Buttons */}
             <div className="space-y-3 pt-4 border-t border-white/10">
               {submitError && (
-                <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2.5">
+                <div className="p-3.5 rounded-xl bg-rose-500/[0.08] border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                   <span>{submitError}</span>
                 </div>
@@ -1434,10 +1392,10 @@ export function CardForgeStudio({
                   type="button"
                   disabled={isSubmitting || !name.trim()}
                   onClick={() => handleSubmit(undefined, true)}
-                  className="sm:w-1/3 min-h-[48px] rounded-xl font-bold text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className={cn("sm:w-1/3 min-h-[48px] rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50", BTN_SECONDARY)}
                 >
-                  <Tag className="w-4 h-4" />
-                  <span>Als Entwurf</span>
+                  <FileText className="w-4 h-4" />
+                  <span>Als Entwurf speichern</span>
                 </button>
 
                 <button
@@ -1477,5 +1435,47 @@ export function CardForgeStudio({
         </div>
       )}
     </div>
+  );
+}
+
+function SettingToggle({
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-4 p-4 cursor-pointer min-h-[64px]">
+      <span className="min-w-0">
+        <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-discord fill-current flex-shrink-0" viewBox="0 0 24 24" aria-hidden>
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+          </svg>
+          {title}
+        </span>
+        <span className="text-[11px] text-ink-subtle leading-relaxed block mt-0.5">{description}</span>
+      </span>
+      <span className="relative inline-flex flex-shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden
+          className="w-10 h-6 rounded-full bg-white/[0.1] border border-hairline-strong peer-checked:bg-discord peer-checked:border-discord transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-white/40"
+        />
+        <span
+          aria-hidden
+          className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"
+        />
+      </span>
+    </label>
   );
 }

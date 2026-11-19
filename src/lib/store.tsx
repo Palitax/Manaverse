@@ -20,6 +20,7 @@ import {
 } from "./mock-data";
 import { supabase, isSupabaseConfigured } from "./supabase/client";
 import { ensureHostedCardPhoto } from "./supabase/storage";
+import { toast } from "@/components/ui/toast";
 import confetti from "canvas-confetti";
 import {
   rollBoosterReward,
@@ -155,7 +156,9 @@ interface StoreContextType {
   addListing: (listing: Omit<CardListing, "id" | "userId" | "user" | "createdAt" | "status"> & { status?: CardListing["status"] }) => Promise<CardListing>;
   updateListingStatus: (listingId: string, status: CardListing["status"]) => Promise<void>;
   addTradeOffer: (listingId: string, offer: { offeredCardsDescription: string; offeredImages: string[]; estimatedValue: number; message?: string }) => Promise<void>;
+  respondToTradeOffer: (offerId: string, status: "accepted" | "declined") => Promise<boolean>;
   addBulkSubmission: (submission: { cards: BulkSubmission["cards"]; askingPrice?: number; notes?: string }) => Promise<void>;
+  updateBulkSubmissionStatus: (submissionId: string, status: BulkSubmission["status"]) => Promise<boolean>;
   confirmDeal: (dealId: string, asRole: "seller" | "buyer") => Promise<void>;
   createDeal: (listing: CardListing, buyer: UserProfile) => Promise<void>;
   deleteListing: (listingId: string) => Promise<void>;
@@ -218,7 +221,7 @@ function mapDBProfileToUserProfile(p: any, email?: string): UserProfile {
     bio:
       p.bio ||
       (isLuffy
-        ? "Manaforge Administrator 🔥 • Whatnot: all_out_luffy • Discord: @freakyfamous#0"
+        ? "Manaforge Administrator · Whatnot: all_out_luffy · Discord: @freakyfamous#0"
         : undefined),
     createdAt: p.created_at || new Date().toISOString(),
     email,
@@ -600,7 +603,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const loginWithDiscord = async (): Promise<{ error?: string }> => {
     if (!isSupabaseConfigured || !supabase) {
       const err = "Supabase ist nicht konfiguriert.";
-      alert(err);
+      toast.error(err);
       return { error: err };
     }
 
@@ -618,7 +621,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     if (error) {
       console.error("Discord login error:", error);
-      alert("Fehler bei der Discord-Anmeldung: " + error.message);
+      toast.error("Discord-Anmeldung fehlgeschlagen", error.message);
       return { error: error.message };
     }
     return {};
@@ -1227,20 +1230,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const dispatchDiscordWebhook = async (listing: CardListing) => {
     let channel: "sell" | "trade" | "looking_for" = "sell";
-    let embedColor = 0x10b981;
+    let embedColor = 0xfbbf24;
     let typeLabel = "VERKAUF";
 
     if (listing.type === "sell") {
       channel = "sell";
-      embedColor = 0x10b981;
+      embedColor = 0xfbbf24;
       typeLabel = "VERKAUF";
     } else if (listing.type === "trade") {
       channel = "trade";
-      embedColor = 0xa855f7;
+      embedColor = 0x8b5cf6;
       typeLabel = "TAUSCH";
     } else if (listing.type === "looking_for") {
       channel = "looking_for";
-      embedColor = 0x06b6d4;
+      embedColor = 0xf97316;
       typeLabel = "GESUCH";
     }
 
@@ -1567,6 +1570,44 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setTradeOffers((prev) => [newOffer, ...prev.filter((o) => o.id !== newOffer.id)]);
   };
 
+  const respondToTradeOffer = async (offerId: string, status: "accepted" | "declined"): Promise<boolean> => {
+    const previous = tradeOffers;
+    setTradeOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status } : o)));
+
+    if (isSupabaseConfigured && supabase && !offerId.startsWith("offer-")) {
+      const { error } = await supabase.from("trade_offers").update({ status }).eq("id", offerId);
+      if (error) {
+        console.error("Supabase respondToTradeOffer error:", error);
+        setTradeOffers(previous);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const updateBulkSubmissionStatus = async (
+    submissionId: string,
+    status: BulkSubmission["status"]
+  ): Promise<boolean> => {
+    const previous = bulkSubmissions;
+    setBulkSubmissions((prev) =>
+      prev.map((s) => (s.id === submissionId ? { ...s, status } : s))
+    );
+
+    if (isSupabaseConfigured && supabase && !submissionId.startsWith("bulk-")) {
+      const { error } = await supabase
+        .from("bulk_submissions")
+        .update({ status })
+        .eq("id", submissionId);
+      if (error) {
+        console.error("Supabase updateBulkSubmissionStatus error:", error);
+        setBulkSubmissions(previous);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const addBulkSubmission = async (submissionData: {
     cards: BulkSubmission["cards"];
     askingPrice?: number;
@@ -1646,7 +1687,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           embed: {
             title: `[MANACARDS ANKAUF] Neue Sammlung eingereicht von ${currentUser.username}!`,
             description: `Enthält **${newSubmission.totalCards} Karten**. Wunschpreis: ${newSubmission.askingPrice ? `${newSubmission.askingPrice} €` : "Offen / Gebot erwünscht"}\n\nNotizen: ${newSubmission.notes || "Keine"}`,
-            color: 0xf59e0b,
+            color: 0xe2e8f0,
             fields: newSubmission.cards.slice(0, 5).map((c, i) => ({
               name: `Karte #${i + 1}: ${c.name}`,
               value: `Zustand: ${c.condition} | Sprache: ${c.language}${c.estimatedValue ? ` | Wert: ${c.estimatedValue} €` : ""}`,
@@ -1822,7 +1863,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updateListingStatus,
         deleteListing,
         addTradeOffer,
+        respondToTradeOffer,
         addBulkSubmission,
+        updateBulkSubmissionStatus,
         confirmDeal,
         createDeal,
         manaPoints: currentUser?.manaPoints ?? 0,

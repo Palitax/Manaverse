@@ -85,27 +85,27 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center p-4">
-      <div className="glass-panel p-8 rounded-3xl border border-orange-500/20 bg-[#121316]/90 backdrop-blur-xl text-center space-y-4 max-w-sm w-full shadow-2xl">
+    <div className="min-h-[70dvh] flex items-center justify-center p-4">
+      <div className="p-8 rounded-3xl border border-hairline-strong bg-surface-1/95 backdrop-blur-xl text-center space-y-4 max-w-sm w-full shadow-[0_30px_80px_rgba(0,0,0,0.85)]">
         {errorMsg ? (
           <>
-            <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto text-lg font-black">
               !
             </div>
-            <h2 className="text-lg font-black text-white">Anmeldefehler</h2>
-            <p className="text-xs text-neutral-400">{errorMsg}</p>
+            <h2 className="text-lg font-black text-ink tracking-tight">Anmeldefehler</h2>
+            <p className="text-xs text-ink-muted leading-relaxed">{errorMsg}</p>
             <button
               onClick={() => router.replace("/")}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all min-h-[44px] cursor-pointer"
+              className="px-5 py-2.5 bg-white hover:bg-neutral-200 text-black rounded-xl text-xs font-bold transition-colors min-h-[44px] cursor-pointer"
             >
               Zurück zur Startseite
             </button>
           </>
         ) : (
           <>
-            <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <h2 className="text-lg font-black text-white">Anmeldung wird abgeschlossen...</h2>
-            <p className="text-xs text-neutral-400">
+            <div className="w-11 h-11 border-2 border-white/15 border-t-white rounded-full animate-spin mx-auto" />
+            <h2 className="text-lg font-black text-ink tracking-tight">Anmeldung wird abgeschlossen …</h2>
+            <p className="text-xs text-ink-muted leading-relaxed">
               Dein Profil wird mit Manaforge synchronisiert. Du wirst gleich weitergeleitet.
             </p>
           </>

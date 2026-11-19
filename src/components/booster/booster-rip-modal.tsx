@@ -438,7 +438,7 @@ export function BoosterRipModal() {
               className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/30 transition-all active:scale-[0.98] cursor-pointer min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Gift className="w-4 h-4 text-white" />
-              <span>{isClaiming ? "Wird abgeholt..." : "🎁 Gratis-Booster abholen & rippen"}</span>
+              <span>{isClaiming ? "Wird abgeholt..." : "Gratis-Booster abholen & rippen"}</span>
             </button>
           </div>
         )}

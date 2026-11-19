@@ -26,8 +26,10 @@ import {
   Tag,
   Plus,
   FileText,
+  Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { listingTypeLabel, formatEuro } from "@/lib/design-system";
 import { BoosterPackCard } from "@/components/booster/booster-pack-card";
 import { AvatarCustomizerModal } from "@/components/profile/avatar-customizer-modal";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
@@ -85,7 +87,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-[75vh] flex items-center justify-center p-4">
         <div className="max-w-md w-full p-8 rounded-3xl glass-panel bg-[#0c101c] border border-white/10 text-center space-y-6 relative overflow-hidden shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/25">
+          <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-hairline-strong flex items-center justify-center text-white mx-auto">
             <Flame className="w-8 h-8 fill-amber-200 text-amber-300" />
           </div>
 
@@ -221,11 +223,11 @@ export default function ProfilePage() {
                 className={cn(
                   "h-9 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]",
                   myDrafts.length > 0
-                    ? "bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25 shadow-sm font-bold"
-                    : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"
+                    ? "bg-white/[0.08] border-hairline-strong text-ink hover:bg-white/[0.12] font-bold"
+                    : "bg-white/[0.04] border-hairline text-ink-muted hover:bg-white/[0.08]"
                 )}
               >
-                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <FileText className="w-3.5 h-3.5 text-ink-subtle" />
                 <span>{myDrafts.length} {myDrafts.length === 1 ? "Entwurf" : "Entwürfe"}</span>
               </button>
 
@@ -239,7 +241,7 @@ export default function ProfilePage() {
                 title="Klicke hier, um deine aktiven Inserate anzuzeigen"
                 className="h-9 px-3.5 rounded-xl bg-white/5 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-white/10 transition-all cursor-pointer min-h-[44px]"
               >
-                <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                <Layers className="w-3.5 h-3.5 text-ink-subtle" />
                 <span>{myActive.length} Inserate</span>
               </button>
             </div>
@@ -260,7 +262,7 @@ export default function ProfilePage() {
                 </a>
               )}
               {discordUsername && (
-                <span className="text-indigo-400">Discord: @{discordUsername}</span>
+                <span className="text-[#aab4f5]">Discord: @{discordUsername}</span>
               )}
               {(currentUser.role === "admin" || currentUser.role === "founder") && (
                 <Link
@@ -280,7 +282,7 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-              <Layers className="w-6 h-6 text-indigo-400" />
+              <Layers className="w-6 h-6 text-ink-subtle" />
               <span>Meine Sammlerkarten & Entwürfe</span>
             </h2>
             <p className="text-xs text-neutral-400 mt-1">
@@ -305,11 +307,11 @@ export default function ProfilePage() {
             className={cn(
               "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
               cardTab === "draft"
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
-                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+                ? "bg-white/[0.08] text-ink border border-hairline-strong"
+                : "bg-transparent text-ink-subtle hover:text-ink border border-transparent"
             )}
           >
-            <FileText className="w-4 h-4 text-amber-400" />
+            <FileText className="w-4 h-4" />
             <span>Entwürfe ({myDrafts.length})</span>
           </button>
 
@@ -319,11 +321,11 @@ export default function ProfilePage() {
             className={cn(
               "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
               cardTab === "active"
-                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
-                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+                ? "bg-white/[0.08] text-ink border border-hairline-strong"
+                : "bg-transparent text-ink-subtle hover:text-ink border border-transparent"
             )}
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4" />
             <span>Aktive Inserate ({myActive.length})</span>
           </button>
 
@@ -333,11 +335,11 @@ export default function ProfilePage() {
             className={cn(
               "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
               cardTab === "sold"
-                ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/10"
-                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+                ? "bg-white/[0.08] text-ink border border-hairline-strong"
+                : "bg-transparent text-ink-subtle hover:text-ink border border-transparent"
             )}
           >
-            <Tag className="w-4 h-4 text-purple-400" />
+            <Tag className="w-4 h-4" />
             <span>Verkauft ({mySold.length})</span>
           </button>
 
@@ -347,11 +349,11 @@ export default function ProfilePage() {
             className={cn(
               "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px]",
               cardTab === "all"
-                ? "bg-white/20 text-white border border-white/30"
-                : "bg-white/5 text-neutral-400 hover:text-white border border-white/5"
+                ? "bg-white/[0.08] text-ink border border-hairline-strong"
+                : "bg-transparent text-ink-subtle hover:text-ink border border-transparent"
             )}
           >
-            <Layers className="w-4 h-4 text-neutral-400" />
+            <Layers className="w-4 h-4" />
             <span>Alle Karten ({myListings.length})</span>
           </button>
         </div>
@@ -361,9 +363,9 @@ export default function ProfilePage() {
           <div className="py-12 px-4 rounded-2xl bg-black/20 border border-white/5 text-center space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
               {cardTab === "draft" ? (
-                <FileText className="w-6 h-6 text-amber-400" />
+                <FileText className="w-6 h-6 text-ink-subtle" />
               ) : cardTab === "sold" ? (
-                <Tag className="w-6 h-6 text-purple-400" />
+                <Tag className="w-6 h-6 text-ink-subtle" />
               ) : (
                 <Layers className="w-6 h-6 text-neutral-400" />
               )}
@@ -387,7 +389,7 @@ export default function ProfilePage() {
             <div className="pt-2">
               <Link
                 href="/sell"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg transition-all min-h-[44px]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs transition-colors min-h-[44px]"
               >
                 <Plus className="w-4 h-4" />
                 <span>Neues Inserat vorbereiten</span>
@@ -557,7 +559,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Card 2: Discord Welcome Pack Status */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-indigo-500/40 transition-colors shadow-md">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0f121e] border border-white/10 hover:border-hairline-strong transition-colors">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] shrink-0">
@@ -571,8 +573,8 @@ export default function ProfilePage() {
 
                 <div className="w-full sm:w-auto flex items-center justify-end">
                   {currentUser.hasReceivedDiscordWelcomePack || currentUser.discordUsername ? (
-                    <span className="px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="px-3 py-1.5 rounded-xl bg-emerald-500/[0.08] text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Freigeschaltet</span>
                     </span>
                   ) : (
@@ -603,23 +605,40 @@ export default function ProfilePage() {
         {isAuthenticated ? (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-[#5865F2] flex items-center justify-center text-white shadow-lg shadow-[#5865F2]/25 flex-shrink-0">
+              <div
+                className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0",
+                  currentUser.discordUsername ? "bg-discord text-white" : "bg-white/[0.04] border border-hairline-strong text-ink-muted"
+                )}
+              >
                 <DiscordIcon className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-black text-white flex items-center gap-1.5">
-                  Mit Discord verbunden <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <p className="text-sm font-black text-ink flex items-center gap-1.5">
+                  {currentUser.discordUsername ? (
+                    <>
+                      Discord verknüpft <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    </>
+                  ) : (
+                    "Angemeldet per E-Mail"
+                  )}
                 </p>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Angemeldet als <b className="text-indigo-300">@{currentUser.discordUsername || currentUser.username}</b>
-                  {currentUser.email ? ` • ${currentUser.email}` : ""}
+                <p className="text-xs text-ink-subtle mt-0.5">
+                  {currentUser.discordUsername ? (
+                    <>
+                      Discord: <b className="text-ink-muted">@{currentUser.discordUsername}</b>
+                    </>
+                  ) : (
+                    "Trage deinen Discord-Namen unten im Profil ein, damit Käufer dich erreichen."
+                  )}
+                  {currentUser.email ? ` · ${currentUser.email}` : ""}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => logout()}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-neutral-300 hover:text-rose-300 text-xs font-bold transition-all border border-white/10"
+              className="px-4 min-h-[44px] rounded-xl bg-white/[0.04] hover:bg-rose-500/10 text-ink-muted hover:text-rose-300 text-xs font-bold transition-colors border border-hairline hover:border-rose-500/30 cursor-pointer"
             >
               Abmelden
             </button>
@@ -669,7 +688,7 @@ export default function ProfilePage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.replace(/\s+/g, "_"))}
                 placeholder="z. B. All_Out_Luffy"
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-surface-2 border border-hairline rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-white/30"
               />
               <p className="text-[11px] text-neutral-400 mt-1">
                 Keine Leerzeichen erlaubt – längere Namen mit Unterstrich schreiben (z. B. All_Out_Luffy).
@@ -693,7 +712,7 @@ export default function ProfilePage() {
                 {[
                   {
                     id: "admin",
-                    label: "Admin 🔥",
+                    label: "Admin",
                     sublabel: "Molten Lava",
                     icon: <Flame className="w-3.5 h-3.5 fill-amber-400 text-orange-400" />,
                     isLocked: currentUser?.role !== "admin" && currentUser?.role !== "founder",
@@ -748,7 +767,7 @@ export default function ProfilePage() {
                         isSelected
                           ? roleOption.id === "admin"
                             ? "bg-orange-950/40 border-orange-500 text-white font-black shadow-[0_0_15px_rgba(255,80,0,0.45)]"
-                            : "bg-indigo-600/20 border-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20"
+                            : "bg-white/[0.08] border-white/40 text-white font-bold"
                           : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
                       )}
                     >
@@ -764,7 +783,7 @@ export default function ProfilePage() {
 
               {currentUser?.role !== "admin" && currentUser?.role !== "founder" && (
                 <p className="text-[11px] text-neutral-500 italic">
-                  🔥 Der animierte Molten-Flammenrahmen ist exklusiv für Administratoren und muss manuell von einem Admin im Dashboard vergeben werden.
+                  Der animierte Flammenrahmen ist Administratoren vorbehalten und wird im Admin-Dashboard vergeben.
                 </p>
               )}
             </div>
@@ -777,7 +796,7 @@ export default function ProfilePage() {
                 type="url"
                 value={avatarUrl}
                 onChange={(e) => setAvatarUrl(e.target.value)}
-                className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-surface-2 border border-hairline rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-white/30"
               />
             </div>
 
@@ -791,7 +810,7 @@ export default function ProfilePage() {
                   value={whatnotUsername}
                   onChange={(e) => setWhatnotUsername(e.target.value)}
                   placeholder="Dein Whatnot Name"
-                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-surface-2 border border-hairline rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-white/30"
                 />
               </div>
 
@@ -804,7 +823,7 @@ export default function ProfilePage() {
                   value={discordUsername}
                   onChange={(e) => setDiscordUsername(e.target.value)}
                   placeholder="z.B. Levin#0001"
-                  className="w-full bg-[#111624] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-surface-2 border border-hairline rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-white/30"
                 />
               </div>
             </div>
@@ -817,17 +836,17 @@ export default function ProfilePage() {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
-                className="w-full bg-[#111624] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-surface-2 border border-hairline rounded-xl p-3 text-white focus:outline-none focus:border-white/30"
               />
             </div>
 
             <div className="pt-2 flex items-center justify-start">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
+                className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold flex items-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
               >
                 <Save className="w-4 h-4" />
-                {savedSuccess ? "Gespeichert! ✓" : "Profil speichern"}
+                {savedSuccess ? "Gespeichert" : "Profil speichern"}
               </button>
             </div>
           </form>
@@ -852,7 +871,7 @@ export default function ProfilePage() {
           <div className="space-y-3 pt-2">
             {myDeals.length === 0 ? (
               <div className="text-center py-12 text-neutral-500 text-xs">
-                Noch keine Deals gestartet. Klicke auf einer Karte auf „Deal anfragen“, um eine Transaktion zu beginnen.
+                Noch keine Deals gestartet. Öffne eine Karte im Marktplatz und sende eine Kaufanfrage oder ein Angebot.
               </div>
             ) : (
               myDeals.map((deal) => {
@@ -871,7 +890,7 @@ export default function ProfilePage() {
                       <div>
                         <p className="font-bold text-white">{deal.listingTitle}</p>
                         <p className="text-[11px] text-neutral-400">
-                          Partner: <span className="text-indigo-300 font-semibold">{partnerName}</span> ({deal.listingType.toUpperCase()})
+                          Partner: <span className="text-ink font-semibold">{partnerName}</span> · {listingTypeLabel(deal.listingType)}{deal.priceOrValue ? ` · ${formatEuro(deal.priceOrValue)}` : ""}
                         </p>
                       </div>
                       <span
@@ -882,24 +901,28 @@ export default function ProfilePage() {
                             : "bg-amber-500/20 text-amber-300 border-amber-500/30"
                         )}
                       >
-                        {deal.status === "completed" ? "✓ Abgeschlossen" : "Warte auf Bestätigung"}
+                        {deal.status === "completed" ? "Abgeschlossen" : "Wartet auf Bestätigung"}
                       </span>
                     </div>
 
                     {/* Status checks */}
                     <div className="grid grid-cols-2 gap-2 text-[11px] bg-black/30 p-2.5 rounded-xl border border-white/5">
                       <div className="flex items-center gap-1.5">
-                        <span className={deal.sellerConfirmed ? "text-emerald-400" : "text-neutral-500"}>
-                          {deal.sellerConfirmed ? "✓" : "○"}
-                        </span>
+                        {deal.sellerConfirmed ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <Circle className="w-3.5 h-3.5 text-ink-subtle" />
+                        )}
                         <span className="text-neutral-300">
                           Verkäufer ({deal.sellerUsername})
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className={deal.buyerConfirmed ? "text-emerald-400" : "text-neutral-500"}>
-                          {deal.buyerConfirmed ? "✓" : "○"}
-                        </span>
+                        {deal.buyerConfirmed ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <Circle className="w-3.5 h-3.5 text-ink-subtle" />
+                        )}
                         <span className="text-neutral-300">
                           Käufer ({deal.buyerUsername})
                         </span>
@@ -916,7 +939,7 @@ export default function ProfilePage() {
                         ) : (
                           <button
                             onClick={() => confirmDeal(deal.id, isSeller ? "seller" : "buyer")}
-                            className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+                            className="w-full min-h-[44px] rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <CheckCircle className="w-3.5 h-3.5" />
                             Deal als erfolgreich abschließen

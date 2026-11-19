@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { PokemonApiCard, CardLanguage } from "@/types";
 import { cn } from "@/lib/utils";
+import { LanguageTag } from "@/components/ui/language-tag";
 
 interface PokemonSearchInputProps {
   value: string;
@@ -155,11 +156,11 @@ export function PokemonSearchInput({
           placeholder={placeholder}
           required={required}
           autoComplete="off"
-          className="w-full bg-[#111624] border border-white/10 rounded-xl px-4 py-3 pl-11 text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm min-h-[46px]"
+          className="w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 pl-11 text-ink placeholder:text-ink-subtle focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/10 transition-colors text-sm min-h-[46px]"
         />
         <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+            <Loader2 className="w-4 h-4 animate-spin text-ink-muted" />
           ) : (
             <Search className="w-4 h-4" />
           )}
@@ -168,8 +169,8 @@ export function PokemonSearchInput({
 
       {/* Autocomplete Dropdown */}
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 mt-2 bg-[#101624] border border-indigo-500/35 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 overflow-hidden max-h-96 overflow-y-auto backdrop-blur-xl animate-in fade-in duration-150">
-          <div className="px-3.5 py-2 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center justify-between gap-2 text-[11px] text-indigo-300 font-semibold sticky top-0 backdrop-blur-md z-10">
+        <div className="absolute left-0 right-0 mt-2 bg-surface-1 border border-hairline-strong rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 overflow-hidden max-h-96 overflow-y-auto backdrop-blur-xl toast-enter">
+          <div className="px-3.5 py-2 bg-surface-2/95 border-b border-hairline flex items-center justify-between gap-2 text-[11px] text-ink-muted font-semibold sticky top-0 backdrop-blur-md z-10">
             <span className="flex items-center gap-1.5 truncate">
               <Search className="w-3.5 h-3.5 flex-shrink-0" />
               <span>
@@ -199,7 +200,7 @@ export function PokemonSearchInput({
                   onMouseEnter={() => setActiveIndex(idx)}
                   className={cn(
                     "w-full flex items-center gap-3 p-2 rounded-xl transition-colors text-left group min-h-[54px] cursor-pointer",
-                    isHighlighted ? "bg-indigo-500/20 border border-indigo-400/30" : "hover:bg-white/10 border border-transparent"
+                    isHighlighted ? "bg-white/[0.07] border border-hairline-strong" : "hover:bg-white/[0.04] border border-transparent"
                   )}
                 >
                   {/* Thumbnail */}
@@ -219,7 +220,7 @@ export function PokemonSearchInput({
                   {/* Details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
+                      <p className="text-sm font-bold text-ink truncate">
                         {card.language === "DE" && card.nameDe ? card.nameDe : card.name}
                       </p>
                       {card.nameOriginal && card.nameOriginal !== card.name && (
@@ -228,7 +229,7 @@ export function PokemonSearchInput({
                         </span>
                       )}
                       {card.number && (
-                        <span className="text-[11px] font-mono font-bold text-amber-300/90">
+                        <span className="text-[11px] font-mono font-bold text-ink-muted">
                           #{card.number}
                         </span>
                       )}
@@ -238,25 +239,15 @@ export function PokemonSearchInput({
                     </p>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                       {card.language && (
-                        <span className="text-[10px] font-bold text-neutral-200 bg-white/10 px-1.5 py-0.5 rounded">
-                          {card.language === "DE"
-                            ? "🇩🇪 DE"
-                            : card.language === "JP"
-                            ? "🇯🇵 JP"
-                            : card.language === "KR"
-                            ? "🇰🇷 KR"
-                            : card.language === "CN"
-                            ? "🇨🇳 CN"
-                            : "🇬🇧 EN"}
-                        </span>
+                        <LanguageTag lang={card.language} className="px-1.5 py-0.5" />
                       )}
                       {card.set?.id && (
-                        <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                        <span className="text-[10px] font-mono font-bold text-ink-muted bg-white/[0.04] px-1.5 py-0.5 rounded-md border border-hairline">
                           {card.set.id}
                         </span>
                       )}
                       {card.rarity && card.rarity !== "Standard" && (
-                        <span className="text-[10px] text-indigo-300 font-medium bg-indigo-500/15 px-1.5 py-0.5 rounded border border-indigo-500/20 truncate max-w-[170px]">
+                        <span className="text-[10px] text-ink-subtle font-medium bg-white/[0.03] px-1.5 py-0.5 rounded-md border border-hairline truncate max-w-[170px]">
                           {card.rarity}
                         </span>
                       )}

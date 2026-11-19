@@ -2,11 +2,12 @@
 
 import React, { useState, useMemo } from "react";
 import { useStore } from "@/lib/store";
+import { isVerifiedCollector, MODE_THEME } from "@/lib/design-system";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
-import { Tag, Plus, ShieldCheck } from "lucide-react";
+import { MarketPageHeader, MarketEmptyState } from "@/components/market/page-shell";
 
 export default function BuyPage() {
   const { listings, currentUser, openAuthModal } = useStore();
@@ -46,7 +47,8 @@ export default function BuyPage() {
         const matchesName = card.name.toLowerCase().includes(q);
         const matchesSet = card.set ? card.set.toLowerCase().includes(q) : false;
         const matchesSeller = card.user.username.toLowerCase().includes(q);
-        if (!matchesName && !matchesSet && !matchesSeller) return false;
+        const matchesNumber = card.cardNumber ? card.cardNumber.toLowerCase().includes(q) : false;
+        if (!matchesName && !matchesSet && !matchesSeller && !matchesNumber) return false;
       }
 
       if (selectedLanguage !== "ALL" && card.language !== selectedLanguage) {
@@ -57,7 +59,7 @@ export default function BuyPage() {
         return false;
       }
 
-      if (onlyVerified && !card.user.verified) {
+      if (onlyVerified && !isVerifiedCollector(card.user)) {
         return false;
       }
 
@@ -87,17 +89,11 @@ export default function BuyPage() {
 
   return (
     <div className="min-h-screen py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-28">
-      {/* Hero Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Karten kaufen
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Entdecke Community-Einzelkarten.
-          </p>
-        </div>
-      </div>
+      <MarketPageHeader
+        theme={MODE_THEME.buy}
+        title="Karten kaufen"
+        description="Einzelkarten und Graded Slabs direkt aus der Community – mit transparenten Zuständen und ohne Käufergebühren."
+      />
 
       {/* Mode Hub & Navigation */}
       <MarketHubNavigation
@@ -131,29 +127,19 @@ export default function BuyPage() {
 
       {/* Content */}
       {filteredListings.length === 0 ? (
-        <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
-            <Tag className="w-8 h-8" />
-          </div>
-          <h3 className="text-xl font-black text-white">Keine passenden Verkaufskarten</h3>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            Es wurden keine Inserate für deine aktuellen Filtereinstellungen gefunden. Sei der Erste und stelle eine Karte ein!
-          </p>
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
-            <button
-              onClick={handleOpenCreate}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs transition-all min-h-[44px]"
-            >
-              + Neue Karte anbieten
-            </button>
-            <button
-              onClick={resetFilters}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all min-h-[44px]"
-            >
-              Filter zurücksetzen
-            </button>
-          </div>
-        </div>
+        <MarketEmptyState
+          theme={MODE_THEME.buy}
+          title={sellListings.length === 0 ? "Noch keine Karten im Marktplatz" : "Keine passenden Karten"}
+          description={
+            sellListings.length === 0
+              ? "Sobald Sammler Karten zum Sofortkauf einstellen, erscheinen sie hier. Sei der Erste!"
+              : "Für deine aktuellen Filter gibt es gerade keine Angebote. Passe die Suche an oder setze die Filter zurück."
+          }
+          primaryLabel="Karte anbieten"
+          onPrimary={handleOpenCreate}
+          secondaryLabel={sellListings.length > 0 ? "Filter zurücksetzen" : undefined}
+          onSecondary={resetFilters}
+        />
       ) : (
         <>
           {/* Mobile Swipe Deck View (if toggled on mobile) */}

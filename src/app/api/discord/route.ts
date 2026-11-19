@@ -15,32 +15,32 @@ const channelConfig: Record<
   }
 > = {
   sell: {
-    botName: "Manaforge • VERKAUF 🟢",
+    botName: "Manaforge • VERKAUF 🟡",
     avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png",
-    color: 0x10b981, // Emerald Green
+    color: 0xfbbf24, // Gold (Kaufen / Sofortkauf)
     badge: "VERKAUF (SOFORTKAUF)",
-    tagEmoji: "🟢",
+    tagEmoji: "🟡",
   },
   trade: {
     botName: "Manaforge • TAUSCH 🟣",
     avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png",
-    color: 0xa855f7, // Royal Purple / Violet
+    color: 0x8b5cf6, // Violett (Tauschen)
     badge: "1:1 KARTEN-TAUSCH",
     tagEmoji: "🟣",
   },
   looking_for: {
-    botName: "Manaforge • GESUCH 🔵",
+    botName: "Manaforge • GESUCH 🟠",
     avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png",
-    color: 0x06b6d4, // Cyan / Sky Blue
-    badge: "SUCHANFRAGE (WANT)",
-    tagEmoji: "🔵",
+    color: 0xf97316, // Orange (Gesucht)
+    badge: "GESUCH",
+    tagEmoji: "🟠",
   },
   bulk: {
     botName: "Manaforge • ANKAUF 📦",
     avatarUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
-    color: 0xf59e0b, // Amber / Lava Orange
+    color: 0xe2e8f0, // Platin (Manacards Ankauf)
     badge: "SAMMLUNG-ANKAUF",
-    tagEmoji: "🟠",
+    tagEmoji: "⚪",
   },
   test: {
     botName: "Manaforge • TEST-SIGNAL 🧪",

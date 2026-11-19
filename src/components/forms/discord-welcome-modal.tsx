@@ -12,6 +12,7 @@ import {
   Save,
   ArrowRight,
   Zap,
+  Link2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -172,8 +173,8 @@ export function DiscordWelcomeModal() {
                 className="w-10 h-10 object-contain drop-shadow-[0_2px_8px_rgba(249,115,22,0.5)]"
               />
             </div>
-            <div className="w-8 h-8 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 text-xs font-black">
-              ⚡
+            <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-hairline-strong flex items-center justify-center text-ink-muted">
+              <Link2 className="w-3.5 h-3.5" />
             </div>
             <div className="w-14 h-14 rounded-2xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] shadow-lg shadow-[#5865F2]/20">
               <DiscordIcon className="w-8 h-8" />

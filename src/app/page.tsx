@@ -8,19 +8,12 @@ import {
   CircleDot,
   ChevronDown,
   ArrowRight,
-  ShieldCheck,
-  Zap,
-  RefreshCw,
-  Search,
-  TrendingUp,
-  Layers,
   ArrowUpRight,
-  Flame,
-  ShoppingBag,
-  PlusCircle,
-  ArrowLeftRight,
 } from "lucide-react";
 import { setAmbientHoveredCard } from "@/lib/ambient-theme";
+import { MODE_THEME, type ModeKey } from "@/lib/design-system";
+import { VerifiedSeal } from "@/components/ui/verified-seal";
+import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   const router = useRouter();
@@ -55,36 +48,36 @@ export default function HomePage() {
       categoryNum: "02",
       sidebarText: "BUY // KAUFEN",
       badgeText: "MARKTPLATZ",
-      badgeDot: "bg-cyan-400",
-      badgeBorder: "border-cyan-500/30 text-cyan-300",
+      badgeDot: "bg-amber-400",
+      badgeBorder: "border-amber-400/30 text-amber-300",
       title: "KAUFEN",
       nameGradient: "holo-text-buy",
       description: "Karten und Angebote aus der Community erwerben.",
       href: "/buy",
       bgImage: "/pokemon/pikachu.webp",
-      cardBg: "from-cyan-950/40 via-sky-950/20 to-black/60",
-      sidebarBg: "bg-gradient-to-b from-yellow-400/90 via-amber-400/90 to-cyan-400/90",
-      borderColor: "border-cyan-400/40 group-hover:border-yellow-300/90",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(6,182,212,0.45)]",
-      patternColor: "rgba(6, 182, 212, 0.05)",
+      cardBg: "from-amber-950/40 via-yellow-950/20 to-black/60",
+      sidebarBg: "bg-gradient-to-b from-amber-300/90 via-amber-400/90 to-yellow-500/90",
+      borderColor: "border-amber-400/40 group-hover:border-amber-300/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(251,191,36,0.4)]",
+      patternColor: "rgba(251, 191, 36, 0.05)",
     },
     {
       id: "trade",
       categoryNum: "03",
       sidebarText: "TRADE // TAUSCHEN",
       badgeText: "1:1 TAUSCH",
-      badgeDot: "bg-fuchsia-400",
-      badgeBorder: "border-fuchsia-500/30 text-fuchsia-300",
+      badgeDot: "bg-violet-400",
+      badgeBorder: "border-violet-400/30 text-violet-300",
       title: "TAUSCHEN",
       nameGradient: "holo-text-trade",
       description: "Karten fair 1:1 innerhalb der Community tauschen.",
       href: "/trade",
       bgImage: "/pokemon/mewtwo.webp",
-      cardBg: "from-purple-950/40 via-fuchsia-950/20 to-black/60",
-      sidebarBg: "bg-gradient-to-b from-purple-400/90 via-fuchsia-400/90 to-pink-500/90",
-      borderColor: "border-purple-400/40 group-hover:border-fuchsia-300/90",
-      glowColor: "group-hover:shadow-[0_0_35px_rgba(217,70,239,0.45)]",
-      patternColor: "rgba(217, 70, 239, 0.05)",
+      cardBg: "from-violet-950/40 via-purple-950/20 to-black/60",
+      sidebarBg: "bg-gradient-to-b from-violet-400/90 via-purple-400/90 to-fuchsia-500/90",
+      borderColor: "border-violet-400/40 group-hover:border-violet-300/90",
+      glowColor: "group-hover:shadow-[0_0_35px_rgba(139,92,246,0.45)]",
+      patternColor: "rgba(139, 92, 246, 0.05)",
     },
     {
       id: "looking-for",
@@ -309,7 +302,7 @@ export default function HomePage() {
         >
           <a
             href="#ecosystem-bento"
-            className="flex flex-col items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-neutral-300 hover:text-cyan-400 transition-colors group cursor-pointer"
+            className="flex flex-col items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-ink-muted hover:text-ink transition-colors group cursor-pointer"
           >
             <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-[11px] sm:text-xs">
               Alle 4 Optionen im Detail
@@ -317,9 +310,9 @@ export default function HomePage() {
             <motion.div
               animate={{ y: [0, 6, 0] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:bg-cyan-500/10 transition-all shadow-lg"
+              className="w-8 h-8 rounded-full bg-surface-1/80 backdrop-blur-md border border-hairline-strong flex items-center justify-center group-hover:border-white/35 transition-colors shadow-lg"
             >
-              <ChevronDown className="w-4 h-4 text-cyan-400" />
+              <ChevronDown className="w-4 h-4 text-ink" />
             </motion.div>
           </a>
         </motion.div>
@@ -340,20 +333,21 @@ export default function HomePage() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 space-y-3"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.2em] text-ink-subtle">
+            Manaforge Plattform
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ink tracking-[-0.025em] leading-tight">
             Alle 4 Kernbereiche{" "}
-            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-500 bg-clip-text text-transparent">
-              im Detail
-            </span>
+            <span className="text-ink-muted">im Detail</span>
           </h2>
 
-          <p className="text-xs sm:text-sm text-neutral-300/90 max-w-2xl mx-auto leading-relaxed">
-            Transparenter Ankauf, sicherer Marktplatz, flexibles Tauschen und Gesuche in einer zusammenhängenden Community-Plattform.
+          <p className="text-xs sm:text-sm text-ink-muted max-w-2xl mx-auto leading-relaxed">
+            Transparenter Ankauf, geprüfter Marktplatz, fairer 1:1-Tausch und Gesuche in einer ruhigen, zusammenhängenden Community-Plattform.
           </p>
         </motion.div>
 
-        {/* Unified 4-Tier Horizontal Bento Grid (Seamless, Connected Single Grid with Smooth Gradient Fades) */}
-        <div className="w-full rounded-3xl border border-white/10 bg-black/95 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/5">
+        {/* Unified 4-Tier Horizontal Bento Grid */}
+        <div className="w-full rounded-3xl border border-hairline bg-surface-1/95 backdrop-blur-2xl shadow-2xl overflow-hidden divide-y divide-white/[0.06]">
           {bentoDetails.map((bento) => {
             const isLeft = bento.align === "left";
             const bentoThemeKey =
@@ -364,6 +358,15 @@ export default function HomePage() {
                 : bento.id === "bento-trade"
                 ? "trade"
                 : "looking-for";
+            const modeKey: ModeKey =
+              bento.id === "bento-sell"
+                ? "sell"
+                : bento.id === "bento-buy"
+                ? "buy"
+                : bento.id === "bento-trade"
+                ? "trade"
+                : "want";
+            const modeTheme = MODE_THEME[modeKey];
 
             return (
               <div
@@ -413,28 +416,34 @@ export default function HomePage() {
                 >
                   {/* Category Pill Tag */}
                   <div className="flex items-center gap-2 mb-2.5">
-                    <span className="px-3 py-1 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase border bg-orange-500/10 text-orange-400 border-orange-500/30 backdrop-blur-md shadow-sm">
+                    <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold tracking-[0.14em] uppercase border backdrop-blur-md", modeTheme.soft)}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", modeTheme.dot)} />
                       {bento.categoryName}
                     </span>
                   </div>
 
                   {/* Title */}
                   <div className="w-full text-left">
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-ink tracking-tight leading-tight">
                       {bento.title}
                     </h3>
                   </div>
 
                   {/* Highlighted Focused Description */}
-                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed my-3 max-w-xl text-left">
+                  <p className="text-xs sm:text-sm text-ink-muted leading-relaxed my-3 max-w-xl text-left">
                     {bento.description}
                   </p>
 
-                  {/* Unified Action CTA Button */}
+                  {/* Unified Mode Action CTA Button */}
                   <div className="w-full pt-2 flex justify-start">
                     <button
+                      type="button"
                       onClick={() => router.push(bento.href)}
-                      className="h-10 sm:h-11 min-h-[44px] px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/25 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      className={cn(
+                        "h-11 min-h-[44px] px-6 rounded-xl font-black text-xs sm:text-sm flex items-center gap-2 transition-colors active:scale-[0.98] cursor-pointer",
+                        modeTheme.solid,
+                        modeTheme.shadow
+                      )}
                     >
                       <span>{bento.cta}</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -451,29 +460,31 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-16 rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-black/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl"
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="mt-14 rounded-3xl border border-hairline bg-surface-1/95 backdrop-blur-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
         >
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
           <div className="flex items-center gap-4 text-left">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-surface-2 border border-hairline-strong flex items-center justify-center shrink-0">
+              <VerifiedSeal level={3} size={28} />
             </div>
             <div>
-              <h4 className="text-base sm:text-lg font-black text-white">
-                Verifizierte TCG-Community & Discord Live-Sync
+              <h4 className="text-base sm:text-lg font-black text-ink tracking-tight">
+                Verifizierte TCG-Community &amp; Discord Live-Sync
               </h4>
-              <p className="text-xs sm:text-sm text-neutral-300 mt-0.5">
-                Jedes Listing, jedes Gesuch und jeder Tausch wird in Echtzeit mit unserem Discord synchronisiert.
+              <p className="text-xs sm:text-sm text-ink-muted mt-0.5 leading-relaxed">
+                Jedes Inserat, jedes Gesuch und jeder Tausch wird in Echtzeit mit unserem Discord synchronisiert.
               </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={() => router.push("/buy")}
-            className="h-11 min-h-[44px] px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all hover:scale-105 shrink-0 flex items-center gap-2"
+            className="h-11 min-h-[44px] px-6 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-xs transition-colors active:scale-[0.98] shrink-0 flex items-center gap-2 cursor-pointer"
           >
-            <span>Jetzt Community beitreten</span>
-            <ArrowUpRight className="w-4 h-4 text-cyan-400" />
+            <span>Zum Marktplatz</span>
+            <ArrowUpRight className="w-4 h-4" />
           </button>
         </motion.div>
       </section>

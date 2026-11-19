@@ -4,16 +4,15 @@ import React, { useState } from "react";
 import { CardListing } from "@/types";
 import { useStore } from "@/lib/store";
 import { HoloAvatarFrame } from "../frames/holo-avatar-frame";
-import {
-  X,
-  Target,
-  CheckCircle2,
-  DollarSign,
-  Send,
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
+import { X, Target, CheckCircle2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MODE_THEME, BTN_SECONDARY, BTN_CLOSE, INPUT_BASE, MODAL_OVERLAY, MODAL_PANEL } from "@/lib/design-system";
+import { Portal } from "@/components/ui/portal";
+import { toast } from "@/components/ui/toast";
+import { VerifiedSeal } from "@/components/ui/verified-seal";
+import { getVerificationTier } from "@/components/profile/verification-shield";
+
+const orange = MODE_THEME.want;
 
 interface BountyMatchModalProps {
   listing: CardListing | null;
@@ -47,7 +46,7 @@ export function BountyMatchModal({
 
   if (!isOpen || !listing) return null;
 
-  const handleMatchSubmit = (e: React.FormEvent) => {
+  const handleMatchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) {
       openAuthModal("register");
@@ -55,16 +54,18 @@ export function BountyMatchModal({
     }
 
     if (listing.userId === currentUser.id) {
-      alert("Das ist dein eigenes Gesuch!");
+      toast.info("Das ist dein eigenes Gesuch.");
       return;
     }
 
-    // Create deal proposal from seller to seeker
-    createDeal(
+    // Deal-Vorschlag: Du (Anbieter der Karte) verkaufst an den Suchenden (Käufer)
+    await createDeal(
       {
         ...listing,
+        userId: currentUser.id,
+        user: currentUser,
         price: Number(askingPrice) || listing.price || 0,
-        description: `Bounty-Match von ${currentUser.username}: Zustand ${myCondition}${message ? ` – "${message}"` : ""}`,
+        description: `Gesuch-Match von ${currentUser.username}: Zustand ${myCondition}${message ? ` – „${message}“` : ""}`,
       },
       listing.user as any
     );
@@ -76,201 +77,191 @@ export function BountyMatchModal({
     }, 2200);
   };
 
+  const seekerTier = getVerificationTier(listing.user.dealsCount || 0);
+
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-200"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl glass-panel border border-cyan-500/40 shadow-[0_0_50px_rgba(6,182,212,0.25)] p-5 sm:p-7"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <Target className="w-5 h-5 text-cyan-300" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-lg sm:text-xl font-black text-white">
-                  „Ich habe diese Karte!“
-                </h2>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                  Gesucht
-                </span>
+    <Portal>
+      <div onClick={onClose} className={cn(MODAL_OVERLAY, "overlay-fade")}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={cn(MODAL_PANEL, "max-w-2xl p-5 sm:p-7 panel-rise")}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-hairline">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-10 h-10 rounded-xl border flex items-center justify-center", orange.soft)}>
+                <Target className="w-5 h-5" />
               </div>
-              <p className="text-xs text-neutral-400">
-                Biete deine Karte direkt dem Suchenden an und schließt den Deal ab.
+              <div>
+                <span className={cn("text-[10px] font-bold uppercase tracking-[0.16em] block", orange.textSoft)}>
+                  Gesuch erfüllen
+                </span>
+                <h2 className="text-lg sm:text-xl font-black text-ink tracking-tight">
+                  Ich habe diese Karte
+                </h2>
+              </div>
+            </div>
+            <button type="button" aria-label="Schließen" onClick={onClose} className={BTN_CLOSE}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {submitted ? (
+            <div className="py-12 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-black text-ink tracking-tight">Angebot übermittelt</h3>
+              <p className="text-xs text-ink-muted max-w-md mx-auto leading-relaxed">
+                Dein Angebot wurde an <b className="text-ink">{listing.user.username}</b> gesendet und erscheint bei euch beiden unter „Transaktionen &amp; Deals“.
               </p>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {submitted ? (
-          <div className="py-12 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-400/40 flex items-center justify-center mx-auto shadow-lg shadow-cyan-500/25 animate-bounce">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <h3 className="text-2xl font-black text-white">Angebot übermittelt!</h3>
-            <p className="text-xs text-neutral-300 max-w-md mx-auto">
-              Dein Angebot wurde an <b>{listing.user.username}</b> gesendet. Der Suchende wurde benachrichtigt und kann deinen Preis annehmen!
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleMatchSubmit} className="space-y-5 pt-5 text-xs">
-            {/* Wanted Card Banner */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-[#0c101d] border border-cyan-500/30 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-16 h-22 rounded-xl bg-black border border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                  {listing.photos[0] ? (
-                    <img src={listing.photos[0]} alt="" className="w-full h-full object-contain" />
-                  ) : (
-                    <Target className="w-6 h-6 text-cyan-400 opacity-50" />
-                  )}
+          ) : (
+            <form onSubmit={handleMatchSubmit} className="space-y-5 pt-5 text-xs">
+              {/* Gesuchte Karte */}
+              <div className={cn("p-4 rounded-2xl bg-surface-2 border flex items-center justify-between gap-4", orange.border)}>
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-16 h-[88px] rounded-xl bg-black border border-hairline overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    {listing.photos[0] ? (
+                      <img src={listing.photos[0]} alt={listing.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <Target className="w-6 h-6 text-ink-subtle" />
+                    )}
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <span className={cn("text-[10px] font-bold uppercase tracking-[0.14em] block", orange.textSoft)}>
+                      Gesuchte Karte
+                    </span>
+                    <h4 className="font-black text-ink text-base leading-tight truncate">{listing.name}</h4>
+                    <p className="text-[11px] text-ink-subtle">
+                      {listing.set && `${listing.set} · `}
+                      {listing.cardNumber && `#${listing.cardNumber} · `}
+                      Zustand: <b className="text-ink-muted">{listing.condition}</b>
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider block">
-                    Gesuchte Karte
+
+                <div className="text-right flex-shrink-0">
+                  <span className="text-[10px] text-ink-subtle uppercase tracking-[0.14em] block">Budget</span>
+                  <span className={cn("text-lg sm:text-xl font-black tabular-nums", orange.text)}>
+                    {listing.priceRange || (listing.price ? `${listing.price} €` : "VB")}
                   </span>
-                  <h4 className="font-black text-white text-base leading-tight">{listing.name}</h4>
-                  <p className="text-[11px] text-neutral-400">
-                    {listing.set && `${listing.set} • `}
-                    {listing.cardNumber && `#${listing.cardNumber} • `}
-                    Gesuchter Zustand: <b className="text-neutral-200">{listing.condition}</b>
-                  </p>
                 </div>
               </div>
 
-              {/* Seeker Budget */}
-              <div className="text-right flex-shrink-0">
-                <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
-                  Budget des Suchenden
-                </span>
-                <span className="text-lg sm:text-xl font-black text-cyan-400">
-                  {listing.priceRange || (listing.price ? `${listing.price} €` : "VB")}
-                </span>
-              </div>
-            </div>
-
-            {/* Seeker Contact & Info */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="flex items-center gap-2.5">
-                <HoloAvatarFrame
-                  avatarUrl={listing.user.avatarUrl}
-                  username={listing.user.username}
-                  role={listing.user.role}
-                  verified={listing.user.verified}
-                  size="sm"
-                />
-                <div>
-                  <p className="text-xs font-bold text-white flex items-center gap-1">
-                    Gesucht von: {listing.user.username}
-                    {listing.user.verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />}
-                  </p>
-                  <p className="text-[10px] text-neutral-400">
-                    {listing.user.dealsCount} erfolgreiche Deals
-                  </p>
+              {/* Suchender */}
+              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-2 border border-hairline">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <HoloAvatarFrame
+                    avatarUrl={listing.user.avatarUrl}
+                    username={listing.user.username}
+                    role={listing.user.role}
+                    verified={listing.user.verified}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-ink flex items-center gap-1.5 truncate">
+                      {listing.user.username}
+                      {seekerTier.level > 0 && <VerifiedSeal level={seekerTier.level} size={14} />}
+                    </p>
+                    <p className="text-[10px] text-ink-subtle">
+                      {listing.user.dealsCount} erfolgreiche Deals
+                    </p>
+                  </div>
                 </div>
+                {listing.user.discordUsername && listing.showDiscordName !== false && (
+                  <span className="text-[11px] text-[#aab4f5] font-mono truncate">
+                    @{listing.user.discordUsername}
+                  </span>
+                )}
               </div>
-              {listing.user.discordUsername && (
-                <span className="text-[11px] text-indigo-300 font-mono">
-                  Discord: @{listing.user.discordUsername}
-                </span>
-              )}
-            </div>
 
-            {/* Seller Match Offer Inputs */}
-            <div className="space-y-4 pt-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Angebot */}
+              <div className="space-y-4 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-ink-muted font-semibold mb-1">Dein Wunschpreis (€) *</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      required
+                      min="1"
+                      value={askingPrice}
+                      onChange={(e) => setAskingPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                      placeholder="z. B. 85"
+                      className={cn(INPUT_BASE, "px-3 py-2.5 min-h-[44px] font-bold tabular-nums", orange.focus)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-ink-muted font-semibold mb-1">Zustand deiner Karte *</label>
+                    <select
+                      value={myCondition}
+                      onChange={(e) => setMyCondition(e.target.value)}
+                      className={cn(INPUT_BASE, "px-3 py-2.5 min-h-[44px] font-semibold cursor-pointer", orange.focus)}
+                    >
+                      <option value="Graded">Graded</option>
+                      <option value="NM">Near Mint</option>
+                      <option value="EX">Excellent (minimale Spuren)</option>
+                      <option value="GD">Good (leichte Spielspuren)</option>
+                      <option value="LP">Light Played (sichtbare Abnutzung)</option>
+                      <option value="PL">Played (gebraucht)</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-neutral-300 font-semibold mb-1">
-                    Dein Wunschpreis (€) *
+                  <label className="block text-ink-muted font-semibold mb-1">
+                    Foto-URL deiner Karte (optional)
                   </label>
                   <input
-                    type="number"
-                    required
-                    min="1"
-                    value={askingPrice}
-                    onChange={(e) => setAskingPrice(e.target.value === "" ? "" : Number(e.target.value))}
-                    placeholder="z.B. 85"
-                    className="w-full bg-[#101524] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 font-bold"
+                    type="url"
+                    value={photoUrl}
+                    onChange={(e) => setPhotoUrl(e.target.value)}
+                    placeholder="https://…"
+                    className={cn(INPUT_BASE, "px-3 py-2.5 min-h-[44px]", orange.focus)}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-neutral-300 font-semibold mb-1">
-                    Zustand deiner Karte *
+                  <label className="block text-ink-muted font-semibold mb-1">
+                    Nachricht an {listing.user.username}
                   </label>
-                  <select
-                    value={myCondition}
-                    onChange={(e) => setMyCondition(e.target.value)}
-                    className="w-full bg-[#101524] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 font-semibold"
-                  >
-                    <option value="Graded">Graded</option>
-                    <option value="NM">Near Mint</option>
-                    <option value="EX">Excellent (Minimale Spielspuren)</option>
-                    <option value="GD">Good (Leichte Spielspuren)</option>
-                    <option value="LP">Light Played (Sichtbare Abnutzung)</option>
-                    <option value="PL">Played (Gebraucht)</option>
-                  </select>
+                  <textarea
+                    rows={2}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="z. B. Karte liegt im Sleeve & Toploader, Versand per Einschreiben möglich."
+                    className={cn(INPUT_BASE, "px-3 py-2 resize-none", orange.focus)}
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-neutral-300 font-semibold mb-1">
-                  Foto-URL deiner Karte (optional, erhöht Zusagechancen)
-                </label>
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-[#101524] border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500"
-                />
+              {/* Actions */}
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={cn("px-5 py-3 rounded-xl text-xs font-semibold min-h-[46px] cursor-pointer", BTN_SECONDARY)}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="submit"
+                  className={cn(
+                    "flex-1 py-3 px-5 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-colors min-h-[46px] cursor-pointer",
+                    orange.solid,
+                    orange.shadow
+                  )}
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Angebot senden</span>
+                </button>
               </div>
-
-              <div>
-                <label className="block text-neutral-300 font-semibold mb-1">
-                  Kurze Nachricht an {listing.user.username}
-                </label>
-                <textarea
-                  rows={2}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="z.B. Karte ist frisch im Sleeve & Toploader, Versand per Prio möglich!"
-                  className="w-full bg-[#101524] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500 resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="pt-2 flex items-center gap-3">
-              <button
-                type="submit"
-                className="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 active:scale-95 transition-all min-h-[46px] cursor-pointer"
-              >
-                <Send className="w-4 h-4 fill-black" />
-                <span>Angebot an Suchenden absenden</span>
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-semibold transition-all min-h-[46px]"
-              >
-                Abbrechen
-              </button>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
-    </div>
+    </Portal>
   );
 }

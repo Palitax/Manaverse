@@ -3,17 +3,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
-  ShieldCheck,
-  ShieldAlert,
-  Shield,
-  Gem,
-  Crown,
-  Flame,
   Award,
-  ChevronRight,
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { VerifiedSeal } from "@/components/ui/verified-seal";
 
 export interface VerificationTierInfo {
   level: number;
@@ -89,7 +83,7 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       glowColor: "shadow-[0_0_8px_rgba(6,182,212,0.3)]",
       borderColor: "border-cyan-400/50",
       badgeBg: "bg-cyan-950/40",
-      textColor: "text-cyan-300",
+      textColor: "text-sky-300",
       perks: "10+ Deals • Verifizierter Händler mit hoher Aktivität",
     };
   }
@@ -105,7 +99,7 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
       glowColor: "shadow-[0_0_6px_rgba(59,130,246,0.25)]",
       borderColor: "border-blue-400/50",
       badgeBg: "bg-blue-950/40",
-      textColor: "text-blue-300",
+      textColor: "text-slate-100",
       perks: "Mindestens 3 Deals verifiziert • Sicherer Handelspartner",
     };
   }
@@ -113,7 +107,7 @@ export function getVerificationTier(dealsCount: number): VerificationTierInfo {
   return {
     level: 0,
     title: "Verifizierungs-Anwärter",
-    subtitle: "Sammle 3 erfolgreiche Deals für den ersten Schild",
+    subtitle: "Sammle 3 erfolgreiche Deals für dein erstes Manaforge-Siegel",
     badgeLabel: "Stufe 0 • Anwärter",
     minDeals: 0,
     nextTierDeals: 3,
@@ -201,16 +195,10 @@ export function VerificationShield({
     };
   }, [isOpen]);
 
-  const sizeClasses = {
-    sm: "w-7 h-7 text-xs",
-    md: "w-9 h-9 text-sm",
-    lg: "w-11 h-11 text-base",
-  };
-
-  const iconSizes = {
-    sm: "w-3.5 h-3.5",
-    md: "w-4.5 h-4.5",
-    lg: "w-5 h-5",
+  const sealSizes = {
+    sm: 18,
+    md: 22,
+    lg: 28,
   };
 
   // Progress to next tier
@@ -240,9 +228,10 @@ export function VerificationShield({
             setIsOpen((prev) => !prev);
           }}
           aria-label={`${tier.title} (Klicken für Details)`}
-          className="h-9 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 text-xs font-semibold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95"
+          className="h-9 min-h-[44px] sm:min-h-0 px-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-hairline text-ink-muted hover:text-ink text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer select-none active:scale-95"
         >
-          <span>{tier.level > 0 ? "Verifiziert" : "Nicht verifiziert"}</span>
+          <VerifiedSeal level={tier.level} size={16} />
+          <span>{tier.level > 0 ? tier.title : "Nicht verifiziert"}</span>
         </button>
       ) : (
         <button
@@ -253,68 +242,18 @@ export function VerificationShield({
           }}
           aria-label={`${tier.title} (Klicken für Details)`}
           className={cn(
-            "relative flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px]",
-            "active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50"
+            "relative flex items-center justify-center rounded-full transition-transform duration-200 cursor-pointer min-w-[32px] min-h-[32px]",
+            "hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           )}
         >
-          {/* Shield Icon Visual Container with single calm glow */}
-          <div
-            className={cn(
-              "relative flex items-center justify-center rounded-xl border transition-all duration-300",
-              sizeClasses[size],
-              tier.borderColor,
-              tier.badgeBg,
-              tier.glowColor
-            )}
-          >
-            {/* Level 0: Minimaler matter Schild */}
-            {tier.level === 0 && (
-              <Shield className={cn(iconSizes[size], "text-neutral-500 opacity-60")} />
-            )}
+          <VerifiedSeal level={tier.level} size={sealSizes[size]} />
 
-            {/* Level 1: Blauer Verifizierungs-Schild */}
-            {tier.level === 1 && (
-              <ShieldCheck className={cn(iconSizes[size], "text-blue-400")} />
-            )}
-
-            {/* Level 2: Cyan Veteran Schild (Ruhiger, sauberer Schild ohne Ping-Animation) */}
-            {tier.level === 2 && (
-              <div className="relative flex items-center justify-center">
-                <ShieldCheck className={cn(iconSizes[size], "text-cyan-300")} />
-              </div>
-            )}
-
-            {/* Level 3: Goldener Elite Schild mit Krone/Stern */}
-            {tier.level === 3 && (
-              <div className="relative flex items-center justify-center">
-                <ShieldCheck className={cn(iconSizes[size], "text-amber-300 fill-amber-500/20")} />
-                <Crown className="w-2 h-2 text-yellow-300 absolute -top-1 -right-1 drop-shadow-[0_0_4px_#f59e0b]" />
-              </div>
-            )}
-
-            {/* Level 4: Feuriger Rubin-Schild */}
-            {tier.level === 4 && (
-              <div className="relative flex items-center justify-center">
-                <ShieldCheck className={cn(iconSizes[size], "text-rose-300 fill-rose-500/30")} />
-                <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-500 absolute -top-1.5 -right-1 drop-shadow-[0_0_6px_#ff4500]" />
-              </div>
-            )}
-
-            {/* Level 5: Kosmischer Prismen-Schild */}
-            {tier.level === 5 && (
-              <div className="relative flex items-center justify-center">
-                <ShieldCheck className={cn(iconSizes[size], "text-purple-200 fill-purple-400/30")} />
-                <Gem className="w-2.5 h-2.5 text-amber-300 absolute -top-1.5 -right-1" />
-              </div>
-            )}
-
-            {/* Optional Level Number Badge */}
-            {showLevelNumber && tier.level > 0 && (
-              <span className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded-full bg-black/90 border border-white/20 text-[9px] font-black text-white">
-                {tier.level}
-              </span>
-            )}
-          </div>
+          {/* Optional Level Number Badge */}
+          {showLevelNumber && tier.level > 0 && (
+            <span className="absolute -bottom-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-surface-1 border border-hairline-strong text-[8px] leading-[12px] font-black text-ink text-center">
+              {tier.level}
+            </span>
+          )}
         </button>
       )}
 
@@ -331,12 +270,12 @@ export function VerificationShield({
             width: "min(320px, calc(100vw - 32px))",
             zIndex: 99999,
           }}
-          className="p-4 rounded-2xl bg-[#0c101c] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-left pointer-events-auto animate-in fade-in zoom-in-95 duration-150"
+          className="p-4 rounded-2xl bg-surface-1 border border-hairline-strong shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-left pointer-events-auto toast-enter"
         >
           {/* Top Notch Pointer */}
           <div
             className={cn(
-              "absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0c101c] border-white/20 rotate-45",
+              "absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-surface-1 border-hairline-strong rotate-45",
               coords.placeAbove
                 ? "-bottom-1.5 border-r border-b"
                 : "-top-1.5 border-l border-t"
@@ -345,29 +284,13 @@ export function VerificationShield({
 
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-2.5">
-            <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center border",
-                  tier.borderColor,
-                  tier.badgeBg
-                )}
-              >
-                {tier.level === 0 ? (
-                  <Shield className="w-4 h-4 text-neutral-400" />
-                ) : tier.level >= 4 ? (
-                  <Flame className="w-4 h-4 text-rose-300" />
-                ) : tier.level === 3 ? (
-                  <Crown className="w-4 h-4 text-amber-300" />
-                ) : (
-                  <ShieldCheck className="w-4 h-4 text-blue-300" />
-                )}
-              </div>
+            <div className="flex items-center gap-2.5">
+              <VerifiedSeal level={tier.level} size={32} />
               <div>
                 <h4 className={cn("text-xs font-black tracking-wide", tier.textColor)}>
                   {tier.title}
                 </h4>
-                <span className="text-[10px] text-neutral-400 font-semibold block">
+                <span className="text-[10px] text-ink-subtle font-semibold block">
                   {tier.badgeLabel}
                 </span>
               </div>
@@ -375,58 +298,54 @@ export function VerificationShield({
 
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-black border",
+                "px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1",
                 tier.level > 0
-                  ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-                  : "bg-neutral-800 text-neutral-400 border-neutral-700"
+                  ? "bg-white/[0.06] text-ink border-hairline-strong"
+                  : "bg-white/[0.03] text-ink-subtle border-hairline"
               )}
             >
-              {tier.level > 0 ? "✓ Verifiziert" : "Anwärter"}
+              {tier.level > 0 && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+              {tier.level > 0 ? "Verifiziert" : "Anwärter"}
             </span>
           </div>
 
-          <p className="text-[11px] text-neutral-300 leading-snug mb-3">
+          <p className="text-[11px] text-ink-muted leading-snug mb-3">
             {tier.subtitle}
           </p>
 
           {/* Deals Count & Progress Bar to next level */}
-          <div className="p-2.5 rounded-xl bg-black/60 border border-white/10 space-y-1.5 mb-2.5">
+          <div className="p-2.5 rounded-xl bg-black/40 border border-hairline space-y-1.5 mb-2.5">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-neutral-400 font-medium">Erfolgreiche Deals:</span>
-              <span className="font-black text-white">{dealsCount} Deals</span>
+              <span className="text-ink-subtle font-medium">Erfolgreiche Deals</span>
+              <span className="font-black text-ink">{dealsCount}</span>
             </div>
 
             {tier.nextTierDeals ? (
               <>
-                <div className="w-full h-2 bg-neutral-900 rounded-full overflow-hidden border border-white/10 p-0.5">
+                <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                   <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-500",
-                      tier.level === 0
-                        ? "bg-gradient-to-r from-amber-500 to-yellow-400"
-                        : "bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500"
-                    )}
+                    className="h-full rounded-full transition-all duration-500 bg-white/70"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-neutral-400">
+                <div className="flex items-center justify-between text-[10px] text-ink-subtle">
                   <span>
                     Noch {Math.max(0, tier.nextTierDeals - dealsCount)} Deals bis Stufe {tier.level + 1}
                   </span>
-                  <span>{tier.nextTierDeals} Deals Ziel</span>
+                  <span>Ziel: {tier.nextTierDeals}</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-1 text-[10px] font-bold text-amber-300">
                 <CheckCircle2 className="w-3 h-3 text-amber-400" />
-                <span>Maximaler Verifizierungs-Rang erreicht!</span>
+                <span>Höchste Verifizierungsstufe erreicht</span>
               </div>
             )}
           </div>
 
           {/* Trust note */}
-          <div className="text-[10px] text-neutral-400 flex items-center gap-1.5 pt-1 border-t border-white/10">
-            <Award className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+          <div className="text-[10px] text-ink-subtle flex items-center gap-1.5 pt-2 border-t border-hairline">
+            <Award className="w-3.5 h-3.5 text-ink-muted shrink-0" />
             <span>{tier.perks}</span>
           </div>
         </div>,

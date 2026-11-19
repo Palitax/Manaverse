@@ -16,9 +16,9 @@ export function MobileSwipeDeck({ cards, onTradeClick }: MobileSwipeDeckProps) {
 
   if (!cards || cards.length === 0) {
     return (
-      <div className="p-8 text-center glass-panel rounded-3xl border border-white/10 text-neutral-400 text-xs space-y-2">
-        <p className="font-bold text-white">Keine Karten gefunden</p>
-        <p className="text-[11px] text-neutral-500">Passe deine Filter an oder stelle selbst eine Karte ein.</p>
+      <div className="p-8 text-center bg-surface-1 rounded-3xl border border-hairline text-xs space-y-2">
+        <p className="font-bold text-ink">Keine Karten gefunden</p>
+        <p className="text-[11px] text-ink-subtle">Passe deine Filter an oder stelle selbst eine Karte ein.</p>
       </div>
     );
   }
@@ -37,13 +37,21 @@ export function MobileSwipeDeck({ cards, onTradeClick }: MobileSwipeDeckProps) {
     <div className="space-y-4 md:hidden">
       {/* Deck Progress Bar & Header */}
       <div className="flex items-center justify-between px-2 text-xs">
-        <div className="flex items-center gap-1.5 text-neutral-300 font-bold">
-          <Layers className="w-4 h-4 text-indigo-400" />
+        <div className="flex items-center gap-1.5 text-ink-muted font-semibold">
+          <Layers className="w-4 h-4 text-ink-subtle" />
           <span>Kartenstapel</span>
         </div>
-        <div className="text-[11px] font-mono text-neutral-400">
-          <b className="text-white">{currentIndex + 1}</b> von {cards.length}
+        <div className="text-[11px] font-mono text-ink-subtle tabular-nums">
+          <b className="text-ink">{currentIndex + 1}</b> / {cards.length}
         </div>
+      </div>
+
+      {/* Fortschritt */}
+      <div className="mx-2 h-0.5 rounded-full bg-white/[0.06] overflow-hidden">
+        <div
+          className="h-full bg-white/60 transition-all duration-300"
+          style={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
+        />
       </div>
 
       {/* Main Slab Card Presentation */}
@@ -61,7 +69,7 @@ export function MobileSwipeDeck({ cards, onTradeClick }: MobileSwipeDeckProps) {
         <button
           type="button"
           onClick={handlePrev}
-          className="flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/10 min-h-[48px] cursor-pointer"
+          className="flex-1 py-3 px-4 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 text-ink-muted font-bold text-xs flex items-center justify-center gap-1 border border-hairline min-h-[48px] cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Zurück</span>
@@ -70,7 +78,7 @@ export function MobileSwipeDeck({ cards, onTradeClick }: MobileSwipeDeckProps) {
         <button
           type="button"
           onClick={handleNext}
-          className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-extrabold text-xs flex items-center justify-center gap-1 shadow-lg shadow-indigo-600/30 min-h-[48px] cursor-pointer"
+          className="flex-1 py-3 px-4 rounded-2xl bg-white hover:bg-neutral-200 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1 min-h-[48px] cursor-pointer"
         >
           <span>Nächste</span>
           <ChevronRight className="w-4 h-4" />

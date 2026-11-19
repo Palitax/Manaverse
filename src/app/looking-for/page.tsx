@@ -3,17 +3,12 @@
 import React, { useState, useMemo } from "react";
 import { useStore } from "@/lib/store";
 import { CardListing } from "@/types";
+import { isVerifiedCollector, MODE_THEME } from "@/lib/design-system";
 import { CollectorSlabCard } from "@/components/cards/collector-slab-card";
 import { MarketHubNavigation } from "@/components/market/market-hub-navigation";
 import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
-import {
-  Target,
-  Plus,
-  HelpCircle,
-  ShieldCheck,
-  Search,
-} from "lucide-react";
+import { MarketPageHeader, MarketEmptyState } from "@/components/market/page-shell";
 
 export default function LookingForPage() {
   const { listings, currentUser, openAuthModal } = useStore();
@@ -53,10 +48,11 @@ export default function LookingForPage() {
         const matchesName = card.name.toLowerCase().includes(q);
         const matchesSet = card.set ? card.set.toLowerCase().includes(q) : false;
         const matchesSeeker = card.user.username.toLowerCase().includes(q);
+        const matchesNumber = card.cardNumber ? card.cardNumber.toLowerCase().includes(q) : false;
         const matchesDesc = card.description
           ? card.description.toLowerCase().includes(q)
           : false;
-        if (!matchesName && !matchesSet && !matchesSeeker && !matchesDesc) return false;
+        if (!matchesName && !matchesSet && !matchesSeeker && !matchesDesc && !matchesNumber) return false;
       }
 
       if (selectedLanguage !== "ALL" && card.language !== selectedLanguage) {
@@ -67,7 +63,7 @@ export default function LookingForPage() {
         return false;
       }
 
-      if (onlyVerified && !card.user.verified) {
+      if (onlyVerified && !isVerifiedCollector(card.user)) {
         return false;
       }
 
@@ -97,17 +93,11 @@ export default function LookingForPage() {
 
   return (
     <div className="min-h-screen py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-28">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Gesuchte Karten
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Stelle Karten ein, die du suchst, oder schau nach, ob du eine Karte hast, die andere Sammler gerade suchen.
-          </p>
-        </div>
-      </div>
+      <MarketPageHeader
+        theme={MODE_THEME.want}
+        title="Gesuchte Karten"
+        description="Schreibe deine Wunschkarten mit Budget aus – oder prüfe, ob du eine Karte hast, die gerade jemand sucht."
+      />
 
       {/* Mode Hub & Navigation */}
       <MarketHubNavigation
@@ -141,29 +131,19 @@ export default function LookingForPage() {
 
       {/* Content */}
       {filteredListings.length === 0 ? (
-        <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <div className="w-16 h-16 rounded-2xl bg-orange-500/15 text-orange-400 border border-orange-500/30 flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">
-            <Target className="w-8 h-8" />
-          </div>
-          <h3 className="text-xl font-black text-white">Aktuell keine Gesuche</h3>
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            Keine passenden Gesuche gefunden. Erstelle selbst ein Gesuch und zeige der Community, welche Karte du suchst!
-          </p>
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
-            <button
-              onClick={handleOpenCreate}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-black text-xs transition-all min-h-[44px] shadow-lg shadow-orange-500/20"
-            >
-              + Neues Gesuch starten
-            </button>
-            <button
-              onClick={resetFilters}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all min-h-[44px]"
-            >
-              Filter zurücksetzen
-            </button>
-          </div>
-        </div>
+        <MarketEmptyState
+          theme={MODE_THEME.want}
+          title={lookingForListings.length === 0 ? "Aktuell keine Gesuche" : "Keine passenden Gesuche"}
+          description={
+            lookingForListings.length === 0
+              ? "Erstelle das erste Gesuch und zeige der Community, welche Karte dir noch fehlt."
+              : "Für deine Filter gibt es gerade keine Gesuche. Passe die Suche an oder setze die Filter zurück."
+          }
+          primaryLabel="Gesuch aufgeben"
+          onPrimary={handleOpenCreate}
+          secondaryLabel={lookingForListings.length > 0 ? "Filter zurücksetzen" : undefined}
+          onSecondary={resetFilters}
+        />
       ) : (
         <>
           {/* Mobile Deck View */}
@@ -180,16 +160,6 @@ export default function LookingForPage() {
         </>
       )}
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={handleOpenCreate}
-          title="Neues Gesuch aufgeben"
-          className="w-14 h-14 rounded-full bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center shadow-2xl shadow-cyan-500/50 hover:scale-110 active:scale-95 transition-all border border-cyan-300/40 cursor-pointer min-h-[56px] min-w-[56px]"
-        >
-          <Plus className="w-7 h-7" />
-        </button>
-      </div>
     </div>
   );
 }

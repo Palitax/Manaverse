@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 interface CardItemViewProps {
@@ -67,11 +68,11 @@ export function CardItemView({ card, onTradeClick, onBuyClick }: CardItemViewPro
       return;
     }
     if (card.userId === currentUser.id) {
-      alert("Das ist dein eigenes Listing!");
+      toast.info("Das ist dein eigenes Inserat.");
       return;
     }
     createDeal(card, currentUser);
-    alert(`Deal-Anfrage an ${card.user.username} gesendet! Ihr könnt den Deal in eurem Profil beidseitig bestätigen.`);
+    toast.success(`Deal-Anfrage an ${card.user.username} gesendet`, "Ihr könnt den Deal in eurem Profil beidseitig bestätigen.");
     setModalOpen(false);
   };
 

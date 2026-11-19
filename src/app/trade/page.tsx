@@ -9,18 +9,15 @@ import { MobileSwipeDeck } from "@/components/market/mobile-swipe-deck";
 import { CardForgeStudio } from "@/components/forms/card-forge-studio";
 import { TradeBalanceDrawer } from "@/components/cards/trade-balance-drawer";
 import { HoloAvatarFrame } from "@/components/frames/holo-avatar-frame";
-import {
-  ArrowLeftRight,
-  Plus,
-  Inbox,
-  Info,
-  CheckCircle2,
-  X as XIcon,
-} from "lucide-react";
+import { ArrowLeftRight, Inbox, CheckCircle2, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MarketPageHeader, MarketEmptyState } from "@/components/market/page-shell";
+import { toast } from "@/components/ui/toast";
+import { isVerifiedCollector, MODE_THEME } from "@/lib/design-system";
 
 export default function TradePage() {
-  const { listings, tradeOffers, currentUser, openAuthModal } = useStore();
+  const { listings, tradeOffers, currentUser, openAuthModal, respondToTradeOffer } = useStore();
+  const violet = MODE_THEME.trade;
   const [activeTab, setActiveTab] = useState<"browse" | "offers">("browse");
   const [studioOpen, setStudioOpen] = useState(false);
   const [selectedTradeCard, setSelectedTradeCard] = useState<CardListing | null>(null);
@@ -45,7 +42,7 @@ export default function TradePage() {
         const q = searchQuery.toLowerCase();
         const matchesName = card.name.toLowerCase().includes(q);
         const matchesSet = card.set ? card.set.toLowerCase().includes(q) : false;
-        const matchesSeller = card.user.username.toLowerCase().includes(q);
+        const matchesSeller = card.user.username.toLowerCase().includes(q) || (card.cardNumber ? card.cardNumber.toLowerCase().includes(q) : false);
         const matchesWants = card.lookingForWants
           ? card.lookingForWants.toLowerCase().includes(q)
           : false;
@@ -60,7 +57,7 @@ export default function TradePage() {
         return false;
       }
 
-      if (onlyVerified && !card.user.verified) {
+      if (onlyVerified && !isVerifiedCollector(card.user)) {
         return false;
       }
 
@@ -72,6 +69,20 @@ export default function TradePage() {
   const myReceivedOffers = currentUser
     ? tradeOffers.filter((o) => o.listing.userId === currentUser.id)
     : [];
+  const pendingReceivedCount = myReceivedOffers.filter((o) => o.status === "pending").length;
+
+  const handleRespond = async (offerId: string, status: "accepted" | "declined", partner: string) => {
+    const ok = await respondToTradeOffer(offerId, status);
+    if (!ok) {
+      toast.error("Antwort konnte nicht gespeichert werden", "Bitte versuche es gleich noch einmal.");
+      return;
+    }
+    if (status === "accepted") {
+      toast.success(`Tausch mit ${partner} angenommen`, "Kontaktiert euch jetzt per Discord, um den Versand abzustimmen.");
+    } else {
+      toast.info(`Angebot von ${partner} abgelehnt`);
+    }
+  };
 
   // Overall counts for navigation hub
   const counts = useMemo(() => {
@@ -112,17 +123,11 @@ export default function TradePage() {
 
   return (
     <div className="min-h-screen py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-28">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white">
-            Karten tauschen
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            Tausche deine Sammelkarten 1:1 oder mit fairem Wertausgleich – biete eigene Karten an oder gleiche Differenzen flexibel mit Zuzahlung aus.
-          </p>
-        </div>
-      </div>
+      <MarketPageHeader
+        theme={violet}
+        title="Karten tauschen"
+        description="Tausche 1:1 oder mit fairem Wertausgleich – die Tausch-Waage zeigt dir sofort, ob ein Angebot ausgeglichen ist."
+      />
 
       {/* Mode Hub & Navigation */}
       <MarketHubNavigation
@@ -155,33 +160,41 @@ export default function TradePage() {
       )}
 
       {/* Tabs: Browse vs My Offers */}
-      <div className="flex items-center gap-2 p-1.5 bg-black/40 rounded-2xl border border-white/10 w-fit mb-6 text-xs font-bold">
+      <div role="tablist" className="inline-flex items-center gap-1 p-1 bg-surface-1/95 backdrop-blur-md rounded-xl border border-hairline mb-6 text-xs font-semibold">
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === "browse"}
           onClick={() => setActiveTab("browse")}
           className={cn(
-            "px-4 py-2 rounded-xl transition-all min-h-[40px] flex items-center gap-2",
-            activeTab === "browse"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-              : "text-neutral-400 hover:text-white"
+            "px-4 rounded-lg transition-colors min-h-[40px] flex items-center gap-2",
+            activeTab === "browse" ? "bg-white/[0.08] text-ink" : "text-ink-subtle hover:text-ink"
           )}
         >
           <ArrowLeftRight className="w-3.5 h-3.5" />
-          <span>Alle Tauschangebote ({filteredTrades.length})</span>
+          <span>Alle Tauschkarten</span>
+          <span className="text-[10px] text-ink-subtle tabular-nums">{filteredTrades.length}</span>
         </button>
 
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === "offers"}
           onClick={() => setActiveTab("offers")}
           className={cn(
-            "px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 min-h-[40px]",
-            activeTab === "offers"
-              ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-              : "text-neutral-400 hover:text-white"
+            "px-4 rounded-lg transition-colors flex items-center gap-2 min-h-[40px]",
+            activeTab === "offers" ? "bg-white/[0.08] text-ink" : "text-ink-subtle hover:text-ink"
           )}
         >
           <Inbox className="w-3.5 h-3.5" />
-          <span>Eingehende Angebote ({myReceivedOffers.length})</span>
+          <span>Eingehende Angebote</span>
+          {pendingReceivedCount > 0 ? (
+            <span className={cn("min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black flex items-center justify-center", violet.solid)}>
+              {pendingReceivedCount}
+            </span>
+          ) : (
+            <span className="text-[10px] text-ink-subtle tabular-nums">{myReceivedOffers.length}</span>
+          )}
         </button>
       </div>
 
@@ -189,52 +202,27 @@ export default function TradePage() {
       {activeTab === "browse" && (
         <>
           {filteredTrades.length === 0 ? (
-            <div className="my-12 max-w-md mx-auto p-8 rounded-3xl glass-panel border border-white/10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/20">
-                <ArrowLeftRight className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-black text-white">Keine aktiven Tauschkarten</h3>
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                Es wurden keine passenden Tauschkarten gefunden. Biete deine eigene Karte an und starte den ersten Tausch der Community!
-              </p>
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleOpenCreate}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs transition-all min-h-[44px]"
-                >
-                  + Tauschkarte einstellen
-                </button>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all min-h-[44px]"
-                >
-                  Filter zurücksetzen
-                </button>
-              </div>
-            </div>
+            <MarketEmptyState
+              theme={violet}
+              title={tradeListings.length === 0 ? "Noch keine Tauschkarten" : "Keine passenden Tauschkarten"}
+              description={
+                tradeListings.length === 0
+                  ? "Biete deine erste Karte zum Tausch an und starte den ersten Trade der Community."
+                  : "Für deine Filter gibt es gerade keine Tauschkarten. Passe die Suche an oder setze die Filter zurück."
+              }
+              primaryLabel="Tauschkarte einstellen"
+              onPrimary={handleOpenCreate}
+              secondaryLabel={tradeListings.length > 0 ? "Filter zurücksetzen" : undefined}
+              onSecondary={resetFilters}
+            />
+          ) : viewMode === "deck" ? (
+            <MobileSwipeDeck cards={filteredTrades} onTradeClick={handleTradeClick} />
           ) : (
-            <>
-              {/* Mobile Deck View */}
-              {viewMode === "deck" ? (
-                <MobileSwipeDeck
-                  cards={filteredTrades}
-                  onTradeClick={handleTradeClick}
-                />
-              ) : (
-                /* Grid View */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
-                  {filteredTrades.map((card) => (
-                    <CollectorSlabCard
-                      key={card.id}
-                      card={card}
-                      onTradeClick={handleTradeClick}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+              {filteredTrades.map((card) => (
+                <CollectorSlabCard key={card.id} card={card} onTradeClick={handleTradeClick} />
+              ))}
+            </div>
           )}
         </>
       )}
@@ -242,25 +230,31 @@ export default function TradePage() {
       {/* TAB 2: RECEIVED OFFERS */}
       {activeTab === "offers" && (
         <div className="space-y-4">
-          {myReceivedOffers.length === 0 ? (
-            <div className="my-12 text-center glass-panel rounded-3xl border border-white/10 p-8 space-y-3 max-w-md mx-auto">
-              <div className="w-14 h-14 rounded-2xl bg-white/5 text-neutral-500 flex items-center justify-center mx-auto">
-                <Inbox className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-bold text-white">Noch keine Gegenangebote eingegangen</h3>
-              <p className="text-xs text-neutral-400">
-                Sobald ein Sammler ein Angebot über die Tausch-Waage für deine Karten einreicht, erscheint es hier.
-              </p>
-            </div>
+          {!currentUser ? (
+            <MarketEmptyState
+              theme={violet}
+              icon={Inbox}
+              title="Melde dich an"
+              description="Eingehende Tauschangebote für deine Karten siehst du, sobald du angemeldet bist."
+              primaryLabel="Jetzt anmelden"
+              onPrimary={() => openAuthModal("login")}
+            />
+          ) : myReceivedOffers.length === 0 ? (
+            <MarketEmptyState
+              theme={violet}
+              icon={Inbox}
+              title="Noch keine Gegenangebote"
+              description="Sobald ein Sammler über die Tausch-Waage ein Angebot für deine Karten einreicht, erscheint es hier."
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {myReceivedOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="p-5 rounded-2xl glass-panel border border-purple-500/30 space-y-4"
+                  className="p-5 rounded-2xl bg-surface-1/95 backdrop-blur-md border border-hairline space-y-4"
                 >
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-3 pb-3 border-b border-hairline">
+                    <div className="flex items-center gap-3 min-w-0">
                       <HoloAvatarFrame
                         avatarUrl={offer.fromUser.avatarUrl}
                         username={offer.fromUser.username}
@@ -268,48 +262,64 @@ export default function TradePage() {
                         verified={offer.fromUser.verified}
                         size="sm"
                       />
-                      <div>
-                        <p className="text-xs font-bold text-white">
-                          Angebot von {offer.fromUser.username}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-ink truncate">
+                          {offer.fromUser.username}
                         </p>
-                        <p className="text-[10px] text-neutral-400">
-                          Für: <b className="text-purple-300">{offer.listing.name}</b>
+                        <p className="text-[11px] text-ink-subtle truncate">
+                          für <span className={cn("font-semibold", violet.text)}>{offer.listing.name}</span>
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-black text-cyan-400 bg-cyan-950/40 px-2.5 py-1 rounded-lg border border-cyan-500/30">
-                      Wert: ~{offer.estimatedValue} €
+                    <span className="text-xs font-black text-ink bg-white/[0.04] px-2.5 py-1 rounded-lg border border-hairline tabular-nums flex-shrink-0">
+                      ~{offer.estimatedValue} €
                     </span>
                   </div>
 
-                  <div className="text-xs bg-[#0b0f19] p-3 rounded-xl border border-white/5 space-y-1">
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
-                      Angebotene Karten:
+                  <div className="text-xs bg-surface-2 p-3 rounded-xl border border-hairline space-y-1">
+                    <span className="text-[10px] font-bold text-ink-subtle uppercase tracking-[0.14em] block">
+                      Angeboten
                     </span>
-                    <p className="text-neutral-200">{offer.offeredCardsDescription}</p>
+                    <p className="text-ink-muted">{offer.offeredCardsDescription}</p>
                     {offer.message && (
-                      <p className="text-neutral-400 italic pt-1 border-t border-white/5">
-                        "{offer.message}"
+                      <p className="text-ink-subtle italic pt-1.5 mt-1.5 border-t border-hairline">
+                        „{offer.message}“
                       </p>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => alert(`Tausch mit ${offer.fromUser.username} angenommen!`)}
-                      className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs transition-all min-h-[44px]"
+                  {offer.status === "pending" ? (
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleRespond(offer.id, "accepted", offer.fromUser.username)}
+                        className={cn("flex-1 py-2.5 rounded-xl font-black text-xs transition-colors min-h-[44px] cursor-pointer flex items-center justify-center gap-1.5", violet.solid)}
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Annehmen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRespond(offer.id, "declined", offer.fromUser.username)}
+                        className="px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-hairline text-ink-muted hover:text-ink text-xs font-semibold transition-colors min-h-[44px] cursor-pointer flex items-center gap-1.5"
+                      >
+                        <XIcon className="w-4 h-4" />
+                        Ablehnen
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-bold",
+                        offer.status === "accepted"
+                          ? "bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-300"
+                          : "bg-white/[0.03] border-hairline text-ink-subtle"
+                      )}
                     >
-                      Tausch annehmen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => alert("Gegenangebot abgelehnt.")}
-                      className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-semibold transition-all min-h-[44px]"
-                    >
-                      Ablehnen
-                    </button>
-                  </div>
+                      {offer.status === "accepted" ? <CheckCircle2 className="w-4 h-4" /> : <XIcon className="w-4 h-4" />}
+                      {offer.status === "accepted" ? "Angenommen" : "Abgelehnt"}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -13,6 +13,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BTN_CLOSE, INPUT_BASE, MODAL_OVERLAY, MODAL_PANEL } from "@/lib/design-system";
+import { Portal } from "@/components/ui/portal";
 
 function DiscordIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -140,246 +142,251 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl bg-[#121316] border border-orange-500/25 p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_40px_rgba(249,115,22,0.12)] max-h-[92dvh] overflow-y-auto">
-        {/* Subtle orange ambient glow in background */}
-        <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-orange-500/10 via-amber-500/5 to-transparent pointer-events-none rounded-t-3xl" />
-
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={closeAuthModal}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center z-20"
-          aria-label="Dialog schließen"
+    <Portal>
+      <div
+        onClick={closeAuthModal}
+        className={cn(MODAL_OVERLAY, "z-[9999] overlay-fade")}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={cn(MODAL_PANEL, "max-w-md p-6 sm:p-7 panel-rise")}
         >
-          <X className="w-5 h-5" />
-        </button>
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={closeAuthModal}
+            className={cn(BTN_CLOSE, "absolute top-4 right-4 z-20")}
+            aria-label="Dialog schließen"
+          >
+            <X className="w-4 h-4" />
+          </button>
 
-        {/* Modal Header */}
-        <div className="text-center space-y-2 mb-6 relative z-10">
-          <div className="flex justify-center mb-1">
-            <img
-              src="/manaforge-logo.webp"
-              alt="MANAFORGE"
-              loading="lazy"
-              decoding="async"
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_16px_rgba(249,115,22,0.4)]"
-            />
+          {/* Modal Header */}
+          <div className="text-center space-y-2 mb-6 relative z-10">
+            <div className="flex justify-center mb-1">
+              <img
+                src="/manaforge-logo.webp"
+                alt="MANAFORGE"
+                loading="lazy"
+                decoding="async"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_16px_rgba(249,115,22,0.35)]"
+              />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-ink tracking-tight">
+              {tab === "register" ? "Konto erstellen" : "Willkommen zurück"}
+            </h2>
+            <p className="text-xs text-ink-muted">
+              {tab === "register"
+                ? "Werde Teil der Manaforge-Community"
+                : "Melde dich an, um Karten zu kaufen, tauschen und anzubieten"}
+            </p>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            {tab === "register" ? "Konto erstellen" : "Willkommen zurück"}
-          </h2>
-          <p className="text-xs text-neutral-400">
-            {tab === "register"
-              ? "Werde Teil der Manaforge Pokémon-Community"
-              : "Melde dich an, um Karten zu kaufen, tauschen und anzubieten"}
-          </p>
-        </div>
 
-        {/* Tab Switcher */}
-        <div className="flex rounded-xl bg-black/40 p-1 mb-5 border border-white/10 relative z-10">
-          <button
-            type="button"
-            onClick={() => {
-              setTab("register");
-              setErrorMsg(null);
-            }}
-            className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px] cursor-pointer",
-              tab === "register"
-                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/30"
-                : "text-neutral-400 hover:text-white"
-            )}
-          >
-            Registrieren
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTab("login");
-              setErrorMsg(null);
-            }}
-            className={cn(
-              "flex-1 py-2 text-xs font-bold rounded-lg transition-all min-h-[38px] cursor-pointer",
-              tab === "login"
-                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/30"
-                : "text-neutral-400 hover:text-white"
-            )}
-          >
-            Anmelden
-          </button>
-        </div>
+          {/* Tab Switcher */}
+          <div className="flex rounded-xl bg-surface-2 p-1 mb-5 border border-hairline relative z-10">
+            <button
+              type="button"
+              onClick={() => {
+                setTab("register");
+                setErrorMsg(null);
+              }}
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-lg transition-colors min-h-[40px] cursor-pointer",
+                tab === "register"
+                  ? "bg-white/[0.1] text-ink border border-hairline-strong"
+                  : "text-ink-subtle hover:text-ink border border-transparent"
+              )}
+            >
+              Registrieren
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTab("login");
+                setErrorMsg(null);
+              }}
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-lg transition-colors min-h-[40px] cursor-pointer",
+                tab === "login"
+                  ? "bg-white/[0.1] text-ink border border-hairline-strong"
+                  : "text-ink-subtle hover:text-ink border border-transparent"
+              )}
+            >
+              Anmelden
+            </button>
+          </div>
 
-        {/* 1-Click Discord OAuth Option */}
-        <div className="space-y-3 mb-5 relative z-10">
-          <button
-            type="button"
-            onClick={handleDiscordClick}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs sm:text-sm shadow-lg shadow-[#5865F2]/25 transition-all active:scale-[0.98] cursor-pointer min-h-[44px] disabled:opacity-50"
-          >
-            <DiscordIcon className="w-5 h-5 flex-shrink-0" />
-            <span>
-              {tab === "register" ? "Mit Discord registrieren" : "Mit Discord anmelden"}
+          {/* 1-Click Discord OAuth Option */}
+          <div className="space-y-2.5 mb-5 relative z-10">
+            <button
+              type="button"
+              onClick={handleDiscordClick}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-discord hover:bg-[#4752c4] text-white font-bold text-xs sm:text-sm transition-colors active:scale-[0.98] cursor-pointer min-h-[46px] disabled:opacity-50"
+            >
+              <DiscordIcon className="w-5 h-5 flex-shrink-0" />
+              <span>
+                {tab === "register" ? "Mit Discord registrieren" : "Mit Discord anmelden"}
+              </span>
+            </button>
+            <p className="text-[11px] text-center text-ink-subtle">
+              Schnellster Weg: Übernimmt Avatar und Discord-Tag direkt.
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="relative flex items-center justify-center my-4 z-10">
+            <div className="border-t border-hairline w-full" />
+            <span className="bg-surface-1 px-3 text-[10px] uppercase tracking-[0.14em] text-ink-subtle font-bold absolute">
+              oder per E-Mail
             </span>
-          </button>
-          <p className="text-[11px] text-center text-neutral-400">
-            Schnellster Weg: Übernimmt automatisch deinen Avatar & Discord-Tag.
-          </p>
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center my-4 z-10">
-          <div className="border-t border-white/10 w-full" />
-          <span className="bg-[#121316] px-3 text-[11px] uppercase tracking-wider text-neutral-400 font-semibold absolute">
-            oder mit E-Mail
-          </span>
-        </div>
-
-        {/* Error / Success Feedback */}
-        {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 animate-in fade-in relative z-10">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400 mt-0.5" />
-            <span>{errorMsg}</span>
           </div>
-        )}
 
-        {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 animate-in fade-in relative z-10">
-            <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400 mt-0.5" />
-            <span>{successMsg}</span>
-          </div>
-        )}
+          {/* Error / Success Feedback */}
+          {errorMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-500/[0.08] border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2 toast-enter relative z-10">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-        {/* Email & Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5 relative z-10">
-          {tab === "register" && (
+          {successMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/30 text-emerald-200 text-xs flex items-start gap-2 toast-enter relative z-10">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400 mt-0.5" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {/* Email & Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-3.5 relative z-10">
+            {tab === "register" && (
+              <div>
+                <label className="block text-xs font-semibold text-ink-muted mb-1">
+                  Trainer-Name (Benutzername)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink-subtle">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    placeholder="z. B. Ash_Ketchum"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/\s+/g, "_"))}
+                    className={cn(INPUT_BASE, "pl-9 pr-3 py-2.5 text-xs focus:border-hairline-strong min-h-[44px]")}
+                  />
+                </div>
+                <p className="text-[11px] text-ink-subtle mt-1">
+                  Keine Leerzeichen – längere Namen mit Unterstrich schreiben (z. B. All_Out_Luffy).
+                </p>
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                Trainer-Name (Benutzername)
+              <label className="block text-xs font-semibold text-ink-muted mb-1">
+                E-Mail-Adresse
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                  <User className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink-subtle">
+                  <Mail className="w-4 h-4" />
                 </div>
                 <input
-                  type="text"
+                  type="email"
                   required
-                  placeholder="z.B. Ash_Ketchum"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.replace(/\s+/g, "_"))}
-                  className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
+                  placeholder="trainer@beispiel.de"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={cn(INPUT_BASE, "pl-9 pr-3 py-2.5 text-xs focus:border-hairline-strong min-h-[44px]")}
                 />
               </div>
-              <p className="text-[11px] text-neutral-400 mt-1">
-                Keine Leerzeichen erlaubt – längere Namen mit Unterstrich schreiben (z. B. All_Out_Luffy).
-              </p>
             </div>
-          )}
 
-          <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
-              E-Mail-Adresse
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                <Mail className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-ink-muted">
+                  Passwort
+                </label>
+                {tab === "login" && !resetSent && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-[11px] text-ink-muted hover:text-ink underline underline-offset-4 decoration-white/20 font-medium transition-colors cursor-pointer"
+                  >
+                    Passwort vergessen?
+                  </button>
+                )}
               </div>
-              <input
-                type="email"
-                required
-                placeholder="trainer@beispiel.de"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink-subtle">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  type="password"
+                  required
+                  placeholder={tab === "register" ? "Mindestens 6 Zeichen" : "••••••••"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={cn(INPUT_BASE, "pl-9 pr-3 py-2.5 text-xs focus:border-hairline-strong min-h-[44px]")}
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-neutral-300">
-                Passwort
-              </label>
-              {tab === "login" && !resetSent && (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-xs sm:text-sm transition-colors active:scale-[0.98] cursor-pointer min-h-[46px] flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : tab === "register" ? (
+                <>
+                  <span>Konto erstellen</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  <span>Anmelden</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer switch prompt */}
+          <div className="mt-5 text-center text-xs text-ink-subtle relative z-10">
+            {tab === "register" ? (
+              <p>
+                Bereits registriert?{" "}
                 <button
                   type="button"
-                  onClick={handleForgotPassword}
-                  className="text-[11px] text-orange-400 hover:text-orange-300 font-medium transition-colors cursor-pointer"
+                  onClick={() => {
+                    setTab("login");
+                    setErrorMsg(null);
+                  }}
+                  className="text-ink hover:underline font-bold cursor-pointer"
                 >
-                  Passwort vergessen?
+                  Hier anmelden
                 </button>
-              )}
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                <Lock className="w-4 h-4" />
-              </div>
-              <input
-                type="password"
-                required
-                placeholder={tab === "register" ? "Mindestens 6 Zeichen" : "••••••••"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 bg-black/40 border border-white/10 rounded-xl text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors min-h-[44px]"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all active:scale-[0.98] cursor-pointer min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : tab === "register" ? (
-              <>
-                <span>Konto erstellen</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
+              </p>
             ) : (
-              <>
-                <span>Anmelden</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
+              <p>
+                Noch kein Konto?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("register");
+                    setErrorMsg(null);
+                  }}
+                  className="text-ink hover:underline font-bold cursor-pointer"
+                >
+                  Jetzt registrieren
+                </button>
+              </p>
             )}
-          </button>
-        </form>
-
-        {/* Footer switch prompt */}
-        <div className="mt-5 text-center text-xs text-neutral-400 relative z-10">
-          {tab === "register" ? (
-            <p>
-              Bereits registriert?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setTab("login");
-                  setErrorMsg(null);
-                }}
-                className="text-orange-400 hover:text-orange-300 font-bold underline transition-colors cursor-pointer"
-              >
-                Hier anmelden
-              </button>
-            </p>
-          ) : (
-            <p>
-              Noch kein Konto?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setTab("register");
-                  setErrorMsg(null);
-                }}
-                className="text-orange-400 hover:text-orange-300 font-bold underline transition-colors cursor-pointer"
-              >
-                Jetzt registrieren
-              </button>
-            </p>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

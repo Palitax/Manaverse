@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Toaster } from "@/components/ui/toast";
 
 const AuthModal = dynamic(
   () => import("@/components/forms/auth-modal").then((m) => m.AuthModal),
@@ -27,6 +28,7 @@ export function GlobalModals() {
       <AuthModal />
       <DiscordWelcomeModal />
       <BoosterRipModal />
+      <Toaster />
     </>
   );
 }

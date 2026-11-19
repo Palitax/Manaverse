@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* ==============================================================================
+   MANAFORGE DESIGN TOKENS (siehe DESIGN.md)
+   Surface-Ladder, Hairlines & Ink-Abstufungen als Tailwind-Utilities:
+   bg-canvas, bg-surface-1 … bg-surface-4, border-hairline, text-ink-muted …
+   ============================================================================== */
+@theme {
+  --color-canvas: #05070c;
+  --color-surface-1: #0a0d16;
+  --color-surface-2: #0f131e;
+  --color-surface-3: #151a27;
+  --color-surface-4: #1c2232;
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-strong: rgba(255, 255, 255, 0.16);
+  --color-ink: #f4f5f7;
+  --color-ink-muted: #b4bac6;
+  --color-ink-subtle: #7d8494;
+  --color-discord: #5865f2;
+}
+
 :root {
   --background: #000000;
   --foreground: #f3f4f6;
@@ -103,6 +122,58 @@ body {
 
 .animate-float {
   animation: float-subtle 4s ease-in-out infinite;
+}
+
+/* Toast- & Overlay-Einblendungen */
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-enter {
+  animation: toast-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.overlay-fade {
+  animation: overlay-fade 0.18s ease-out;
+}
+
+.panel-rise {
+  animation: panel-rise 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter,
+  .overlay-fade,
+  .panel-rise {
+    animation: none;
+  }
 }
 
 /* ==================================================================== */
@@ -214,8 +285,8 @@ body {
 }
 .glass-panel-hover:hover {
   background: rgba(15, 19, 32, 0.99);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.75);
   transform: translateY(-2px);
 }
 
@@ -269,11 +340,11 @@ body {
   background: linear-gradient(
     135deg,
     #ffffff 0%,
-    #22d3ee 25%,
-    #fde047 45%,
-    #38bdf8 65%,
+    #fcd34d 25%,
+    #fef08a 45%,
+    #fbbf24 65%,
     #ffffff 80%,
-    #06b6d4 100%
+    #f59e0b 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;

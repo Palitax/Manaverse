@@ -24,9 +24,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { VerifiedSeal } from "@/components/ui/verified-seal";
+import { getVerificationTier } from "@/components/profile/verification-shield";
+import { toast } from "@/components/ui/toast";
+import { BTN_SECONDARY, INPUT_BASE } from "@/lib/design-system";
 
 export default function AdminPage() {
-  const { currentUser, bulkSubmissions, users, assignUserRole } = useStore();
+  const { currentUser, bulkSubmissions, users, assignUserRole, updateBulkSubmissionStatus } = useStore();
   const [activeTab, setActiveTab] = useState<"roles" | "bulk" | "discord">("roles");
   const [testStatus, setTestStatus] = useState<string | null>(null);
   const [testingChannel, setTestingChannel] = useState<string | null>(null);
@@ -103,7 +107,7 @@ export default function AdminPage() {
           type: "success",
           text:
             newRole === "admin"
-              ? `🔥 ${targetUsername} ist jetzt Administrator! Der animierte Flammen-Avatarrahmen wurde aktiviert.`
+              ? `${targetUsername} ist jetzt Administrator. Der Flammen-Avatarrahmen ist aktiv.`
               : `Rolle von ${targetUsername} wurde erfolgreich auf „${newRole}“ geändert.`,
         });
       } else {
@@ -281,7 +285,7 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (data.success) {
-        setTestStatus(`✓ Erfolgreich gesendet: '${channel}' wurde in Discord veröffentlicht!`);
+        setTestStatus(`Erfolgreich gesendet: „${channel}“ wurde in Discord veröffentlicht.`);
       } else {
         setTestStatus(`Hinweis: ${data.error}`);
       }
@@ -295,33 +299,33 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen py-8 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 pb-28">
       {/* Title */}
-      <div>
-        <div className="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-1">
-          <Zap className="w-4 h-4 fill-cyan-400" /> Manacards Admin-Zentrale
+      <div className="space-y-2">
+        <div className="inline-flex items-center gap-2 text-ink-subtle text-[11px] font-bold uppercase tracking-[0.18em]">
+          <Zap className="w-3.5 h-3.5 text-amber-400" /> Manacards Admin-Zentrale
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-white">
-          Admin Dashboard & Rollenverwaltung
+        <h1 className="text-[28px] leading-[1.1] sm:text-4xl font-black text-ink tracking-[-0.02em]">
+          Admin-Dashboard &amp; Verwaltung
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-          Geschützter Verwaltungsbereich für Administrator-Berechtigungen, Sammlungs-Ankäufe und Discord-Integrationen.
+        <p className="text-xs sm:text-sm text-ink-muted">
+          Geschützter Verwaltungsbereich für Rollen, Sammlungs-Ankäufe und Discord-Integrationen.
         </p>
       </div>
 
-      {/* Navigation Tabs (Mobile-optimiert mit Daumenfreundlicher Steuerung) */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md overflow-x-auto no-scrollbar">
+      {/* Navigation Tabs */}
+      <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-surface-1/95 border border-hairline backdrop-blur-md overflow-x-auto no-scrollbar max-w-full">
         <button
           type="button"
           onClick={() => setActiveTab("roles")}
           className={cn(
-            "flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap min-h-[44px]",
+            "flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] cursor-pointer",
             activeTab === "roles"
-              ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/25"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
+              ? "bg-white/[0.08] text-ink border border-hairline-strong"
+              : "text-ink-subtle hover:text-ink border border-transparent"
           )}
         >
-          <Flame className="w-4 h-4 text-amber-300 fill-amber-300" />
-          <span>🔥 Admins & Flammenrahmen</span>
-          <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-black/20">
+          <Flame className="w-4 h-4 text-orange-400" />
+          <span>Rollen &amp; Rahmen</span>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.06] text-ink-muted tabular-nums">
             {users.length}
           </span>
         </button>
@@ -330,15 +334,15 @@ export default function AdminPage() {
           type="button"
           onClick={() => setActiveTab("bulk")}
           className={cn(
-            "flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap min-h-[44px]",
+            "flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] cursor-pointer",
             activeTab === "bulk"
-              ? "bg-amber-500 text-black shadow-lg shadow-amber-500/25"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
+              ? "bg-white/[0.08] text-ink border border-hairline-strong"
+              : "text-ink-subtle hover:text-ink border border-transparent"
           )}
         >
-          <Inbox className="w-4 h-4" />
-          <span>📦 Ankäufe</span>
-          <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-black/20">
+          <Inbox className="w-4 h-4 text-ink-muted" />
+          <span>Ankäufe</span>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.06] text-ink-muted tabular-nums">
             {bulkSubmissions.length}
           </span>
         </button>
@@ -347,13 +351,13 @@ export default function AdminPage() {
           type="button"
           onClick={() => setActiveTab("discord")}
           className={cn(
-            "flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap min-h-[44px]",
+            "flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap min-h-[44px] cursor-pointer",
             activeTab === "discord"
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
-              : "text-neutral-400 hover:text-white hover:bg-white/5"
+              ? "bg-white/[0.08] text-ink border border-hairline-strong"
+              : "text-ink-subtle hover:text-ink border border-transparent"
           )}
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-4 h-4 text-discord" />
           <span>Discord-Zentrale</span>
         </button>
       </div>
@@ -399,24 +403,25 @@ export default function AdminPage() {
           {roleFeedback && (
             <div
               className={cn(
-                "p-4 rounded-2xl flex items-center justify-between gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-2",
+                "p-4 rounded-2xl flex items-center justify-between gap-3 text-xs font-semibold toast-enter",
                 roleFeedback.type === "success"
-                  ? "bg-cyan-950/40 border border-cyan-500/50 text-cyan-200 shadow-lg shadow-cyan-500/10"
-                  : "bg-rose-950/40 border border-rose-500/50 text-rose-200 shadow-lg shadow-rose-500/10"
+                  ? "bg-emerald-500/[0.08] border border-emerald-500/30 text-emerald-200"
+                  : "bg-rose-500/[0.08] border border-rose-500/30 text-rose-200"
               )}
             >
               <div className="flex items-center gap-2.5">
                 {roleFeedback.type === "success" ? (
-                  <CheckCircle2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
                 )}
                 <span>{roleFeedback.text}</span>
               </div>
               <button
                 type="button"
+                aria-label="Hinweis schließen"
                 onClick={() => setRoleFeedback(null)}
-                className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white"
+                className="min-w-[32px] min-h-[32px] rounded-lg flex items-center justify-center hover:bg-white/10 text-ink-subtle hover:text-ink cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -424,22 +429,23 @@ export default function AdminPage() {
           )}
 
           {/* Search & Filter Bar */}
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="bg-surface-1/95 backdrop-blur-md p-3.5 rounded-2xl border border-hairline flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-ink-subtle absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Benutzer nach Name, Discord oder Whatnot suchen..."
-                className="w-full bg-[#101524] border border-white/10 rounded-xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500"
+                placeholder="Benutzer nach Name, Discord oder Whatnot suchen …"
+                className={cn(INPUT_BASE, "pl-10 pr-9 py-2.5 text-xs min-h-[44px] focus:border-hairline-strong")}
               />
               {userSearch && (
                 <button
                   type="button"
+                  aria-label="Suche leeren"
                   onClick={() => setUserSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] flex items-center justify-center text-ink-subtle hover:text-ink"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -450,7 +456,7 @@ export default function AdminPage() {
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {[
                 { id: "all", label: "Alle" },
-                { id: "admin", label: "🔥 Admins" },
+                { id: "admin", label: "Admins" },
                 { id: "founder", label: "Gründer" },
                 { id: "member", label: "Mitglieder" },
               ].map((f) => (
@@ -511,10 +517,13 @@ export default function AdminPage() {
 
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-bold text-white flex items-center gap-1.5">
+                          <p className="text-sm font-bold text-ink flex items-center gap-1.5">
                             {user.username}
-                            {user.verified && (
-                              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                            {(user.verified || (user.dealsCount || 0) >= 3) && (
+                              <VerifiedSeal
+                                level={Math.max(1, getVerificationTier(user.dealsCount || 0).level)}
+                                size={15}
+                              />
                             )}
                           </p>
 
@@ -575,7 +584,7 @@ export default function AdminPage() {
                           className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-red-600 hover:from-orange-400 hover:to-red-500 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-orange-500/25 min-h-[44px] cursor-pointer"
                         >
                           <Flame className="w-3.5 h-3.5 fill-black text-black" />
-                          <span>🔥 Als Admin ernennen</span>
+                          <span>Zum Admin ernennen</span>
                         </button>
                       ) : (
                         <button
@@ -598,10 +607,10 @@ export default function AdminPage() {
                         }
                         className="bg-[#101524] text-neutral-200 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 min-h-[44px]"
                       >
-                        <option value="admin">🔥 Administrator (Flammenrahmen)</option>
-                        <option value="founder">👑 Gründer (Goldrahmen)</option>
-                        <option value="beta">⚡ Beta-Tester (Holo-Rahmen)</option>
-                        <option value="member">👤 Standard-Mitglied</option>
+                        <option value="admin">Administrator (Flammenrahmen)</option>
+                        <option value="founder">Gründer (Goldrahmen)</option>
+                        <option value="beta">Beta-Tester (Holo-Rahmen)</option>
+                        <option value="member">Standard-Mitglied</option>
                       </select>
                     </div>
                   </div>
@@ -702,20 +711,52 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex gap-2">
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => alert(`Angebot per Discord an ${sub.user.discordUsername || sub.user.username} vorbereiten!`)}
-                      className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-all shadow-md shadow-amber-500/20 min-h-[44px]"
+                      onClick={async () => {
+                        const ok = await updateBulkSubmissionStatus(sub.id, "offer_sent");
+                        const target = sub.user.discordUsername || sub.user.username;
+                        if (sub.user.discordUsername) {
+                          try {
+                            await navigator.clipboard.writeText(sub.user.discordUsername);
+                          } catch {
+                            // Zwischenablage optional
+                          }
+                        }
+                        if (ok) {
+                          toast.success(
+                            `Status auf „Angebot gesendet“ gesetzt`,
+                            sub.user.discordUsername
+                              ? `Discord-Name @${target} wurde kopiert.`
+                              : `Kontaktiere ${target} mit deinem Ankaufsangebot.`
+                          );
+                        } else {
+                          toast.error("Status konnte nicht gespeichert werden");
+                        }
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-xs transition-colors min-h-[44px] cursor-pointer"
                     >
-                      Ankaufsangebot senden
+                      Ankaufsangebot markieren
                     </button>
                     <button
                       type="button"
-                      onClick={() => alert("Status auf 'In Verhandlung' gesetzt.")}
-                      className="px-3.5 py-2.5 rounded-xl bg-white/5 text-neutral-300 text-xs font-semibold hover:bg-white/10 min-h-[44px]"
+                      onClick={async () => {
+                        const nextStatus = sub.status === "reviewing" ? "completed" : "reviewing";
+                        const ok = await updateBulkSubmissionStatus(sub.id, nextStatus);
+                        if (ok) {
+                          toast.success(
+                            nextStatus === "completed"
+                              ? "Ankauf abgeschlossen"
+                              : "Status auf „In Prüfung“ gesetzt"
+                          );
+                        } else {
+                          toast.error("Status konnte nicht gespeichert werden");
+                        }
+                      }}
+                      className={cn("px-4 py-2.5 rounded-xl text-xs font-semibold min-h-[44px] cursor-pointer", BTN_SECONDARY)}
                     >
-                      In Prüfung
+                      {sub.status === "reviewing" ? "Abschließen" : "In Prüfung"}
                     </button>
                   </div>
                 </div>
@@ -762,30 +803,30 @@ export default function AdminPage() {
                 {
                   id: "sell",
                   name: "Verkauf (Sofortkauf)",
-                  badge: "🟢 Pokéball • Grün",
-                  desc: "Bot: Manaforge • VERKAUF 🟢",
-                  color: "border-emerald-500/30 bg-emerald-500/5",
+                  badge: "Pokéball · Gold",
+                  desc: "Bot: Manaforge • VERKAUF",
+                  color: "border-amber-400/25 bg-amber-400/[0.04]",
                 },
                 {
                   id: "trade",
                   name: "1:1 Karten-Tausch",
-                  badge: "🟣 Meisterball • Violett",
-                  desc: "Bot: Manaforge • TAUSCH 🟣",
-                  color: "border-purple-500/30 bg-purple-500/5",
+                  badge: "Meisterball · Violett",
+                  desc: "Bot: Manaforge • TAUSCH",
+                  color: "border-violet-400/25 bg-violet-400/[0.04]",
                 },
                 {
                   id: "looking_for",
                   name: "Suchanfrage (Gesuch)",
-                  badge: "🔵 Superball • Cyan",
-                  desc: "Bot: Manaforge • GESUCH 🔵",
-                  color: "border-cyan-500/30 bg-cyan-500/5",
+                  badge: "Superball · Orange",
+                  desc: "Bot: Manaforge • GESUCH",
+                  color: "border-orange-400/25 bg-orange-400/[0.04]",
                 },
                 {
                   id: "bulk",
                   name: "Sammlungs-Ankauf",
-                  badge: "🟠 Hyperball • Bernstein",
-                  desc: "Bot: Manaforge • ANKAUF 📦",
-                  color: "border-amber-500/30 bg-amber-500/5",
+                  badge: "Hyperball · Platin",
+                  desc: "Bot: Manaforge • ANKAUF",
+                  color: "border-hairline-strong bg-white/[0.03]",
                 },
               ].map((channelItem) => (
                 <div

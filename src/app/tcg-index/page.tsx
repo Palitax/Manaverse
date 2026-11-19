@@ -14,14 +14,15 @@ import {
 import { TCG_SETS, TCG_CARDS } from "@/lib/tcg-index-data";
 import { CardLanguage, PokemonApiCard } from "@/types";
 import { cn } from "@/lib/utils";
+import { FlagSwatch, LanguageTag, getLanguageCode } from "@/components/ui/language-tag";
 
-const LANGUAGE_TABS: { id: CardLanguage | "ALL"; label: string; flag: string }[] = [
-  { id: "ALL", label: "Alle Sprachen", flag: "🌐" },
-  { id: "DE", label: "Deutsch", flag: "🇩🇪" },
-  { id: "EN", label: "Englisch", flag: "🇬🇧" },
-  { id: "JP", label: "Japanisch", flag: "🇯🇵" },
-  { id: "KR", label: "Koreanisch", flag: "🇰🇷" },
-  { id: "CN", label: "Chinesisch", flag: "🇨🇳" },
+const LANGUAGE_TABS: { id: CardLanguage | "ALL"; label: string }[] = [
+  { id: "ALL", label: "Alle Sprachen" },
+  { id: "DE", label: "Deutsch" },
+  { id: "EN", label: "Englisch" },
+  { id: "JP", label: "Japanisch" },
+  { id: "KR", label: "Koreanisch" },
+  { id: "CN", label: "Chinesisch" },
 ];
 
 const PAGE_SIZE = 24;
@@ -164,24 +165,24 @@ export default function TcgIndexPage() {
     <div className="min-h-screen bg-[#060911] text-white pt-20 pb-28 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto relative">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-20 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
+        
 
         {/* Header Hero Section */}
         <div className="relative z-10 text-center max-w-3xl mx-auto space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-neutral-300 backdrop-blur-md">
-            <Database className="w-4 h-4 text-amber-400" />
+            <Database className="w-4 h-4 text-ink-subtle" />
             <span>Vollständiger Pokémon TCG-Index (29.200+ japanische & internationale Karten)</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
             Einheitlicher{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400">
+            <span className="text-ink-muted">
               TCG-Katalog
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Verifizierte Kartennamen, sämtliche japanische Erweiterungen & Promo-Serien (1996–2026 inkl. XY-P, SM-P, S-P, SV-P, Old Back) sowie internationale Set-Verknüpfungen für 🇩🇪 Deutsch, 🇬🇧 Englisch, 🇯🇵 Japanisch, 🇰🇷 Koreanisch und 🇨🇳 Chinesisch.
+            Verifizierte Kartennamen, sämtliche japanische Erweiterungen & Promo-Serien (1996–2026 inkl. XY-P, SM-P, S-P, SV-P, Old Back) sowie internationale Set-Verknüpfungen für Deutsch, Englisch, Japanisch, Koreanisch und Chinesisch.
           </p>
         </div>
 
@@ -202,11 +203,11 @@ export default function TcgIndexPage() {
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] border active:scale-95",
                     isSelected
-                      ? "bg-amber-400 text-black border-amber-300 shadow-lg shadow-amber-400/20"
-                      : "bg-[#111625] hover:bg-white/10 text-neutral-300 border-white/10"
+                      ? "bg-white text-black border-white"
+                      : "bg-surface-2 hover:bg-white/[0.06] text-ink-muted border-hairline"
                   )}
                 >
-                  <span className="text-base">{tab.flag}</span>
+                  <FlagSwatch lang={tab.id} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -222,10 +223,10 @@ export default function TcgIndexPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Suche nach Pokémon, Nummer oder Set (z.B. Pikachu 070/XY-P, Glurak 201, リザードン, Poncho)..."
-                className="w-full bg-[#131929] border border-white/10 rounded-xl px-4 py-3 pl-11 pr-24 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 min-h-[46px]"
+                className="w-full bg-surface-2 border border-hairline rounded-xl px-4 py-3 pl-11 pr-24 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-amber-400 min-h-[46px]"
               />
               {isLoading ? (
-                <Loader2 className="w-4 h-4 text-amber-400 animate-spin absolute left-4 top-1/2 -translate-y-1/2" />
+                <Loader2 className="w-4 h-4 text-ink-muted animate-spin absolute left-4 top-1/2 -translate-y-1/2" />
               ) : (
                 <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2" />
               )}
@@ -245,7 +246,7 @@ export default function TcgIndexPage() {
               <select
                 value={selectedSetCode}
                 onChange={(e) => setSelectedSetCode(e.target.value)}
-                className="bg-[#131929] border border-white/10 rounded-xl px-3 py-3 text-xs sm:text-sm text-white font-semibold focus:outline-none focus:border-amber-400 cursor-pointer min-h-[46px] flex-1 sm:max-w-[260px]"
+                className="bg-surface-2 border border-hairline rounded-xl px-3 py-3 text-xs sm:text-sm text-white font-semibold focus:outline-none focus:border-white/30 cursor-pointer min-h-[46px] flex-1 sm:max-w-[260px]"
               >
                 <option value="ALL">Alle Editionen / Sets</option>
                 {TCG_SETS.filter(
@@ -294,12 +295,12 @@ export default function TcgIndexPage() {
         {activeTab === "cards" && (
           <div className="space-y-8">
             {cards.length === 0 && !isLoading ? (
-              <div className="p-10 sm:p-12 text-center rounded-3xl bg-[#0c101b] border border-white/10 space-y-3">
+              <div className="p-10 sm:p-12 text-center rounded-3xl bg-surface-1/95 border border-hairline space-y-3">
                 <p className="text-base font-bold text-white">
                   Keine passenden Karten im TCG-Index gefunden
                 </p>
                 <p className="text-xs text-neutral-400 max-w-md mx-auto">
-                  Überprüfe die gewählte Sprache oder das Set-Kürzel. Japanische Promos und Editionen (wie XY-P, SM-P, SV2a) sind unter 🇯🇵 Japanisch und 🌐 Alle Sprachen verfügbar.
+                  Überprüfe die gewählte Sprache oder das Set-Kürzel. Japanische Promos und Editionen (wie XY-P, SM-P, SV2a) sind unter „Japanisch“ und „Alle Sprachen“ verfügbar.
                 </p>
                 <button
                   type="button"
@@ -308,7 +309,7 @@ export default function TcgIndexPage() {
                     setSearchQuery("");
                     setSelectedSetCode("ALL");
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-amber-400 text-black font-bold text-xs cursor-pointer min-h-[44px]"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs cursor-pointer min-h-[44px]"
                 >
                   Filter zurücksetzen
                 </button>
@@ -327,16 +328,7 @@ export default function TcgIndexPage() {
                     const originalLabel = card.nameOriginal || card.name;
                     const displayTitle = isToggled ? originalLabel : primaryLabel;
 
-                    const flag =
-                      lang === "DE"
-                        ? "🇩🇪 DE"
-                        : lang === "JP"
-                        ? "🇯🇵 JP"
-                        : lang === "KR"
-                        ? "🇰🇷 KR"
-                        : lang === "CN"
-                        ? "🇨🇳 CN"
-                        : "🇬🇧 EN";
+                    const flagLang = lang;
 
                     const imageSrc =
                       card.images?.large ||
@@ -348,12 +340,13 @@ export default function TcgIndexPage() {
                     return (
                       <div
                         key={cardKey}
-                        className="group relative rounded-2xl bg-[#0c111d] border border-white/10 hover:border-amber-400/50 p-4 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] flex flex-col justify-between"
+                        className="group relative rounded-2xl bg-surface-1/95 border border-hairline hover:border-hairline-strong p-4 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] flex flex-col justify-between"
                       >
                         {/* Top Header Badge */}
                         <div className="flex items-center justify-between gap-1 mb-3">
-                          <span className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-bold text-neutral-200 border border-white/10 truncate max-w-[65%]">
-                            {flag} • {setCode}
+                          <span className="px-2 py-1 rounded-md bg-white/[0.04] text-[10px] font-bold text-ink-muted border border-hairline truncate max-w-[65%] inline-flex items-center gap-1.5">
+                            <FlagSwatch lang={flagLang} />
+                            <span className="font-mono tracking-[0.06em] truncate">{getLanguageCode(flagLang)} · {setCode}</span>
                           </span>
                           {card.number && (
                             <span className="text-[10px] font-mono text-neutral-400 truncate">
@@ -384,10 +377,10 @@ export default function TcgIndexPage() {
                             title="Klicken, um zwischen übersetztem und originalem Namen zu wechseln"
                             className="text-left w-full group/title cursor-pointer min-h-[44px]"
                           >
-                            <h3 className="font-extrabold text-sm text-white group-hover/title:text-amber-300 transition-colors line-clamp-1">
+                            <h3 className="font-extrabold text-sm text-white group-hover/title:text-ink-muted transition-colors line-clamp-1">
                               {displayTitle}
                             </h3>
-                            <span className="text-[10px] text-neutral-400 flex items-center gap-1 group-hover/title:text-amber-400/90 transition-colors truncate">
+                            <span className="text-[10px] text-neutral-400 flex items-center gap-1 group-hover/title:text-ink transition-colors truncate">
                               <ArrowLeftRight className="w-3 h-3 flex-shrink-0" />
                               {isToggled
                                 ? lang === "DE"
@@ -403,7 +396,7 @@ export default function TcgIndexPage() {
 
                           {card.rarity && (
                             <div className="pt-1">
-                              <span className="inline-block text-[10px] font-semibold text-amber-300/90 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded truncate max-w-full">
+                              <span className="inline-block text-[10px] font-semibold text-ink-muted bg-white/[0.04] border border-hairline px-2 py-0.5 rounded truncate max-w-full">
                                 {card.rarity}
                               </span>
                             </div>
@@ -446,12 +439,12 @@ export default function TcgIndexPage() {
                     >
                       {isLoadingMore ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                          <Loader2 className="w-4 h-4 animate-spin text-ink-muted" />
                           <span>Weitere Karten werden geladen...</span>
                         </>
                       ) : (
                         <>
-                          <ChevronDown className="w-4 h-4 text-amber-400" />
+                          <ChevronDown className="w-4 h-4 text-ink-muted" />
                           <span>Weitere 24 Karten laden</span>
                         </>
                       )}
@@ -489,18 +482,14 @@ export default function TcgIndexPage() {
                     setSelectedSetCode(s.code);
                     setActiveTab("cards");
                   }}
-                  className="text-left p-4 rounded-2xl bg-[#0c101b] border border-white/10 hover:border-amber-400/40 space-y-2.5 transition-all cursor-pointer"
+                  className="text-left p-4 rounded-2xl bg-surface-1/95 border border-hairline hover:border-hairline-strong space-y-2.5 transition-all cursor-pointer"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-1 rounded-lg bg-amber-400/15 border border-amber-400/30 font-mono font-bold text-xs text-amber-300">
+                    <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-hairline font-mono font-bold text-xs text-ink">
                       {s.code}
                     </span>
                     <span className="text-xs font-bold text-neutral-300">
-                      {s.language === "DE" && "🇩🇪 Deutsch"}
-                      {s.language === "EN" && "🇬🇧 Englisch"}
-                      {s.language === "JP" && "🇯🇵 Japanisch"}
-                      {s.language === "KR" && "🇰🇷 Koreanisch"}
-                      {s.language === "CN" && "🇨🇳 Chinesisch"}
+                      <LanguageTag lang={s.language} showLabel variant="plain" />
                     </span>
                   </div>
                   <div>
@@ -554,14 +543,10 @@ export default function TcgIndexPage() {
                     >
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span className="font-bold text-white flex items-center gap-1.5">
-                          {s.language === "DE" && "🇩🇪 Deutsch"}
-                          {s.language === "EN" && "🇬🇧 Englisch"}
-                          {s.language === "JP" && "🇯🇵 Japanisch"}
-                          {s.language === "KR" && "🇰🇷 Koreanisch"}
-                          {s.language === "CN" && "🇨🇳 Chinesisch"}
+                          <LanguageTag lang={s.language} showLabel variant="plain" />
                         </span>
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap font-mono font-bold text-amber-300">
+                      <td className="py-3 px-4 whitespace-nowrap font-mono font-bold text-ink">
                         {s.code}
                       </td>
                       <td className="py-3 px-4 font-bold text-white">{s.name}</td>
